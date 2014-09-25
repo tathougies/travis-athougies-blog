@@ -1,4 +1,4 @@
-#!/usr/bin/env python -u
+#!python -u
 import Image
 import ExifTags
 import sys

@@ -3,7 +3,7 @@ before_install:
     - openssl aes-256-cbc -K $encrypted_20ea0b3ef7d9_key -iv $encrypted_20ea0b3ef7d9_iv -in s3cfg.enc -out s3cfg -d
     - mv s3cfg .s3cfg
 install:
-    - sudo apt-get install s3cmd
+    - sudo apt-get install s3cmd python-virtualenv
     - virtualenv --system-site-packages py
     - source py/bin/activate
     - easy_install Pillow
