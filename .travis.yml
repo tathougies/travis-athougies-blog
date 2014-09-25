@@ -2,6 +2,8 @@ language: haskell
 install:
     - sudo apt-get install s3cmd python-imaging
     - cabal install
+    - cd site-contents
 script: dist/build/travisblog/travisblog build
 after_script:
     - dist/build/travisblog/travisblog deploy
+    - cd ..
