@@ -135,7 +135,7 @@ main = hakyllWith myHakyllConfig $ do
 
     match "css/*.hs" $ do
         route   $ setExtension "css"
-        compile $ getResourceString >>= withItemBody (unixFilter "runghc" ["-package-db=/Users/iammisc/Projects/site/travisblog/.cabal-sandbox/x86_64-osx-ghc-7.6.3-packages.conf.d"])
+        compile $ getResourceString >>= withItemBody (unixFilter "runghc" [])
 
     tags <- buildTags "posts/*" (fromCapture "tags/*.html")
     posts <- map toFilePath <$> getMatches "posts/*"
