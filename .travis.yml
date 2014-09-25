@@ -4,6 +4,8 @@ before_install:
     - mv s3cfg .s3cfg
 install:
     - sudo apt-get install s3cmd
+    - virtualenv --system-site-packages py
+    - source py/bin/activate
     - easy_install Pillow
     - python -c "import ExifTags; print 'hello'"
     - cabal install
