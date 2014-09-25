@@ -1,5 +1,5 @@
 #!python -u
-import Image
+from PIL import Image
 import sys
 import cStringIO as StringIO
 

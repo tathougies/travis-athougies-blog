@@ -7,7 +7,7 @@ install:
     - virtualenv --system-site-packages py
     - source py/bin/activate
     - easy_install Pillow
-    - python -c "import Image; print 'hello'"
+    - python -c "from PIL import Image; print 'hello'"
     - cabal install
     - cd site-content
 script: travisblog build
