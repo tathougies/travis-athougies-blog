@@ -117,13 +117,13 @@ main = hakyllWith myHakyllConfig $ do
 
     match ("images/**" .&&. complement "images/stock/**") $ do
         route   idRoute
-        compile $ do getResourceLBS >>= withItemBody (unixFilterLBS "./generate-thumbnail.py" [show imageMaxSize])
+        compile $ do getResourceLBS >>= withItemBody (unixFilterLBS "python" ["./generate-thumbnail.py", show imageMaxSize])
 
     match ("images/**" .&&. complement "images/stock/**") $ version "small" $ do
       route $ customRoute $ \i -> let (path, ext) = splitExtension $ toFilePath i
                                       fp = addExtension (path ++ "-small") ext
                                   in fp
-      compile $ do getResourceLBS >>= withItemBody (unixFilterLBS "./generate-thumbnail.py" [show thumbnailMaxSize])
+      compile $ do getResourceLBS >>= withItemBody (unixFilterLBS "python" ["./generate-thumbnail.py", show thumbnailMaxSize])
 
     match "images/stock/**" $ do
       route idRoute
