@@ -1,6 +1,5 @@
 #!python -u
 import Image
-import ExifTags
 import sys
 import cStringIO as StringIO
 
