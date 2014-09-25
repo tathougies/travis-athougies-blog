@@ -7,5 +7,5 @@ install:
     - cd site-content
 script: travisblog build
 after_script:
-    - dist/build/travisblog/travisblog deploy
+    - travisblog deploy
     - cd ..
