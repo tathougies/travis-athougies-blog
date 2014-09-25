@@ -1,0 +1,16 @@
+<div class="info">
+    Posted on <span class="date">$date$</span>
+    $if(author)$
+        by <span class="author">$author$</span>
+    $endif$
+</div>
+<div class="tags">
+  in
+  <ul>
+    $for(myTags)$
+    <li><a href="/tags/$tag$.html">$tag$</a></li>
+    $endfor$
+  </ul>
+</div>
+
+$body$

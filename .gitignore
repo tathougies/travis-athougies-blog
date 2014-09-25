@@ -1,0 +1,8 @@
+_cache
+_site
+dist
+cabal.sandbox.config
+.cabal-sandbox
+.DS_Store
+*.hi
+*.o
