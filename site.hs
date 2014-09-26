@@ -4,6 +4,7 @@ import           Control.Applicative ((<$>), empty)
 import           Control.Monad
 import           Control.Monad.Writer
 import           Data.Monoid (mappend, mempty)
+import           Data.Ord
 import           Hakyll
 
 import           Text.Pandoc.Options
@@ -185,7 +186,7 @@ main = hakyllWith myHakyllConfig $ do
         compile $ do
             list <- loadAll pattern
             let context = constField "title" title `mappend`
-                          listField "posts" postCtx (return list)  `mappend`
+                          listField "posts" postCtx (return (sortBy (comparing (Down . itemIdentifier)) list))  `mappend`
                           travisContext
             makeItem ""
                 >>= loadAndApplyTemplate "templates/post-list.html" context
