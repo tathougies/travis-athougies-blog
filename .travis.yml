@@ -10,7 +10,6 @@ install:
     - python -c "from PIL import Image; print 'hello'"
     - cabal install
     - cd site-content
-script: travisblog build
+script: travisblog build && travisblog deploy
 after_script:
-    - travisblog deploy
     - cd ..
