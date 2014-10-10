@@ -174,7 +174,7 @@ main = hakyllWith myHakyllConfig $ do
         route $ setExtension "html"
         compile $ do
           underlying <- getUnderlying
-          myTags <- getTags underlying
+          myTags <- getTagsQuoted underlying
           pandocMathCompiler
             >>= loadAndApplyTemplate "templates/post.html"    (postCtx `mappend` myTagsCtx myTags)
             >>= loadAndApplyTemplate "templates/default.html" (postCtx `mappend` travisContext)
@@ -306,8 +306,8 @@ getProjects = getMatches "projects/*.markdown"
 --------------------------------------------------------------------------------
 -- | Obtain tags from a page in an almost default way: parse them from the @tags@
 -- metadata field, removing any surrounding quotes
-getTags :: MonadMetadata m => Identifier -> m [String]
-getTags identifier = do
+getTagsQuoted :: MonadMetadata m => Identifier -> m [String]
+getTagsQuoted identifier = do
     metadata <- getMetadata identifier
     return $ maybe [] (map trim . splitAll "," . unQuote) $ M.lookup "tags" metadata
     
