@@ -313,6 +313,6 @@ getTags identifier = do
     
 -- Takes a string possibly wrapped in qutoes and removes them
 unQuote :: String -> String
-unQuote s = let s' = if head s == '"' then tail s else s
+unQuote s = let s' = if Prelude.head s == '"' then Prelude.tail s else s
                 s'' = if last s' == '"' then init s' else s'
             in s''
