@@ -6,6 +6,7 @@ import           Control.Monad.Writer
 import           Data.Monoid (mappend, mempty)
 import           Data.Ord
 import           Hakyll
+import           Hakyll.Core.Util.String
 
 import           Text.Pandoc.Options
 import           Text.Pandoc.Walk
@@ -138,7 +139,7 @@ main = hakyllWith myHakyllConfig $ do
         route   $ setExtension "css"
         compile $ getResourceString >>= withItemBody (unixFilter "runghc" [])
 
-    tags <- buildTags "posts/*" (fromCapture "tags/*.html")
+    tags <- buildTagsWith getTagsQuoted "posts/*" (fromCapture "tags/*.html")
     posts <- map toFilePath <$> getMatches "posts/*"
     -- Project pages! :D
     projectIdentifiers <- getProjects
@@ -301,3 +302,17 @@ myTagsCtx tags = listField "myTags" simpleTagCtx (mapM makeItem tags)
 
 getProjects :: MonadMetadata m => m [Identifier]
 getProjects = getMatches "projects/*.markdown"
+
+--------------------------------------------------------------------------------
+-- | Obtain tags from a page in an almost default way: parse them from the @tags@
+-- metadata field, removing any surrounding quotes
+getTags :: MonadMetadata m => Identifier -> m [String]
+getTags identifier = do
+    metadata <- getMetadata identifier
+    return $ maybe [] (map trim . splitAll "," . unQuote) $ M.lookup "tags" metadata
+    
+-- Takes a string possibly wrapped in qutoes and removes them
+unQuote :: String -> String
+unQuote s = let s' = if head s == '"' then tail s else s
+                s'' = if last s' == '"' then init s' else s'
+            in s''
