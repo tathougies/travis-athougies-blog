@@ -292,6 +292,7 @@ projectAsItem =
     field "summary" (return . projectSummary . itemBody) `mappend`
     field "version" (return . projectVersion . itemBody) `mappend`
     field "language" (return . projectLanguage . itemBody) `mappend`
+    field "status" (maybe empty return . projectStatus . itemBody) `mappend`
     field "github" (maybe empty return . projectGithub . itemBody)
 
 postCtx :: Context String
