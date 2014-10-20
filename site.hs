@@ -257,6 +257,7 @@ data ProjectDescription = ProjectDescription {
       projectSlug     :: String,
       projectSummary  :: String,
       projectLanguage :: String,
+      projectStatus   :: Maybe String,
       projectVersion  :: String,
       projectPriority :: Int,
       projectGithub   :: Maybe String
@@ -270,7 +271,8 @@ mkProjectDescription metadata =
         Just projectLanguage = M.lookup "language" metadata
         Just projectVersion  = M.lookup "version"  metadata
         projectPriority      = read . fromJust $ M.lookup "priority" metadata
-        projectGithub        = M.lookup "github"  metadata
+        projectStatus        = M.lookup "status"   metadata
+        projectGithub        = M.lookup "github"   metadata
     in ProjectDescription { .. }
 
 projectCtx :: ProjectDescription -> Context String
@@ -280,6 +282,7 @@ projectCtx (ProjectDescription { .. }) =
     constField "summary" projectSummary `mappend`
     constField "version" projectVersion `mappend`
     constField "language" projectLanguage `mappend`
+    maybe mempty (constField "status") projectStatus `mappend`
     maybe mempty (constField "github") projectGithub
 
 projectAsItem :: Context ProjectDescription

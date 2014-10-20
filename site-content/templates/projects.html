@@ -4,6 +4,9 @@
   <ul class="info">
     <li><span class="label">Language:</span><span class="value">$language$</span></li>
     <li><span class="label">Version:</span><span class="value">$version$</span></li>
+    $if(status)$
+    <li><span class="label">Status:</span><span class="value">$status$</span></li>
+    $endif$
     $if(github)$
     <li><a href="$github$"><span class="label">View on Github</span></a></li>
     $endif$
