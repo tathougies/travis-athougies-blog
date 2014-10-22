@@ -83,6 +83,7 @@ pandocMathCompiler' allPosts =
         useThumbnails (Image caption target) = let (url, title) = target
                                                    (urlFp, urlExt) = splitExtension url
                                                    url' = addExtension (urlFp ++ "-small") urlExt
+                                                   url'' = if "/images/" `isPrefixOf` url' then url' else url
 
                                                    (caption', attributes) = runWriter (collectImageAttributes caption)
                                                    compiledCaption = writeHtmlString writerOptions (Pandoc mempty [Plain caption'])
@@ -98,7 +99,7 @@ pandocMathCompiler' allPosts =
 
                                                    raw = div ! class_ (fromString $ intercalate " " ("figure":htmlClasses)) $ do
                                                            a ! href (fromString url) $ do
-                                                             img ! src (fromString url') ! alt (fromString compiledCaption)
+                                                             img ! src (fromString url'') ! alt (fromString compiledCaption)
                                                            p ! class_ "caption" $ preEscapedToHtml compiledCaption
                                                in RawInline (Format "html") (renderHtml raw)
         useThumbnails x = x

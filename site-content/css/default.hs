@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Clay
 import qualified Clay.Media as Mq
+import Control.Monad
 import Prelude hiding (div, span, (**), all)
 
 travisLightGray = grayish 136
@@ -146,8 +147,8 @@ main = putCss $ do
         marginLeft      auto
         marginRight     auto
       ".figure-flow" & do
-        marginLeft      (px 5)
-        marginRight     (px 5)
+        marginLeft      (em 2)
+        marginRight     (em 2)
       ".figure-right" & do
         float           floatRight
       firstChild & do
@@ -162,12 +163,12 @@ main = putCss $ do
         narrowW $ do display none
         textAlign       (alignSide sideLeft)
 
-    ul ? do
-      li ? do
-        lineHeight    (em 1.3)
-        marginBottom  (em 1)
-        "last-child" & do
-          marginBottom 0
+    forM_ [ul, ol] (? do
+                      li ? do
+                        lineHeight    (em 1.4)
+                        marginBottom  (em 1)
+                        "last-child" & do
+                             marginBottom 0)
     h1 ? do
       normalW $ bodyFamily
       narrowW $ do titleFamily
