@@ -1,10 +1,3 @@
----
-title: One Plant's Trash Is Another Plant's Treasure: Pondering the Use of Compost Tea as a Hydroponic Nutrient
-author: Travis Athougies
-tags: "hydroponics,sustainability"
-published: true
----
-
 Recently, I've been thinking about hydroponic nutrients and sustainability. Most hydroponic
 nutrients (both dry or wet) are made from the same stuff used to make regular fertilizer. This is
 usually a combination of readily available chemicals like Calcium Nitrate
@@ -74,7 +67,7 @@ final plant. However, I think that using the tea means that you would be able to
 fertilizer solution.
 
 For a more scientific answer, I decided to research how much nutrient actually gets dissolved back into
-the water during the brewing process.  I couldn't find any good non-pay-walled sources. But
+the water during the brewing process.  I couldn't find any good non-pay-walled sources, but
 [this article](http://www.gardenmyths.com/compost-tea/) has a good explanation. Basically, compost
 has an NPK ratio of about 2.6-0.9-2. If you dilute this by one fifth (since we only added one gallon
 of compost), you get an NPK ratio of about 0.5-0.2-0.4. To put that in perspective, hydroponic
