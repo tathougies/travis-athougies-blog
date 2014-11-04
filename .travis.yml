@@ -8,6 +8,7 @@ install:
     - source py/bin/activate
     - easy_install Pillow
     - python -c "from PIL import Image; print 'hello'"
+    - cabal install clay
     - cabal install
     - cd site-content
 script: travisblog build && travisblog deploy
