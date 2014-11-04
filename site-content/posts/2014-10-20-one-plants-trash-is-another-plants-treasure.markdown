@@ -1,3 +1,10 @@
+---
+title: One Plant's Trash Is Another Plant's Treasure: Pondering the Use of Compost Tea as a Hydroponic Nutrient
+author: Travis Athougies
+tags: "hydroponics,sustainability"
+published: true
+---
+
 Recently, I've been thinking about hydroponic nutrients and sustainability. Most hydroponic
 nutrients (both dry or wet) are made from the same stuff used to make regular fertilizer. This is
 usually a combination of readily available chemicals like Calcium Nitrate
