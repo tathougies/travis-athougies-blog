@@ -9,7 +9,7 @@ install:
     - easy_install Pillow
     - python -c "from PIL import Image; print 'hello'"
     - cabal install clay
-    - cabal install
+    - cabal install --max-backjumps=-1
     - cd site-content
 script: travisblog build && travisblog deploy
 after_script:
