@@ -119,7 +119,13 @@ main = putCss $ do
       marginTop       (em 1)
       firstChild & do
         marginTop     0
-
+  "#content" |> p ? do
+      firstOfType & do
+        fontSize (pt 13)
+        lineHeight (em 1.8)
+      ":first-of-type:first-line" & do
+        fontSize (pt 15)
+        fontWeight bold
   div # "#content" ? do
     normalW $ maxWidth (px contentMaxWidth)
     marginLeft        auto
