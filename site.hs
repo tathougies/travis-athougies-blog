@@ -35,6 +35,9 @@ import Debug.Trace
 -- | How many tags to display on the front page
 tagCount = 10
 
+-- | How many posts to show on the home page
+maxPostCount = 5
+
 data ImageAttribute = ImageCentered
                     | ImageFlow
                     | ImageAlignRight
@@ -239,7 +242,7 @@ main = hakyllWith myHakyllConfig $ do
     match "index.html" $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
+            posts <- take maxPostCount <$> (recentFirst =<< loadAll "posts/*")
             let indexCtx =
                     listField "posts" postCtx (return posts) `mappend`
                     travisContext

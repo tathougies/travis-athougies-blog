@@ -3,6 +3,7 @@ import Clay
 import qualified Clay.Media as Mq
 import Control.Monad
 import Prelude hiding (div, span, (**), all)
+import qualified Prelude as P
 
 travisLightGray = grayish 136
 travisBlue      = rgb 0 0x99 0xFF
@@ -22,7 +23,7 @@ contentPaddingTopNarrow = miniHeaderHeight + 10
 contentPaddingLeftNarrow = 10
 contentPaddingRightNarrow = 10
 normalBodyPadding = 190
-miniHeaderHeight = 140
+miniHeaderHeight = 50
 
 siteMinWidth = headerWidth - headerRightSpace + contentMinWidth + contentPaddingLeft + normalBodyPadding * 2
 
@@ -127,7 +128,7 @@ main = putCss $ do
       paddingTop  (px contentPaddingTopNarrow)
       paddingLeft (px contentPaddingLeftNarrow)
       paddingRight (px contentPaddingRightNarrow)
-      fontSize (pt 18)
+      fontSize (pt 11)
     normalW $ do
       paddingTop      (px contentPaddingTop)
       paddingLeft     (px contentPaddingLeft)
@@ -172,14 +173,13 @@ main = putCss $ do
     h1 ? do
       normalW $ bodyFamily
       narrowW $ do titleFamily
-                   fontSize (pt 40)
+                   fontSize (pt 16)
       fontWeight      normal
       marginBottom    (px 12)
     h2 ? do
       titleFamily
       textTransform   uppercase
-      normalW $ fontSize (pt 13)
-      narrowW $ fontSize (pt 16)
+      fontSize (pt 13)
       borderBottom    solid (px 1) headerRuleColor
 
     div # byClass "info" ? do
@@ -191,11 +191,13 @@ main = putCss $ do
           color black
         byClass "date" & do
           color navy
+      narrowW $ fontSize (pt 10)
     div # byClass "tags" ? do
       paddingLeft     (em 2)
       fontStyle       italic
       color           gray
       marginTop     (px 10)
+      narrowW $ fontSize (pt 10)
       ul ? do
         color         black
         fontStyle     normal
@@ -225,24 +227,21 @@ main = putCss $ do
                   titleFamily
                   star # "#show-header" ? do
                     color white
-                    fontSize (px 70)
-                    width    (px 70)
-                    sym padding (px 10)
-                    paddingRight (px 2)
+                    fontSize (px (miniHeaderHeight `P.div` 2))
+                    width    (px (miniHeaderHeight `P.div` 2))
                     sym margin (px 7)
                     float floatRight
                     "cursor" -: "pointer"
                   h1 # "#mini-logo" ? do
                     plainLinks
-                    fontSize (pt 30)
+                    fontSize (pt 14)
                     letterSpacing (px 5)
                     textTransform uppercase
                     fontWeight normal
                     display block
                     marginLeft auto
                     marginRight auto
-                    marginTop (px 40)
-                    width (px 400)
+                    marginTop (px 10)
                     textAlign (alignSide sideCenter)
                     p ? do
                       sym margin 0
@@ -271,7 +270,7 @@ main = putCss $ do
       fontSize  (pt 28)
     div # byId "shamelessplug" ? do
       normalW $ fontSize (pt 8)
-      narrowW $ fontSize (pt 15)
+      narrowW $ fontSize (pt 10)
     h1 # byId "logo" ? do
       -- display         block
       -- float           floatLeft
@@ -295,13 +294,13 @@ main = putCss $ do
           color       travisLightGray
 
     div # byId "taglines" ? do
-      normalW $ fontSize (pt 14)
-      narrowW $ fontSize (pt 20)
+      fontSize        (pt 14)
       color           travisBlue
 
     ul # byId "navigation" ? do
       "list-style" -: "none"
       sym padding     0
+      marginTop       (px 10)
       h2 ? do
         textTransform uppercase
         sym margin    0
@@ -320,6 +319,7 @@ main = putCss $ do
              paddingLeft 0
              a ? color white
         li ? do
+          narrowW $ fontSize (pt 14)
           marginTop   (px 4)
           firstChild &
             marginTop 0
