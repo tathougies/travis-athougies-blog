@@ -10,12 +10,14 @@ travisBlue      = rgb 0 0x99 0xFF
 codeBackground  = grayish 0xEE
 headerRuleColor = grayish 0xDD
 
-titleFamily = fontFamily ["Open Sans", "Nexa Light"] [sansSerif]
+titleFamily = do
+  fontFamily ["Open Sans", "Nexa Light"] [sansSerif]
+  fontWeight (weight 300)
 bodyFamily  = fontFamily ["Palatino Linotype", "Palatino", "Baskerville", "Book Antiqua", "URW Palladio L"] [serif]
 
 headerWidth = 280
 headerRightSpace = 20
-contentMaxWidth = 685
+contentMaxWidth = 700
 contentMinWidth = 300
 contentPaddingLeft = 75
 contentPaddingTop = 75
@@ -34,6 +36,7 @@ plainLinks =
 
 narrowW = query all [Mq.maxWidth (px siteMinWidth)]
 normalW = query all [Mq.minWidth (px siteMinWidth)]
+figureShadow = insetBoxShadow    inset 0 0 (px 10) (setA 64 gray)
 
 -- Related speciically to projects
 projects = do
@@ -119,7 +122,7 @@ main = putCss $ do
       marginTop       (em 1)
       firstChild & do
         marginTop     0
-  "#content" |> p ? do
+  "#post" |> p ? do
       firstOfType & do
         titleFamily
         fontSize (pt 20)
@@ -150,7 +153,7 @@ main = putCss $ do
       sym margin        (px 10)
       width             (px 400)
       textAlign         (alignSide sideCenter)
-      insetBoxShadow    inset 0 0 (px 10) (setA 64 gray)
+      figureShadow
       ".caption" ? do
         fontSize        (pt 10)
         color           gray
@@ -170,10 +173,13 @@ main = putCss $ do
         color           gray
         display         block
         textAlign       (alignSide sideRight)
+    div # ".gallery" |> div # ".figure" ? do
+      sym margin 0
+      marginBottom (px 10)
     div # ".figure" ? do
+      figureShadow
       sym padding       (px 10)
       border            solid (px 1) travisLightGray
-      float             floatLeft
       sym margin        (px 5)
       width             (px 200)
       textAlign         (alignSide sideCenter)
@@ -181,10 +187,12 @@ main = putCss $ do
         marginLeft      auto
         marginRight     auto
       ".figure-flow" & do
-        marginLeft      (em 2)
         marginRight     (em 2)
+        float           floatLeft
       ".figure-right" & do
         float           floatRight
+        marginLeft      (em 2)
+        marginRight     0
       firstChild & do
         marginLeft      0
         marginTop       0
@@ -204,10 +212,10 @@ main = putCss $ do
                         "last-child" & do
                              marginBottom 0)
     h1 ? do
-      normalW $ bodyFamily
+      normalW $ do bodyFamily
+                   fontWeight normal
       narrowW $ do titleFamily
                    fontSize (pt 16)
-      fontWeight      normal
       marginBottom    (px 12)
     h2 ? do
       titleFamily
@@ -305,6 +313,7 @@ main = putCss $ do
       normalW $ fontSize (pt 8)
       narrowW $ fontSize (pt 10)
     h1 # byId "logo" ? do
+      titleFamily
       -- display         block
       -- float           floatLeft
       narrowW $
@@ -313,7 +322,6 @@ main = putCss $ do
       fontSize        (pt 24)
       letterSpacing   (px 6)
       textTransform   uppercase
-      fontWeight      normal
       display         block
       marginTop       (px 60)
       marginBottom    (px 10)
@@ -335,6 +343,7 @@ main = putCss $ do
       sym padding     0
       marginTop       (px 10)
       h2 ? do
+        titleFamily
         textTransform uppercase
         sym margin    0
         marginBottom  (px 5)

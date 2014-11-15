@@ -6,6 +6,15 @@ var images = [];
 var isHandheld = false;
 
 $(document.body).ready(function () {
+    $(".gallery").each(function () {
+        var that = $(this);
+        $(this).imagesLoaded(function () {
+            that.isotope({itemSelector: ".figure",
+                          layoutMode: "masonry",
+                          masonry: { gutter: 10 }});
+        });
+    });
+
     figures = $("div.figure").get();
     $("div.figure").each(function (i) {
         var a = $(this).children("a");

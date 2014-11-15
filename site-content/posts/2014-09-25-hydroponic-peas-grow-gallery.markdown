@@ -19,7 +19,7 @@ Anyway, as you can see in the pictures, the plants suffered extensive burn damag
 
 This weekend, I'll be changing the nutrient mix to be more phosphorous-heavy so the plants get everything they need to produce some snappy peas!
 
-<div class="gallery js-packery" data-packery-options='{"gutter": 10,"itemSelector":".gallery .figure"}'>
+<div class="gallery">
 ![The peas got too hot and started to burn, so I put them back under a cover](image:hydroponics/peas-drying-out.jpg)
 ![Covering the plants led to a quick recovery. By the next morning, they were looking alive again](image:hydroponics/peas-coming-back-1.jpg)
 ![The next afternoon, they were looking almost as good as new, except for some visible leaf damage from the sun](image:hydroponics/peas-fully-back.jpg)

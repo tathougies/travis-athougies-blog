@@ -41,6 +41,13 @@ nitrates dissolved in water).
 Water Usage
 ------------
 
+Agriculture is currently the single largest consumer of fresh water in the world. Since fresh water
+is always in limited supply, any water used for agriculture is water that we aren’t able to drink or
+store. Big farms consume so much water that they can run groundwater wells dry, meaning that when
+drought inevitably strikes, its effects are heightened. The effects here aren’t only environmental;
+groundwater depletion has economic effects as well. According to California Secretary of Agriculture
+Karen Ross, the current drought in California has affected over 17,000 jobs.
+
 > ~~LARGE~~
 > Statewide economic impacts for the 2014 drought total **$2.2 billion in lost revenue** and
 > **17,100 jobs lost.**
@@ -48,13 +55,6 @@ Water Usage
 > ~~SOURCE~~
 > [*Economic Analysis of the 2014 Drought for California Agriculture*](https://watershed.ucdavis.edu/files/biblio/DroughtReport_23July2014_0.pdf),
 > Center for Watershed Sciences, UC Davis
-
-Agriculture is currently the single largest consumer of fresh water in the world. Since fresh water
-is always in limited supply, any water used for agriculture is water that we aren’t able to drink or
-store. Big farms consume so much water that they can run groundwater wells dry, meaning that when
-drought inevitably strikes, its effects are heightened. The effects here aren’t only environmental;
-groundwater depletion has economic effects as well. According to California Secretary of Agriculture
-Karen Ross, the current drought in California has affected over 17,000 jobs.
 
 Hydroponics solves this issue by using up to 90% less water than traditional agriculture. This
 phenomenon has nothing to do with hydroponics; it’s a common savings in a recirculating agricultural

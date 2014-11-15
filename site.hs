@@ -48,7 +48,7 @@ suggestNames max name names = take max sortedSuggestions
           distance s = levenshteinDistance defaultEditCosts s name
 
 --------------------------------------------------------------------------------
-pandocMathCompiler' allPosts =
+pandocMathCompiler' allPosts customTransform =
     let mathExtensions = [Ext_tex_math_dollars, Ext_tex_math_double_backslash,
                           Ext_latex_macros, Ext_implicit_figures]
         defaultExtensions = writerExtensions defaultHakyllWriterOptions
@@ -63,7 +63,7 @@ pandocMathCompiler' allPosts =
 
         allPostsFixed = map (\s -> take (length s - length (".markdown" :: String)) s) $ map (drop (length ("posts/" :: String))) allPosts
         allPostsSet = S.fromList allPostsFixed
-        
+
         -- The following function handles large quotes. These are Markdown quotes which begin with the strikeout text "~~LARGE~~".
         -- Large quotes can also be attributed to a source, which should come after a line saying exactly "~~SOURCE~~"
         handleLargeQuotes (BlockQuote (Para (Strikeout [Str "LARGE"]:afterLarge):largeQuoteBlocks)) =
@@ -71,21 +71,21 @@ pandocMathCompiler' allPosts =
 
               source (Para (Strikeout [Str "SOURCE"]:_)) = True
               source _ = False
-             
+
               beforeSource = takeWhile (not . source) largeQuoteBlocks'
               afterSource  = dropWhile (not . source) $ largeQuoteBlocks'
-              fixedSource = let (Para (_:x):xs) = afterSource 
+              fixedSource = let (Para (_:x):xs) = afterSource
                             in Plain x:xs
-              
+
               compiledContent = writeHtmlString writerOptions (Pandoc mempty beforeSource)
               compiledSource = writeHtmlString writerOptions (Pandoc mempty fixedSource)
-              
+
               raw = div ! class_ "large-quote" $ do
                 span ! class_ "quote-content" $ preEscapedToHtml compiledContent
                 span ! class_ "quote-source" $ preEscapedToHtml compiledSource
           in RawBlock (Format "html") (renderHtml raw)
         handleLargeQuotes x = x
-             
+
         interpostLinks (Link t (url, title))
             | "post:" `isPrefixOf` url = let postName = drop 5 url
                                              postURL = "/posts/" ++ postName ++ ".html"
@@ -128,7 +128,7 @@ pandocMathCompiler' allPosts =
                                                            p ! class_ "caption" $ preEscapedToHtml compiledCaption
                                                in RawInline (Format "html") (renderHtml raw)
         useThumbnails x = x
-    in pandocCompilerWithTransform defaultHakyllReaderOptions writerOptions generateThumbnailsAndPostLinks
+    in pandocCompilerWithTransform defaultHakyllReaderOptions writerOptions (generateThumbnailsAndPostLinks . customTransform)
 
 myHakyllConfig = defaultConfiguration {
                    deployCommand = "s3cmd sync --acl-public --delete-removed ./_site/ s3://travis.athougies.net/"
@@ -188,7 +188,7 @@ main = hakyllWith myHakyllConfig $ do
 
         projectDependencies = map IdentifierDependency projectIdentifiers
 
-        pandocMathCompiler = pandocMathCompiler' posts
+        pandocMathCompiler = pandocMathCompiler' posts id
 
     match (fromList ["about.rst", "contact.markdown"]) $ do
         route   $ setExtension "html"
