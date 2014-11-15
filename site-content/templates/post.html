@@ -13,6 +13,15 @@
   </ul>
 </div>
 
+$if(header-image)$
+<div class="header-image">
+  <img src="$header-image$"/>
+  <div class="caption">
+    $header-image-caption$
+  </div>
+</div>
+$endif$
+
 $body$
 
 <div id="disqus_thread"></div>

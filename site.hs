@@ -1,4 +1,3 @@
---------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 import           Control.Applicative ((<$>), empty)
 import           Control.Monad
@@ -14,7 +13,7 @@ import           Text.Pandoc
 
 import qualified Data.Set as S
 import qualified Data.Map as M
-import           Data.List
+import           Data.List hiding (span)
 import           Data.Ord
 import           Data.String
 import           Data.Function
@@ -22,11 +21,11 @@ import           Data.Maybe
 import           System.FilePath
 
 import           Text.Blaze.Html5 hiding (map)
-import           Text.Blaze.Html5.Attributes
+import           Text.Blaze.Html5.Attributes hiding (span)
 import           Text.Blaze.Html.Renderer.String
 import           Text.EditDistance
 
-import           Prelude hiding (div)
+import           Prelude hiding (div, span)
 
 import Debug.Trace
 
@@ -59,11 +58,34 @@ pandocMathCompiler' allPosts =
                           writerHTMLMathMethod = MathJax ""
                         }
 
-        generateThumbnailsAndPostLinks = walk (useThumbnails . interpostLinks)
+        generateThumbnailsAndPostLinks = walk (useThumbnails . interpostLinks) . -- This walks inlines
+                                         walk handleLargeQuotes -- This walks blocks...
 
         allPostsFixed = map (\s -> take (length s - length (".markdown" :: String)) s) $ map (drop (length ("posts/" :: String))) allPosts
         allPostsSet = S.fromList allPostsFixed
+        
+        -- The following function handles large quotes. These are Markdown quotes which begin with the strikeout text "~~LARGE~~".
+        -- Large quotes can also be attributed to a source, which should come after a line saying exactly "~~SOURCE~~"
+        handleLargeQuotes (BlockQuote (Para (Strikeout [Str "LARGE"]:afterLarge):largeQuoteBlocks)) =
+          let largeQuoteBlocks' = Plain afterLarge:largeQuoteBlocks
 
+              source (Para (Strikeout [Str "SOURCE"]:_)) = True
+              source _ = False
+             
+              beforeSource = takeWhile (not . source) largeQuoteBlocks'
+              afterSource  = dropWhile (not . source) $ largeQuoteBlocks'
+              fixedSource = let (Para (_:x):xs) = afterSource 
+                            in Plain x:xs
+              
+              compiledContent = writeHtmlString writerOptions (Pandoc mempty beforeSource)
+              compiledSource = writeHtmlString writerOptions (Pandoc mempty fixedSource)
+              
+              raw = div ! class_ "large-quote" $ do
+                span ! class_ "quote-content" $ preEscapedToHtml compiledContent
+                span ! class_ "quote-source" $ preEscapedToHtml compiledSource
+          in RawBlock (Format "html") (renderHtml raw)
+        handleLargeQuotes x = x
+             
         interpostLinks (Link t (url, title))
             | "post:" `isPrefixOf` url = let postName = drop 5 url
                                              postURL = "/posts/" ++ postName ++ ".html"
@@ -189,9 +211,9 @@ main = hakyllWith myHakyllConfig $ do
 
         route idRoute
         compile $ do
-            list <- loadAll pattern
+            list <- recentFirst =<< loadAll pattern
             let context = constField "title" title `mappend`
-                          listField "posts" postCtx (return (sortBy (comparing (Down . itemIdentifier)) list))  `mappend`
+                          listField "posts" postCtx (return list) `mappend`
                           travisContext
             makeItem ""
                 >>= loadAndApplyTemplate "templates/post-list.html" context
@@ -299,9 +321,25 @@ projectAsItem =
     field "status" (maybe empty return . projectStatus . itemBody) `mappend`
     field "github" (maybe empty return . projectGithub . itemBody)
 
+headerImageField :: Context String
+headerImageField = headerImageF `mappend` headerImageCaptionF
+  where headerImageF = Context (getMetadataMaybe "header-image" mkImgLink)
+        headerImageCaptionF = Context (getMetadataMaybe "header-image-caption" Prelude.id)
+        
+        getMetadataMaybe f transform key _ item
+          | key == f = do
+            metadata <- getMetadata $ itemIdentifier item
+            maybe empty (return . StringField . transform) $ M.lookup f metadata
+          | otherwise = empty
+                        
+        mkImgLink link
+          | "image:" `isPrefixOf` link = "/images/" ++ drop 6 link
+          | otherwise = link
+
 postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
+    headerImageField `mappend`
     defaultContext
 
 myTagsCtx :: [String] -> Context String

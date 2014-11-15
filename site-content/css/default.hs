@@ -121,10 +121,11 @@ main = putCss $ do
         marginTop     0
   "#content" |> p ? do
       firstOfType & do
-        fontSize (pt 13)
+        titleFamily
+        fontSize (pt 20)
         lineHeight (em 1.8)
       ":first-of-type:first-line" & do
-        fontSize (pt 15)
+        fontSize (pt 22)
         fontWeight bold
   div # "#content" ? do
     normalW $ maxWidth (px contentMaxWidth)
@@ -141,13 +142,39 @@ main = putCss $ do
     p ? do
       lineHeight (em 1.7)
       textAlign       justify
-      overflow        hidden -- This makes the text not wrap around #header
+      -- Can't have overflow: hidden because it makes image wrapping funny
+    div # ".header-image" ? do
+      sym padding       (px 15)
+      border            solid (px 1) travisLightGray
+      float             floatRight
+      sym margin        (px 10)
+      width             (px 400)
+      textAlign         (alignSide sideCenter)
+      insetBoxShadow    inset 0 0 (px 10) (setA 64 gray)
+      ".caption" ? do
+        fontSize        (pt 10)
+        color           gray
+        textAlign       (alignSide sideLeft)
+    div # ".large-quote" ? do
+      sym margin        (em 1)
+      sym padding       (em 1)
+      border            solid (px 1) travisLightGray
+      insetBoxShadow    inset 0 0 (px 15) (setA 128 gray)
+      float             floatLeft
+      ".quote-content" ? do
+        titleFamily
+        fontSize        (pt 20)
+        display         block
+      ".quote-source" ? do
+        fontSize        (pt 10)
+        color           gray
+        display         block
+        textAlign       (alignSide sideRight)
     div # ".figure" ? do
       sym padding       (px 10)
       border            solid (px 1) travisLightGray
       float             floatLeft
-      marginLeft        (px 5)
-      marginTop         (px 5)
+      sym margin        (px 5)
       width             (px 200)
       textAlign         (alignSide sideCenter)
       ".figure-center" & do
@@ -187,7 +214,7 @@ main = putCss $ do
       textTransform   uppercase
       fontSize (pt 13)
       borderBottom    solid (px 1) headerRuleColor
-
+      overflow auto
     div # byClass "info" ? do
       paddingLeft     (em 2)
       fontStyle       italic
