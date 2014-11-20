@@ -130,6 +130,7 @@ main = putCss $ do
   div # "#content" ? do
     marginLeft        auto
     marginRight       auto
+    fontSize   (pt 14)
     narrowW $ do
       paddingTop  (px contentPaddingTopNarrow)
       paddingLeft (px contentPaddingLeftNarrow)
@@ -139,7 +140,6 @@ main = putCss $ do
       paddingTop      (px contentPaddingTop)
       paddingLeft     (px contentPaddingLeft)
       maxWidth (px contentMaxWidth)
-    fontSize   (pt 14)
     p ? do
       lineHeight (em 1.9)
       textAlign       justify
@@ -212,9 +212,9 @@ main = putCss $ do
       marginBottom    (px 12)
     h2 ? do
       titleFamily
-      fontWeight     600
+      fontWeight     bold
       textTransform   uppercase
-      fontSize (pt 13)
+      fontSize (pt 15)
       borderBottom    dotted (px 1) headerRuleColor
       overflow auto
     div # byClass "info" ? do
