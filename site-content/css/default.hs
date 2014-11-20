@@ -140,8 +140,9 @@ main = putCss $ do
       paddingTop      (px contentPaddingTop)
       paddingLeft     (px contentPaddingLeft)
     p ? do
-      lineHeight (em 1.7)
+      lineHeight (em 1.9)
       textAlign       justify
+      fontSize   (pt 14)
       -- Can't have overflow: hidden because it makes image wrapping funny
     div # ".header-image" ? do
       sym padding       (px 15)
