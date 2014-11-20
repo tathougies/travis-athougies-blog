@@ -211,9 +211,10 @@ main = putCss $ do
       marginBottom    (px 12)
     h2 ? do
       titleFamily
+      fontWeight     600
       textTransform   uppercase
       fontSize (pt 13)
-      borderBottom    solid (px 1) headerRuleColor
+      borderBottom    dotted (px 1) headerRuleColor
       overflow auto
     div # byClass "info" ? do
       paddingLeft     (em 2)
