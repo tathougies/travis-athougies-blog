@@ -132,9 +132,9 @@ main = putCss $ do
         fontSize (pt 22)
         fontWeight bold
   div # "#content" ? do
-    normalW $ maxWidth (px contentMaxWidth)
     marginLeft        auto
     marginRight       auto
+    fontSize   (pt 14)
     narrowW $ do
       paddingTop  (px contentPaddingTopNarrow)
       paddingLeft (px contentPaddingLeftNarrow)
@@ -143,8 +143,9 @@ main = putCss $ do
     normalW $ do
       paddingTop      (px contentPaddingTop)
       paddingLeft     (px contentPaddingLeft)
+      maxWidth (px contentMaxWidth)
     p ? do
-      lineHeight (em 1.7)
+      lineHeight (em 1.9)
       textAlign       justify
       -- Can't have overflow: hidden because it makes image wrapping funny
     div # ".header-image" ? do
@@ -224,9 +225,10 @@ main = putCss $ do
       marginBottom    (px 12)
     h2 ? do
       titleFamily
+      fontWeight     bold
       textTransform   uppercase
-      fontSize (pt 13)
-      borderBottom    solid (px 1) headerRuleColor
+      fontSize (pt 15)
+      borderBottom    dotted (px 1) headerRuleColor
       overflow auto
     div # byClass "info" ? do
       paddingLeft     (em 2)
