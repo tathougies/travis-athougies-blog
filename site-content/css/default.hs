@@ -15,6 +15,7 @@ titleFamily = do
   fontWeight (weight 300)
 bodyFamily  = fontFamily ["Palatino Linotype", "Palatino", "Baskerville", "Book Antiqua", "URW Palladio L"] [serif]
 
+-- Remember to update these in gallery.js as well
 headerWidth = 280
 headerRightSpace = 20
 contentMaxWidth = 700
@@ -163,7 +164,6 @@ main = putCss $ do
       sym padding       (em 1)
       border            solid (px 1) travisLightGray
       insetBoxShadow    inset 0 0 (px 15) (setA 128 gray)
-      float             floatLeft
       ".quote-content" ? do
         titleFamily
         fontSize        (pt 20)
@@ -183,9 +183,14 @@ main = putCss $ do
       sym margin        (px 5)
       width             (px 200)
       textAlign         (alignSide sideCenter)
-      ".figure-center" & do
+      ".figure-centered" & do
         marginLeft      auto
         marginRight     auto
+        width           auto
+        img ? do width  auto
+                 height auto
+                 maxWidth none
+                 maxHeight none
       ".figure-flow" & do
         marginRight     (em 2)
         float           floatLeft
@@ -296,11 +301,11 @@ main = putCss $ do
     titleFamily
 --    position          fixed
     overflow          auto
-    float             floatLeft
+--    float             floatLeft
     width             (px (headerWidth - headerRightSpace))
     marginRight       (px headerRightSpace)
+    position fixed
     narrowW $ do
-      position fixed
       display none
       backgroundColor black
       color white
