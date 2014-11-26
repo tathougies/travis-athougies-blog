@@ -1,7 +1,8 @@
 ---
-title: The Future of Food &mdash; Takeaways from New Food Revolution
+title: "The Future of Food — It's Not Exactly What You May Think!"
 author: Travis Athougies
-tags: agriculture, food, business
+tags: "agriculture, food, business"
+published: true
 ---
 
 Today, I attended
@@ -20,4 +21,19 @@ The panelists at the event included:
 
 The event was basically a panel session, where the host posed questions to the panelists and invited them to answer. At the end of the event, audience members had the chance to ask brief questions directly to the panel.
 
-Throughout the evenings, several themes kept re-occuring: 
+The evening was structured around some main points, which I'll list here. I'll also provide what was said by each of the panelists, and then give my own view.
+
+## Food Production
+
+According to the panelists, food production must double by mid-century to match global demand. This is caused by two factors:
+
+1. **A growing population** demands more food. The UN expects world population to settle around 10 billion people sometime by the end of the century, up almost 50% from the current population of around 7 billion. That's a lot of mouths to feed!
+![The UN expects global population to settle around ten billion sometime around the end of the century. More liberal estimations put that number around 16 billion. _Source: Wikipedia_](http://upload.wikimedia.org/wikipedia/commons/thumb/5/56/World-Population-1800-2100.svg/600px-World-Population-1800-2100.svg.png)
+2. As the population grows, so are **people's appetites**. People around the world are getting richer, which means they're demanding more and more food.
+
+According to **Jonathan Foley**, the solution to this problem cannot be increasing supply. Instead, we must work on how much food people demand. This means smaller portion sizes that still meet our nutritional needs but don't lead to excess food production. Foley claimed that agriculture is currently the biggest contributor to climate change, and that expanding production would exacerbate this problem. He cites the fact that agriculture currently releases 30% of the annual global carbon dioxide output through deforestation, livestock cultivation, and nitrous oxide release from the soil
+
+**Secretary Ross** disagreed, arguing that it's a matter of making current agricultural areas more productive. We won't need to expand our farmland footprint if we can grow more food on the same amount of land.
+
+
+
