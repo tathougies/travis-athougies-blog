@@ -4,7 +4,13 @@ author: Travis Athougies
 tags: agriculture, food, business
 ---
 
-Today, I attended [New Food Revolution](http://www.commonwealthclub.org/events/2014-11-05/new-food-revolution), an event about the future of food production, especially in California. The event was held by [ClimateOne](http://www.climate-one.org/), an organization that "brings together top thinkers and doers from business, government, academia and advocacy groups to advance the discussion about a clean energy future."
+Today, I attended
+[New Food Revolution](http://www.commonwealthclub.org/events/2014-11-05/new-food-revolution), an
+event about the future of food production, especially in California.
+
+The event was held by [ClimateOne](http://www.climate-one.org/), an organization that "brings
+together top thinkers and doers from business, government, academia and advocacy groups to advance
+the discussion about a clean energy future."
 
 The panelists at the event included:
 
