@@ -29,6 +29,7 @@ normalBodyPadding = 190
 miniHeaderHeight = 50
 
 siteMinWidth = headerWidth - headerRightSpace + contentMinWidth + contentPaddingLeft + normalBodyPadding * 2
+contentMarginLeft = headerWidth - contentPaddingLeft + 10
 
 plainLinks =
     a ? do
@@ -43,14 +44,14 @@ figureShadow = insetBoxShadow    inset 0 0 (px 10) (setA 64 gray)
 projects = do
   ul # byId "projects" ? do
     "list-style"   -: "none"
-    sym padding       0
+    sym padding       (px 0)
     h2 ? do
       marginBottom    (px 2)
       textTransform   none
     li ? do
       marginTop       (em 3)
       firstChild &
-        marginTop     0
+        marginTop     (px 0)
     ul # byClass "info" ? do
       titleFamily
       "list-style" -: "none"
@@ -62,7 +63,7 @@ projects = do
         display       inline
         marginLeft    (em 1.5)
         firstChild &
-          marginLeft  0
+          marginLeft  (px 0)
         span ? do
           byClass "label" & do
             color      travisBlue
@@ -110,7 +111,7 @@ main :: IO ()
 main = putCss $ do
   body ? do
     bodyFamily
-    sym margin        0
+    sym margin        (px 0)
     normalW $ do
       paddingLeft       (px normalBodyPadding)
       paddingRight      (px normalBodyPadding)
@@ -122,19 +123,19 @@ main = putCss $ do
     li ? do
       marginTop       (em 1)
       firstChild & do
-        marginTop     0
+        marginTop     (px 0)
   "#post" |> p ? do
       firstOfType & do
         titleFamily
-        fontSize (pt 20)
+        fontSize (pt 16)
         lineHeight (em 1.8)
       ":first-of-type:first-line" & do
-        fontSize (pt 22)
+        fontSize (pt 18)
         fontWeight bold
   div # "#content" ? do
     marginLeft        auto
     marginRight       auto
-    fontSize   (pt 14)
+    fontSize   (pt 13)
     narrowW $ do
       paddingTop  (px contentPaddingTopNarrow)
       paddingLeft (px contentPaddingLeftNarrow)
@@ -144,8 +145,9 @@ main = putCss $ do
       paddingTop      (px contentPaddingTop)
       paddingLeft     (px contentPaddingLeft)
       maxWidth (px contentMaxWidth)
+      marginLeft (px contentMarginLeft)
     p ? do
-      lineHeight (em 1.9)
+      lineHeight (em 1.7)
       textAlign       justify
       -- Can't have overflow: hidden because it makes image wrapping funny
     div # ".header-image" ? do
@@ -175,7 +177,7 @@ main = putCss $ do
         display         block
         textAlign       (alignSide sideRight)
     div # ".gallery" |> div # ".figure" ? do
-      sym margin 0
+      sym margin (px 0)
       marginBottom (px 10)
     div # ".figure" ? do
       figureShadow
@@ -198,10 +200,10 @@ main = putCss $ do
       ".figure-right" & do
         float           floatRight
         marginLeft      (em 2)
-        marginRight     0
+        marginRight     (px 0)
       firstChild & do
-        marginLeft      0
-        marginTop       0
+        marginLeft      (px 0)
+        marginTop       (px 0)
       img ? do
         maxWidth        (px 200)
         maxHeight       (px 200)
@@ -215,8 +217,9 @@ main = putCss $ do
                       li ? do
                         lineHeight    (em 1.4)
                         marginBottom  (em 1)
+                        textAlign     justify
                         "last-child" & do
-                             marginBottom 0)
+                             marginBottom (px 0))
     h1 ? do
       normalW $ do bodyFamily
                    fontWeight normal
@@ -250,8 +253,8 @@ main = putCss $ do
         color         black
         fontStyle     normal
         "list-style"  -: "none"
-        sym padding   0
-        sym margin    0
+        sym padding   (px 0)
+        sym margin    (px 0)
         display       inline
         li ? do
           a ? do
@@ -263,12 +266,13 @@ main = putCss $ do
       width           (pct 100)
       marginLeft      (px 20)
       sym padding     (em 1)
-      lineHeight      (em 1)
+      lineHeight      (em 1.2)
       backgroundColor codeBackground
+      fontSize        (pt 10)
 
   div # "#mini-header-bar" ? do
      normalW $ display none
-     narrowW $ do position fixed
+     narrowW $ do position relative
                   width    (pct 100)
                   height   (px miniHeaderHeight)
                   backgroundColor black
@@ -292,7 +296,7 @@ main = putCss $ do
                     marginTop (px 10)
                     textAlign (alignSide sideCenter)
                     p ? do
-                      sym margin 0
+                      sym margin (px 0)
                       color travisBlue
                       display inline
                       ".travis" & do
@@ -306,7 +310,7 @@ main = putCss $ do
 --    float             floatLeft
     width             (px (headerWidth - headerRightSpace))
     marginRight       (px headerRightSpace)
-    position fixed
+    position absolute
     narrowW $ do
       display none
       backgroundColor black
@@ -333,8 +337,8 @@ main = putCss $ do
       marginTop       (px 60)
       marginBottom    (px 10)
       p ? do
-        sym margin    0
-        marginBottom  4
+        sym margin    (px 0)
+        marginBottom  (px 4)
         ":first-letter" & do
           fontSize    (pt 26)
           display     inlineBlock
@@ -347,12 +351,12 @@ main = putCss $ do
 
     ul # byId "navigation" ? do
       "list-style" -: "none"
-      sym padding     0
+      sym padding     (px 0)
       marginTop       (px 10)
       h2 ? do
         titleFamily
         textTransform uppercase
-        sym margin    0
+        sym margin    (px 0)
         marginBottom  (px 5)
         fontSize      (pt 13)
         narrowW $ do
@@ -360,18 +364,18 @@ main = putCss $ do
       li ? do
         marginTop     (px 10)
         firstChild &
-          marginTop   0
+          marginTop   (px 0)
       ul ? do
         "list-style" -: "none"
         normalW $ paddingLeft   (px 20)
         narrowW $ do
-             paddingLeft 0
+             paddingLeft (px 0)
              a ? color white
         li ? do
           narrowW $ fontSize (pt 14)
           marginTop   (px 4)
           firstChild &
-            marginTop 0
+            marginTop (px 0)
 
   projects
   galleryStyles

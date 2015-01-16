@@ -28,6 +28,7 @@ condition from Home Depot (some leaves were browning, and some had lesions which
 transpirational water loss), so they will be in this covering until they get some newer, more healthy
 leaves.
 
+<div class="gallery">
 ![I got six of these cute little tomato plants from Home Depot for less than $3! Some potting soil and clay pots and we have ourselves the beginning of a great afternoon!](image:fall-tomatoes/getting-started.jpg)
 ![I took each plant out of its container and _gently_! washed the soil off of their roots. Then I filled one of the clay pots about one-third full of soil, and put the plant and its roots in. Finally, I covered up the roots with more soil and filled up the pots so that the new plants were supported. I made sure not to pack the soil at all, so as not to damage the fragile root system. Hopefully, these plants will soon get adjusted to their new home!](image:fall-tomatoes/roots.jpg)
 ![These tomato plants are going to be so happy in their new home on this sunny back porch](image:fall-tomatoes/pots-on-floor.jpg)
@@ -35,3 +36,4 @@ leaves.
 ![These plants are moving up in the world! Luckily, summer sales are still one and I managed to get this patio table. Ten dollars later, and these guys have been given a few extra hours of sunlight so they can grow big and strong. But there's still one more problem...](image:fall-tomatoes/pots-on-bench.jpg)
 ![There's too much wind on the back porch! These plants are going to get dried out. They're especially vulnerable after transplanting and in the state that Home Depot sold them in (tssk, tssk Home Depot, you ought to take better care of your seedlings!). Thankfully, I had this old dry cleaning bag and hanger available that I wasn't using. Hurray for plastic!](image:fall-tomatoes/dry-cleaning.jpg)
 ![I MacGyvered this little setup out of some duct tape and a metal clothes hanger from the dry cleaners. These tomatoes are going to be nice and moist in their new home.](image:fall-tomatoes/attachment.jpg)
+</div>

@@ -5,6 +5,14 @@ var images = [];
 
 var isHandheld = false;
 
+var headerWidth = 280,
+    headerRightSpace = 20,
+    contentMinWidth = 300,
+    contentPaddingLeft = 75,
+    normalBodyPadding = 190;
+
+var siteMinWidth = headerWidth - headerRightSpace + contentMinWidth + contentPaddingLeft + normalBodyPadding * 2;
+
 $(document.body).ready(function () {
     $(".gallery").each(function () {
         var that = $(this);
@@ -61,17 +69,17 @@ $(document.body).ready(function () {
             e.preventDefault();
         });
 
-    $(window).scroll(function () {
-        if ( $("#header").css("position") != "fixed" ) {
-            var height = $(document).height() + $("#header").height();
-            $("#header").css("margin-top", Math.min(Math.max(0, $(window).scrollTop()), height) + "px");
-        }
-    });
+    // $(window).scroll(function () {
+    //     if ( $("#header").css("position") != "fixed" ) {
+    //         var height = $(document).height() + $("#header").height();
+    //         $("#header").css("margin-top", Math.min(Math.max(0, $(window).scrollTop()), height) + "px");
+    //     }
+    // });
     $(window).resize(function () {
-        if ( $("#header").css("position") == "fixed" ) {
+        if ( $(window).width() < siteMinWidth ) {
             $("#header").css("height", $(window).height() - $("#mini-header-bar").height());
         } else {
-            $("#header").css("height", "");
+            $("#header").removeAttr("style");
         }
     });
     if ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) )

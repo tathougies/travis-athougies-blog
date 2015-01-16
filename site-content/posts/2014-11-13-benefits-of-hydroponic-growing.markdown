@@ -37,6 +37,26 @@ ground eventually find their way back to the groundwater, which is used for drin
 water. Unfortunately, you can’t drink this water (to explain why, consider that your urine is mostly
 nitrates dissolved in water).
 
+Hydroponic growing addresses this problem in two ways. Firstly, by the time they're ready for
+disposal, hydroponic nutrients have been feeding plants for at least two weeks, meaning they're
+simply
+[weaker than normal fertilizer.](http://www.generalhydroponics.com/blog/2011/08/15/put-your-hydroponic-waste-water-to-good-use/)
+Secondly, since hydroponics is a recirculating system, waste water never inadvertently finds its way
+into the environment. Disposal is a carefully controlled process where the grower drains the
+nutrient tank into a waste water tank and then has the chance to treat the water. Treating the water
+can be as simple as using the nutrient solution to
+[grow weeds or low-nutrient requiring plants.](http://scienceinhydroponics.com/2009/02/hydroponic-nutrient-solution-toxicity.html)
+
+Nutrient solution is also the perfect growing environment for algae. With a small air stone and some
+space, it would be possible to use the waste water to grow algae. As the algae grew, they would use
+the nutrients in the water, slowly purifying the water. The algae could then be harvested to produce
+[biofuel,](http://en.wikipedia.org/wiki/Algae_fuel) or other algal products. The diagram below
+depicts such a hypothetical "algae farm".
+
+![~~CENTERED~~Used hydroponic nutrients could be used to grow algae in a so-called "bioreactor."
+The algae would filter the water as they absorbed the dissolved solids. After sterilization, the water could be re-used. The algae could be harvested to
+create biofuel.<br/>
+ Copyright &copy; 2008 HowStuffWorks.com](http://s.hswstatic.com/gif/algae-biodiesel-5.jpg)
 
 Water Usage
 ------------

@@ -74,8 +74,9 @@ pandocMathCompiler' allPosts customTransform =
 
               beforeSource = takeWhile (not . source) largeQuoteBlocks'
               afterSource  = dropWhile (not . source) $ largeQuoteBlocks'
-              fixedSource = let (Para (_:x):xs) = afterSource
-                            in Plain x:xs
+              fixedSource = case afterSource of
+                              Para (_:x):xs -> Plain x:xs
+                              _             -> afterSource
 
               compiledContent = writeHtmlString writerOptions (Pandoc mempty beforeSource)
               compiledSource = writeHtmlString writerOptions (Pandoc mempty fixedSource)
@@ -177,7 +178,7 @@ main = hakyllWith myHakyllConfig $ do
                         defaultContext
 
         tagsAsItems = mapM tagAsItem
-                      (take tagCount .
+                      (-- take tagCount .
                        reverse .
                        sortBy (comparing (length . snd)) .
                        tagsMap $ tags)
@@ -188,7 +189,7 @@ main = hakyllWith myHakyllConfig $ do
 
         projectDependencies = map IdentifierDependency projectIdentifiers
 
-        pandocMathCompiler = pandocMathCompiler' posts id
+        pandocMathCompiler = pandocMathCompiler' posts Prelude.id
 
     match (fromList ["about.rst", "contact.markdown"]) $ do
         route   $ setExtension "html"
@@ -211,7 +212,7 @@ main = hakyllWith myHakyllConfig $ do
 
         route idRoute
         compile $ do
-            list <- recentFirst =<< loadAll pattern
+            list <- recentFirst =<< onlyPublished =<< loadAll pattern
             let context = constField "title" title `mappend`
                           listField "posts" postCtx (return list) `mappend`
                           travisContext
@@ -249,7 +250,7 @@ main = hakyllWith myHakyllConfig $ do
     create ["archive.html"] $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
+            posts <- recentFirst =<< onlyPublished =<< loadAll "posts/*"
             let archiveCtx =
                     listField  "posts" postCtx (return posts) `mappend`
                     constField "title" "Archives"            `mappend`
@@ -264,7 +265,7 @@ main = hakyllWith myHakyllConfig $ do
     match "index.html" $ do
         route idRoute
         compile $ do
-            posts <- take maxPostCount <$> (recentFirst =<< loadAll "posts/*")
+            posts <- take maxPostCount <$> (recentFirst =<< onlyPublished =<< loadAll "posts/*")
             let indexCtx =
                     listField "posts" postCtx (return posts) `mappend`
                     travisContext
@@ -321,17 +322,17 @@ projectAsItem =
     field "status" (maybe empty return . projectStatus . itemBody) `mappend`
     field "github" (maybe empty return . projectGithub . itemBody)
 
+getMetadataMaybe f transform key _ item
+    | key == f = do
+       metadata <- getMetadata $ itemIdentifier item
+       maybe empty (return . StringField . transform) $ M.lookup f metadata
+    | otherwise = empty
+
 headerImageField :: Context String
 headerImageField = headerImageF `mappend` headerImageCaptionF
   where headerImageF = Context (getMetadataMaybe "header-image" mkImgLink)
         headerImageCaptionF = Context (getMetadataMaybe "header-image-caption" Prelude.id)
-        
-        getMetadataMaybe f transform key _ item
-          | key == f = do
-            metadata <- getMetadata $ itemIdentifier item
-            maybe empty (return . StringField . transform) $ M.lookup f metadata
-          | otherwise = empty
-                        
+
         mkImgLink link
           | "image:" `isPrefixOf` link = "/images/" ++ drop 6 link
           | otherwise = link
@@ -340,6 +341,7 @@ postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
     headerImageField `mappend`
+    Context (getMetadataMaybe "title" unQuote) `mappend`
     defaultContext
 
 myTagsCtx :: [String] -> Context String
@@ -356,9 +358,14 @@ getTagsQuoted :: MonadMetadata m => Identifier -> m [String]
 getTagsQuoted identifier = do
     metadata <- getMetadata identifier
     return $ maybe [] (map trim . splitAll "," . unQuote) $ M.lookup "tags" metadata
-    
+
 -- Takes a string possibly wrapped in qutoes and removes them
 unQuote :: String -> String
 unQuote s = let s' = if Prelude.head s == '"' then Prelude.tail s else s
                 s'' = if last s' == '"' then init s' else s'
             in s''
+
+onlyPublished :: (MonadMetadata m, Functor m) => [Item a] -> m [Item a]
+onlyPublished = filterM (\item -> maybe True parseBool <$> getMetadataField (itemIdentifier item) "published")
+    where parseBool "false" = False
+          parseBool _ = True
