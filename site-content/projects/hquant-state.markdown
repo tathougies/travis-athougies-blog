@@ -6,8 +6,8 @@ summary: An in-memory time-series database written over AcidState, with on-disk 
 language: Haskell
 github: https://github.com/tathougies/hquant-state
 priority: 1
-status: BETA
-version: 0.0.1
+status: STABLE
+version: 1.0.0
 ---
 
 HQuant-State is a time series database for HQuant, meant to store historical stock and option
