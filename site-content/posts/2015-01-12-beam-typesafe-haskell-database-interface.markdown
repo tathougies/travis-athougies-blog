@@ -1,139 +1,138 @@
 ---
-title: Beam - A typesafe Haskell database interface
+title: "Beam - A typesafe Haskell database interface"
 author: Travis Athougies
-tags: haskell, database, types
+tags: "haskell, database, types"
+published: true
 ---
 
 I just uploaded a new package to github. It's called *Beam* and it's a type-safe database interface
 for Haskell.
 
-Haskell and its community value type-safety and elegant solutions to complex problems. However,
-current Haskell database interface libraries (like Persistent and HaskellDB) are anything but. Both
+Type safety and elegance are two of the main selling points of Haskell. However,
+current Haskell database interface libraries (like Persistent and HaskellDB) are anything but. For instance, both
 make extended use of Template Haskell. Although a useful language feature, Template Haskell suffers
-from several disadvantages, namely its complexity and lack of type safety.
+from several disadvantages, namely its complexity and lack of type safety. Additionally, both fail to completely cover all common SQL use cases. For example, Persistent doesn't even support foreign keys. 
 
-What do these libraries mainly use Template Haskell for? Usually, it's for deriving instances and
-generating boiler-plate code. However, Template Haskell isn't the only Haskell feature that lets us
-get rid of this tedious boiler-plate. Several new GHC extensions, such as Generics, Type Families,
-and Default Signatures allow us to write most of what these languages would use Template Haskell for
-in Haskell itself. The best part is that we can do this without introducing crufty metaprogramming
-or unintuitive DSLs. Instead, we rely on simple, intuitive Haskell syntax.
+It doesn't have to be this way. Several new GHC extensions, such as Generics, Closed Type Families, and Default Signatures allow us to elegantly and succinctly express everything that these libraries formerly used Template Haskell for. The best part is that we can do this without introducing metaprogramming or unintuitive DSLs. Instead, we rely on simple, intuitive Haskell syntax.
 
 ## Defining our first Beam database schema
 
-In Beam, everything is done with plain old Haskell data types. To see an example of how we would
-define a Schema in Beam, let's define a simple one-table database for a todo-list. Let's look at the
-code before we review it line-by-line. Since there is no Template Haskell involved, this code can be
-typed directly into GHCi.
+In Beam, everything is done with plain old Haskell data types. Let's define a simple todo list database in beam, and then use this schema to make queries on a SQLite3 database. We begin by defining type-level names for our columns. We will have two tables in our schema: one for todo lists and one for todo items. A todo list will have two columns: a name and a description. A todo item will have three: a name, a description, and a due date. We will need to use the `DeriveGeneric` and `DeriveDataTypeable` extensions in order to allow our names to play nice with Beam.
 
-Make sure to install Beam via Cabal:
-```bash
-cabal install beam
+```haskell
+{-# LANGUAGE DeriveGeneric, DeriveDataTypeable #-}
+import GHC.Generics
+import Data.Typeable
+data Name = Name deriving (Generic, Typeable)
+data Description = Description deriving (Generic, Typeable)
+data DueDate = DueDate deriving (Generic, Typeable)
 ```
 
-In either case, make sure to enable the `DeriveDataTypeable` and `DeriveGeneric` extensions.
+Using these names we can define our Haskell-level data types for our tables. Notice that these definition are given in plain old Haskell. There are no fancy template Haskell DSLs here!
 
 ```haskell
 import Database.Beam
-
-import Data.Typeable
-import GHC.Generics
-
-data Name = Name deriving (Generic, Typeable)
-data Description = Description (Generic, Typeable)
-data DueDate = DueDate deriving (Generic, Typeable)
-
-data TodoListItemTable = TodoListItemTable (TextField Name)
-                                           (TextField Description)
-                                           (DateTimeField DueDate)
-                         deriving (Generic, Typeable)
-instance Table TodoListItemTable
-instance Field TodoListItemTable Name
-instance Field TodoListItemTable Description where
-    fieldSettings _ _ = TextFieldSettings (Varchar (Just 100))
-instance Field TodoListItemTable DueDate
-
-data TodoListDatabase = TodoListDatabase (TableSchema TodoListItemTable)
-                        deriving (Generic, Typeable)
-instance Database TodoListDatabase
+data TodoListRef = TodoListRef deriving (Generic, Typeable)
+data TodoList = TodoList
+              { todoListName :: Column Name Text
+              , todoListDescription :: Column Description Text }
+                deriving (Show, Generic, Typeable)
+data TodoItem = TodoItem
+              { todoItemList :: ForeignKey TodoList TodoListRef
+              , todoItemName :: Column Name Text
+              , todoItemDescription :: Column Description Text }
+                deriving (Show, Generic, Typeable)
 ```
 
-So what does this code do? Let's step through it line-by-line (skipping the imports).
+All we have left is to define a few instances, so our type is Beam compatible. These instances will be auto-generated for us by sensible Beam defaults, but they also give us a lot of flexibility later on if we want to customize exactly how each field is mapped to lower-level SQL. The rules for which instances we need to instantiate are easy. They are:
+
+1. For each Haskell data type that we want to map to a SQL table, we need to instantiate the `Table` type class.
+2. For each name for a `Column` in the table, we need to instantiate a `Field` instance referencing both the table and the name.
+3. For each name for a `ForeignKey` in the table, we need to instantiate a `Reference` instance refererncing both the table and the name.
+
+Applying these rules is straigtforward. First, we apply rule 1 to generate two instances:
 
 ```haskell
-data Name = Name deriving (Generic, Typeable)
-data Description = Description (Generic, Typeable)
+instance Table TodoList
+instance Table TodoItem
 ```
 
-Firstly, we have to define the field names that we will be using. Field names are simple unit
-datatypes (unit means they have one constructor and no arguments). We usually name both the type and
-constructor the same thing. This simplifies the code because it means we can reference the field by
-the same name whether we're using it as data or as a type. The `deriving` clauses are to derive the
-datatypes that Beam needs to automatically generate necessary instances for the classes. We can also
-derive these instances ourselves, but Beam can derive an instance for any type (isomorphic to unit)
-that we're interested in.
+Next, we instantiate a `Field` instance for each column, and a `Reference` instance for each `ForeignKey`.
 
-The next part
 ```haskell
-data TodoListItemTable = TodoListItemTable (TextField Name)
-                                           (TextField Description)
-                         deriving (Generic, Typeable)
-instance Table TodoListItemTable
-instance Field TodoListItemTable Name
-instance Field TodoListItemTable Description where
-    fieldSettings _ _ = TextFieldSettings (Varchar (Just 100))
+instance Field TodoList Name
+instance Field TodoList Description
+instance Field TodoItem Name
+instance Field TodoItem Description
+instance Reference TodoItem TodoListRef
 ```
-defines the schema for our first table, which holds information about todo list items in our
-database. Each item has two text fields, one named `Name` and the other named
-`Description`. In the type signature, `Name` and `Description` are phantom types, meaning that
-they're not used in any data constructor for `TextField`. In fact, the definition for `TextField`
-looks like
+
+Voilà! That's it! These type are ready to be used in Beam.
+
+## Querying the database
+
+We're almost ready to use these types in a real database. First though, we need to create a database with the right tables. This is easy to do in Beam. We simply create a `Database` object.
+
 ```haskell
-data TextField name = TextField Text
+todoListDb :: Database
+todoListDb = database_
+           [ table_ (schema_ :: TodoList)
+           , table_ (schema_ :: TodoItem) ]
 ```
-However, this let's us reference this field by name simply by using the `Name` data constructor. For
-example, type the following into GHCi
+
+Now, we can use this object to allow Beam to automatically migrate a database to match this database schema. Let's open a SQLite3 database in Beam!
+
 ```haskell
-> let x = TodoListItemTable (TextField "list 1") (TextField "This is an important task")
-> getField x Name
-"list 1"
+> import Database.Beam.Backend.Sqlite3
+> beam <- openDatabase todoListDb (Sqlite3Settings "beam.db")
 ```
-By examining the type of `TodoListItemTable`, GHC was able to lookup the field named `Name` simply by
-the type of `TodoListItemTable`! No Template Haskell necessary!
 
-After the table declaration, there are a few `instance` declarations. These instances are derived
-automatically by us thanks to the `Generic` and `Typeable` instances. They can be used to set
-options about how the tables and fields are mapped to database-level objects. For example, the
-`fieldSettings` definition in the `Field TodoListItemTable Description` instance instructs
-`TextField` to use `VARCHAR(100)` as the underlying SQL type for this field.
+### Creating some test data
 
-Finally, the last part
+Before we can query this, let's add in some test data. We'll add in two lists with two items each, and one empty todo list.
+
 ```haskell
-data TodoListDatabase = TodoListDatabase (TableSchema TodoListItemTable)
-                        deriving (Generic, Typeable)
-instance Database TodoListDatabase
+> :set -XOverloadedStrings
+> :{
+| let todoLists = [ TodoList (column "List 1") (column "Description for list 1")
+|                 , TodoList (column "List 2") (column "Description for list 2")
+|                 , TodoList (column "List 3") (column "Description for list 3") ]
+| :}
+> [list1, list2, list3] <- inBeamTxn beam $ mapM insert todoLists
+> :{
+| let todoItems = [ TodoItem (ref list1) (column "Item 1") (column "This is item 1 in list 1")
+|                 , TodoItem (ref list1) (column "Item 2") (column "This is item 2 in list 1")
+|                 , TodoItem (ref list2) (column "Item 1") (column "This is item 1 in list 2")
+|                 , TodoItem (ref list2) (column "Item 2") (column "This is item 2 in list 2") ]
+| :}
+> inBeamTxn beam $ mapM insert todoItems
+[QueryTable (Column 1) (ForeignKey (Column 1) :|: Column "Item 1" :|: ...]
 ```
-defines a one table Beam database, consisting solely of the schema for `TodoListItemTable`. Again, the
-`Database` instance is automatically derived.
 
-## Tying it all together
+### Our first query
 
-Okay, now let's take it for a test drive. Currently, Beam only has support for one backend,
-sqlite. Let's try creating our first Beam database. The following command will open a new Sqlite3
-database and migrate it to our current schema. If you've been following the tutorial in a file, make
-sure to import it into GHCi. Also, make sure the `OverloadedStrings` extension is enabled (run `:set
--XOverloadedStrings` in GHCi).
+First, let's try to get all the todo lists.
+
 ```haskell
-> beam <- openDatabase (Proxy :: Proxy TodoListDatabase) (Sqlite3Settings "mydatabase.db")
-Performing CreateTable TodoListItemTable
-Will run SQL:
-CREATE TABLE TodoListItemTable (id INTEGER PRIMARY KEY, Name VARCHAR, Description VARCHAR, DueDate DATETIME)
-Done...
-> runInsert (TodoListItemTable (TextField "item 1") (TextField "an important event")) beam
-Will run SQL: INSERT INTO TodoListItemTable VALUES (NULL, "item 1", "an important event")
-> runInsert (TodoListItemTable (TextField "item 2") (TextField "another important event")) beam
-Will run SQL: INSERT INTO TodoListItemTable VALUES (NULL, "item 2", "another important event")
-> runQuery (all_ (of_ :: TodoListTable) `where_` (\todoListTable -> (todoListTable # Name) ==$ StrE "item 1")) beam
-Will execute SELECT * FROM TodoListTable AS t0 WHERE 1 AND `t0`.`Name` == "item 1"
-Results: [[SqlByteString "1",SqlByteString "item 1",SqlByteString "an important event"]]
+> inBeamTxn beam $ queryList (all_ (of_ :: TodoList))
+```
+
+We're using the `queryList` function to get our results as a list. The normal `query` function returns a `Source` from the `conduit` package, which is usually easier to work with when writing an application, but is not as intuitive when working on the command line.
+
+Now, let's try to get all the `TodoItem`s associated with `list1`.
+  
+```haskell
+> inBeamTxn beam $ queryList (all_ (of_ :: TodoItem) `where_` (\todoItem -> todoItem # TodoListRef ==# pk_ list1)
+```
+
+Next, let's write a query to get the `TodoItem`s along with their `TodoList`s.
+
+```haskell
+> inBeamTxn beam $ queryList (all_ (of_ :: TodoItem) @->* TodoListRef)
+```
+
+This query will map to a SQL inner join. Suppose you wanted all `TodoList`s regardless of whether they had an associated `TodoItem`. In this case, we can simply use the right join selection
+
+```haskell
+> inBeamTxn beam $ queryList (all_ (of_ :: TodoItem) @?->* TodoListRef)
 ```
