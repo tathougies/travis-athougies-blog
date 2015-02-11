@@ -1,7 +1,7 @@
 ---
 title: "Beam - A typesafe Haskell database interface"
 author: Travis Athougies
-tags: "haskell, database, types"
+tags: "haskell, web"
 published: true
 ---
 
