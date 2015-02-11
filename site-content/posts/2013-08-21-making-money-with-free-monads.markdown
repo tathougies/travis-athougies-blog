@@ -1,7 +1,8 @@
 ---
 title: Making Money With Free Monads (Part 1)
 author: Travis Athougies
-tags: finance, haskell, programming, quant
+tags: "finance, haskell"
+published: true
 ---
 
 I've recently begun investigating using Haskell in the financial sphere to do investment analysis
