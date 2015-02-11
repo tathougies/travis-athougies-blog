@@ -8,24 +8,24 @@ published: true
 I just uploaded a new package to github. It's called *Beam* and it's a type-safe database interface
 for Haskell.
 
-Type safety and elegance are two of the main selling points of Haskell. However,
+Type safety and expressive power are two of the main selling points of Haskell. However,
 current Haskell database interface libraries (like Persistent and HaskellDB) are anything but. For instance, both
 make extended use of Template Haskell. Although a useful language feature, Template Haskell suffers
-from several disadvantages, namely its complexity and lack of type safety. Additionally, both fail to completely cover all common SQL use cases. For example, Persistent doesn't even support foreign keys. 
+from several disadvantages, namely its complexity and lack of type safety. Additionally, both fail to cover several common SQL use cases. For example, Persistent doesn't even support foreign keys and joins. 
 
-It doesn't have to be this way. Several new GHC extensions, such as Generics, Closed Type Families, and Default Signatures allow us to elegantly and succinctly express everything that these libraries formerly used Template Haskell for. The best part is that we can do this without introducing metaprogramming or unintuitive DSLs. Instead, we rely on simple, intuitive Haskell syntax.
+It doesn't have to be this way. Haskell is increasingly being used on the web, and in order to be a serious web language, Haskell needs a good database backend. Several new GHC extensions, such as Generics, Closed Type Families, and Default Signatures allow us to elegantly and succinctly express everything that Yesod and HaskellDB used Template Haskell for. In terms of power, nothing stops these libraries from fully realizing the power of SQL, but it does help to start from clean and simple abstractions.
 
 To summarize, Beam's primary features and differentiators are:
 
-- **Declarative syntax** - Beam schemas are defined declaritively at the type-level as POHT (plain old Haskell types). Type-level programming is used to automatically derive instances and provide proper type-checking.
-- **Comprehensive** - Beam aims to be a comprehensive library. This means that it will at least support all standard SQL features, including all types of joins and nested queries.
-- **Leaky** - Beam does not attempt to shield the user from the idiosyncracies of the underlying database layer. Beam does not try to be an RDBMS. Users should use the RDBMS that they are most familiar with and that best meets the performance and feature requirements of the application. This leakiness also means that Beam can expose backed-specific functions to user queries. For example, PostgreSQL backend could easily provide PostgreSQL-specific functions to work with arrays, JSON, and GIS data. Because of Haskell, these functions could be type-checked statically at compile time.
-- **Backend-agnostic** - Although Beam does not try to standardize RDBMS behavior, the core does aim to be agnostic of the underlying backend. If you use only standard Beam features in your queries and standard data types in your schemas, then you should be able to swap the backend out anytime (including at run time) and have the same SQL generated (notice, we said the *same SQL* -- this does not mean that the results will be the same).
-- **No Template Haskell** - Beam does not make use of any Template Haskell. Rather, it uses several advanced extensions, such as `DeriveGeneric`, `DeriveDataTypeable`, `TypeFamilies`, `MultiParamTypeClasses`, etc. Although this means that Beam is not 100% Haskell 2010, these syntax extensions embody the "spirit of Haskell" much better than Template Haskell. Additionally, unlike Template Haskell, these extensions are not so much tied to the structure of GHC.
+- **Declarative syntax** - Beam schemas are defined declaratively at the type-level as POHT (plain old Haskell types). Type-level programming is used to automatically derive instances and provide proper type-checking.
+- **Comprehensive** - Beam aims to be a comprehensive library. This means that it will at least support all standard SQL features, including all types of joins and nested queries. This is incomplete as of now.
+- **Leaky** - Beam does not attempt to shield the user from the idiosyncracies of the underlying RDBMS. Users should use the RDBMS that they are most familiar with and that best meets the performance and feature requirements of the application. This leakiness also means that Beam can expose backed-specific functions to user queries. For example, PostgreSQL backend could easily provide PostgreSQL-specific functions to work with arrays, JSON, and GIS data. Because of Haskell, these functions could be type-checked statically at compile time.
+- **Backend-agnostic** - Although Beam does not try to standardize RDBMS behavior, the core does aim to be agnostic of the underlying backend. If you use only standard Beam features in your queries and standard data types in your schemas, then you should be able to swap the backend out anytime (including at run time) and have the same SQL generated (notice I said the *same SQL* -- this does not mean that the results will be the same).
+- **No Template Haskell** - Beam does not make use of Template Haskell. Rather, it uses several advanced extensions, such as `DeriveGeneric`, `DeriveDataTypeable`, `TypeFamilies`, `MultiParamTypeClasses`, etc. Although this means that Beam is not 100% Haskell 2010, these syntax extensions embody the "spirit of Haskell" much better than Template Haskell. Additionally, unlike Template Haskell, these extensions are not so much tied to the structure of GHC.
 
 ## Defining our first Beam database schema
 
-In Beam, everything is done with plain old Haskell data types. Let's define a simple todo list database in beam, and then use this schema to make queries on a SQLite3 database. We begin by defining type-level names for our columns. We will have two tables in our schema: one for todo lists and one for todo items. A todo list will have two columns: a name and a description. A todo item will have three: a name, a description, and a due date. We will need to use the `DeriveGeneric` and `DeriveDataTypeable` extensions in order to allow our names to play nice with Beam.
+In Beam, everything is done via plain old Haskell data types. Let's define a simple todo list database in Beam, and then use this schema to make queries on a SQLite3 database. We begin by defining type-level names for our columns. We will have two tables in our schema: one for todo lists and one for todo items. A todo list will have two columns: a name and a description. A todo item will have three: a name, a description, and a due date. We will need to use the `DeriveGeneric` and `DeriveDataTypeable` extensions in order to allow our names to play nicely with Beam.
 
 ```haskell
 {-# LANGUAGE DeriveGeneric, DeriveDataTypeable #-}
@@ -36,7 +36,7 @@ data Description = Description deriving (Generic, Typeable)
 data DueDate = DueDate deriving (Generic, Typeable)
 ```
 
-Using these names we can define our Haskell-level data types for our tables. Notice that these definition are given in plain old Haskell. There are no fancy template Haskell DSLs here!
+Using these names we can define our Haskell-level data types for our tables. Notice that these definition are given in plain old Haskell. No crufty Template Haskell DSLs here!
 
 ```haskell
 import Database.Beam
@@ -52,13 +52,13 @@ data TodoItem = TodoItem
                 deriving (Show, Generic, Typeable)
 ```
 
-All we have left is to define a few instances, so our type is Beam compatible. These instances will be auto-generated for us by sensible Beam defaults, but they also give us a lot of flexibility later on if we want to customize exactly how each field is mapped to lower-level SQL. The rules for which instances we need to instantiate are easy. They are:
+All we have left is to define a few instances, so our type is Beam compatible. These instances will be auto-generated for us with sensible Beam defaults, so we can leave the instance declarations empty. Later on, if we wanted to customize exactly how each field and table is mapped to SQL (for example, to change the SQL name of a table), we would populate these instances. The rules for which instances we need to instantiate are easy. They are:
 
 1. For each Haskell data type that we want to map to a SQL table, we need to instantiate the `Table` type class.
 2. For each name for a `Column` in the table, we need to instantiate a `Field` instance referencing both the table and the name.
 3. For each name for a `ForeignKey` in the table, we need to instantiate a `Reference` instance refererncing both the table and the name.
 
-Applying these rules is straigtforward. First, we apply rule 1 to generate two instances:
+Applying these rules is straightforward. First, we apply rule 1 to generate two instances:
 
 ```haskell
 instance Table TodoList
@@ -79,7 +79,7 @@ Voilà! That's it! These type are ready to be used in Beam.
 
 ## Querying the database
 
-We're almost ready to use these types in a real database. First though, we need to create a database with the right tables. This is easy to do in Beam. We simply create a `Database` object.
+We're almost ready to use these types in a real database. First though, we need to create a `Database` object with the right tables.
 
 ```haskell
 todoListDb :: Database
@@ -125,7 +125,7 @@ First, let's try to get all the todo lists.
 > inBeamTxn beam $ queryList (all_ (of_ :: TodoList))
 ```
 
-We're using the `queryList` function to get our results as a list. The normal `query` function returns a `Source` from the `conduit` package, which is usually easier to work with when writing an application, but is not as intuitive when working on the command line.
+We're using the `queryList` function to get our results as a list. The normal `query` function returns a `Source` from the `conduit` package, which is usually easier and safer to work with when writing an application, but is not as intuitive when working on the command line.
 
 Now, let's try to get all the `TodoItem`s associated with `list1`.
   
