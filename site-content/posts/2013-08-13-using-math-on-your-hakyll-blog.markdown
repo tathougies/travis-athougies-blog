@@ -1,7 +1,8 @@
 ---
 title: Using LaTeX Math on your Hakyll blog
 author: Travis Athougies
-tags: hakyll, math
+tags: "hakyll, haskell, web"
+published: true
 ---
 
 [Hakyll](http://jaspervdj.be/hakyll) is a really powerful static website tool written in
