@@ -1,7 +1,8 @@
 ---
-title: Zippers, Derivatives -- Oh what fun!
+title: "Zippers, Derivatives -- Oh what fun!"
 author: Travis Athougies
-tags: haskell, algebra,types
+tags: "haskell, math"
+published: true
 ---
 
 Haskell's datatypes are *algebraic*. That is, every type can be represented as an addition or
