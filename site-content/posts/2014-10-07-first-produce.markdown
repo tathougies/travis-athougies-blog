@@ -1,7 +1,7 @@
 ---
 title: It Works! First Hydroponic Produce
 author: Travis Athougies
-tags: "hydroponics,gardening,peas"
+tags: "hydroponics,gardening"
 published: true
 ---
 

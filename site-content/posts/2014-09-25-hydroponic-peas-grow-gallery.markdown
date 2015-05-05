@@ -1,7 +1,7 @@
 ---
 title: Hydroponic Peas grow gallery
 author: Travis Athougies
-tags: "hydroponics,gardening,peas"
+tags: "hydroponics,gardening"
 published: true
 ---
 

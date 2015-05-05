@@ -1,6 +1,6 @@
 ---
 title: Fun with Haskell
-tags: haskell, programming
+tags: haskell
 author: Travis Athougies
 published: false
 ---

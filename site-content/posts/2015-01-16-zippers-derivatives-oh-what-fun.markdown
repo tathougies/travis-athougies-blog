@@ -92,7 +92,7 @@ Can we explain easily why these rules work? Below I try to build an intuition, b
 rigorous &em; see McBride's paper for that.
 
 Let's start with the simplest derivative. The zipper of a type with respect to itself. In this case,
-there is only one possible place that "hole" for the type could be. Therefore, the type of this
+there is only one possible place that a "hole" for the type could be. Therefore, the type of this
 zipper is simply unit. In other words,
 \\[ \\frac{da}{da} = 1.\\]
 
@@ -103,7 +103,11 @@ datatype with no constructors).
 
 This covers our base cases. Any type can be created by composing these simple types into larger
 types using type addition and multiplication. Therefore, the only rules we need to consider are
-these.
+the sum rule and the product rule. As a reminder, in regular differentiation, these are
+\\[ \\begin{align}
+\\frac{d}{dx}(f + g) &=& \\frac{df}{dx} + \\frac{dg}{dx} \\
+\\frac{d}{dx} fg &=& f\\frac{dg}{dx} + g \\frac{df}{dx}
+\\end{align} \\]
 
 Let's consider the derivative of a sum type $x + y$ with respect to $a.$ We're looking for a
 datatype that can represent all the holes where we could put a value of type $a.$ In this case, $a$
