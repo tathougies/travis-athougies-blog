@@ -1,5 +1,5 @@
 ---
-title: FRP made easy!
+title: FRP made simple!
 author: Travis Athougies
 tags: haskell
 ---
@@ -41,7 +41,7 @@ In many FRP implementations, `Behavior` actually isn't anything more than a step
 value can only be updated by events. Therefore, we'll start by defining our `Event` type. The only
 really important thing about events is that we be able to subscribe and unsubscibe from them.
 
-```
+```haskell
 type RegisterEventListener a = (a -> Moment ()) -> IO (IO ())
 newtype Event a = Event { _eventRegisterListener :: RegisterEventListener a }
 ```
