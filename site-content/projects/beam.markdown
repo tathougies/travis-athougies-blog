@@ -7,7 +7,7 @@ language: Haskell
 status: ALPHA
 priority: 0
 github: https://github.com/tathougies/beam
-version: 0.0.1
+version: 2.0.0
 ---
 
 Beam is a Haskell interface to relational databases. Its key strengths are its type-safety and
