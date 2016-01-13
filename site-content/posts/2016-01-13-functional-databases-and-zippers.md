@@ -1,6 +1,13 @@
 ---
 title: Functional databases and zippers
 author: Travis Athougies
+tags: "haskell, databases"
+published: false
+---
+
+---
+title: Functional databases and zippers
+author: Travis Athougies
 tags: haskell, databases
 published: false
 ---
@@ -143,8 +150,31 @@ DATA ProductsDatabase ==
 DEFINE add-physical-product ==
   !(ProductsDatabase | *s Text Text Text Float Float)
   [[[[DUP] DIP ] DIP] DIP] DIP
-  Product
+  PhysicalProduct
   SWAP
   [[text-compare] DIP] DIP
-  insert-treap
+  [ insert-treap ] VISIT-by-sku
+  
+DEFINE add-downloadable-product ==
+  !(ProductsDatabase | *s Text Text Text Float Text)
+  [[[[DUP] DIP ] DIP] DIP] DIP
+  DownloadableProduct
+  SWAP
+  [[text-compare] DIP ] DIP
+  [ insert-treap ] VISIT-by-sku
+  
+DEFINE find-product-by-sku ==
+  !(ProductsDatabase | *s Text)
+  
+  { We cut the zipper at the root to create a copy of the zipper that will not
+    be persisted on commit. This is useful to avoid logging reads that we never
+    need to verify, since this query is read-only }
+  CUT
+  [ [ text-compare ] { comparator }
+    [ CUT Just ] { on found, cut the branch here, and yield it }
+    [ Nothing ] { on not found, return Nothing }
+    [ treap-find ] VISIT-by-sku
+    YIELD ] ENTER-ZIPPER
+```
+
 
