@@ -124,3 +124,27 @@ will cause the zephyr run-time to complain of a type error and refuse to run the
 
 Now that we understand zephyr, let's talk about how it will help us store a collection of products. As we said above, all of zippy's standard types are implemented in zephyr itself. The type that we're going to talk about now is called a *treap*. A [treap](http://en.wikipedia.org/wiki/Treap) is a randomized binary search tree that uses randomness to maintain balance. The randmoness ensures that it has good concurrency properties that minimize the amount of aborted transactions. Zephyr's treap implementation is located [here for reference](https://github.com/tathougies/zippy/blob/src/zephyr/treaps.zephyr).
 
+The definition of the treap type is copied here for reference:
+
+```zephyr
+DATA Treap k v ==
+  CONS Leaf
+  CONS Branch key=k value=v prio=Integer left=(Treap k v) right=(Treap k v)
+```
+
+This declaration says that a `Treap k v` is either a `Leaf` or a `Branch`. A `Leaf` has no fields, whereas a `Branch` has five fields, including two recursive ones (`left` and `right`). Those familiar with Haskell type declarations will immediately notice that `Treap` is a parameterized type, meaning that the types `k` and `v` are not known until the type is *instantiated*. For example, `Treap Int Text` is the type of treaps with keys of type `Int` and values of type `Text`.
+
+Let's create a database for our products. Open up `database2.zephyr` and enter the following.
+
+```zephyr
+DATA ProductsDatabase ==
+  CONS ProductsDatabase by-sku=(Treap Text Product)
+
+DEFINE add-physical-product ==
+  !(ProductsDatabase | *s Text Text Text Float Float)
+  [[[[DUP] DIP ] DIP] DIP] DIP
+  Product
+  SWAP
+  [[text-compare] DIP] DIP
+  insert-treap
+
