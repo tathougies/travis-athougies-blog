@@ -5,6 +5,7 @@ tags: "haskell, databases"
 published: false
 ---
 
+
 ---
 title: Functional databases and zippers
 author: Travis Athougies
@@ -20,21 +21,22 @@ As detailed in [my article](post:2015-01-16-zippers-derivatives-oh-what-fun), I 
 
 In this article, I describe a database system (available on GitHub), that combines these two ideas to provide a persistent, ACID, algebraic data structure server. The database system is called Zippy.
 
+## Features
+
+Below is a summary of Zippy's features:
+
+1. **Immutable** -- All data in zippy is stored immutably. Once stored, data is never discarded. Updates are handled by creating a new version of the database. This performs well due to the pure nature of the Zephyr query language -- since all data is immutable, we are free to share large portions of the data structure, like Haskell
+2. **Lock-free** -- Data in zippy is manipulated using zippers. Zippers allow us to focus on particular parts of an algebraic data structure and make changes. Zippy does not perform any locking for reads or writes. Instead, the zipper movements and changes are written to an in-memory log. When it comes time to commit, the log is verified and replayed, to ensure linearizability.
+3. **Append-only** -- Similar to CouchDB, Zippy never seeks to write in its data file. New portions of the data structure are streamed out to the data file in order. Of course, reads may require seeks.
+4. **Richly- and strongly-typed** -- Zippy is not schemaless! Every database must be given a type. Zippy supports polymorphic types and polymorphic queries. Additionally, it comes with built-in implementations of several persistent data structures designed for concurrency including random treaps, hash tries, finger trees, etc.
+
 ## Motivations
 
-In recent years, NoSQL database systems have grown in popularity. One reason developers choose NoSQL databases is Developers choose NoSQL databases is because the data they're storing does not fit neatly into the table paradigm. In response to this, databases such as MongoDB, Redis, and Neo4j offer either a variety of data structures or an alternative to tables.
+The main motivation behind Zippy was to apply Haskell to a real-world problem. I wanted to show that you can write extremely performant Haskell code without losing any elegance.
 
-Redis, for example, offers lists, maps, sets, and counters, among others. It is known for its speed and ease of use. However, writes are not durable, and data can be lost if the server is shut down disgracefully. Additionally, Redis stores all its data in memory, so the size of the database is limited to the system's memory. Finally, although easy to use, Redis does not have a complex query language, and commands do not run concurrently.
+NoSQL databases have grown more popular in recent years, as we've discovered the limitations of the relational paradigm. Many NoSQL databases now include features that seem oh-too-familiar to the functional programming language community such as immutability (CouchDB), rich data types (MongoDB and Redis), and shared-nothing concurrency (Cassandra, CouchDB).
 
-MongoDB offers the ability to store arbitrary JSON in its key-value database. However, it is limited in its querying ability to simple indices. Additionally, extending MongoDB with new data structures cannot be done in its native query language (javascript). Instead, developers would have to modify the C source directly.
-
-Ultimately, most NoSQL databases suffer from the same pitfalls as most SQL databases. Namely, although they do not force developers into the table paradigm, they still force developers into doing things their way, either by limiting their query language or limiting their extensibility.
-
-Fortunately, this does not have to be the case. Using the concept of zippers, zippy enables truly concurrent, durable, ACID access to an arbitrary algebraic data structures. Algebraic data structures are a well-studied group of data structures, and we can store all common data types in an algebraic structure.
-
-Zippy offers a type-checked language known as Zephyr, a low-level, turing-complete, stack-based language, that can be used to beth define new data types and define transformations over data of these types. In fact, all of Zippy's data types (except for the primitive ints, strings, floats, and binary blobs) are defined in Zephyr itself.
-
-In sum, Zippy offers fully durable, ACID access to arbitrary algebraic data and  a powerful query and manipulation language.
+With this in mind, I set out to create a Haskell database that stores Haskell data. Algebraic data types are well-studied, and we know how to fit all types of data into their structure. Additionally, they are infinitely more flexible than tables and relations. The world just seemed ready for a Haskell database to take on the world!
 
 ## Getting Started
 
@@ -105,7 +107,7 @@ Zephyr is a [stack-oriented programming language](https://en.wikipedia.org/wiki/
 1
 ```
 
-simply puhses the integer 1 to the stack. The program
+simply pushes the integer 1 to the stack. The program
 
 ```zephyr
 1 2 +
@@ -149,16 +151,16 @@ DATA ProductsDatabase ==
 
 DEFINE add-physical-product ==
   !(ProductsDatabase | *s Text Text Text Float Float)
-  [[[[DUP] DIP ] DIP] DIP] DIP
   PhysicalProduct
+  [ CUT ] VISIT-PhysicalProduct-sku
   SWAP
   [[text-compare] DIP] DIP
   [ insert-treap ] VISIT-by-sku
   
 DEFINE add-downloadable-product ==
   !(ProductsDatabase | *s Text Text Text Float Text)
-  [[[[DUP] DIP ] DIP] DIP] DIP
   DownloadableProduct
+  [ CUT ] VISIT-DownloadableProduct-sku
   SWAP
   [[text-compare] DIP ] DIP
   [ insert-treap ] VISIT-by-sku
@@ -173,8 +175,6 @@ DEFINE find-product-by-sku ==
   [ [ text-compare ] { comparator }
     [ CUT Just ] { on found, cut the branch here, and yield it }
     [ Nothing ] { on not found, return Nothing }
-    [ treap-find ] VISIT-by-sku
+    [ treap-find ] VISIT-ProductsDatabase-by-sku
     YIELD ] ENTER-ZIPPER
 ```
-
-
