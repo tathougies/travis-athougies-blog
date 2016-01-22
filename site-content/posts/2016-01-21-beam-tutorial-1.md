@@ -156,10 +156,10 @@ instance Database ShoppingCartDb
 ```
 
 The next step is to create a description of the particular database we'd like to create. This
-involves giving each of the tables in our database a name. If you've named all your table data types
-using camel case and suffixed them with a 'T', beam can automatically figure out what all the table
-names should be. If you haven't, or you have multiple tables holding the same type in your database,
-you might have to manually name your tables. For now, we'll let beam do the hard work.
+involves giving each of the tables in our database a name. If you've named all your database
+selectors using camel case, beam can automatically figure out what all the table names should be. If
+you haven't, or you have multiple tables holding the same type in your database, you might have to
+manually name your tables. For now, we'll let beam do the hard work.
 
 ```haskell
 shoppingCartDb :: DatabaseSettings ShoppingCartDb
