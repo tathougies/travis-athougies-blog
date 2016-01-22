@@ -135,8 +135,16 @@ extract the primary key from any `UserT f` object. To do this, we just add the f
 the instance declaration.
 
 ```haskell
-    type PrimaryKey UserT f = PK f Text
-    primaryKey = PK . _userEmail
+    data PrimaryKey UserT f = UserId (Columnar f Text) deriving Generic
+    primaryKey = UserId . _userEmail
+```
+
+It would be nice to have a type synonym for `PrimaryKey UserT f`, so we make one now. We can also
+derive an instance of `Show`.
+
+```haskell
+type UserId = PrimaryKey UserT Identity
+deriving instance Show UserId
 ```
 
 Defining our database
