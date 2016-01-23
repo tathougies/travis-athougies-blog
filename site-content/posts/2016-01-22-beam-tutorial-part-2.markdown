@@ -1,13 +1,14 @@
 ---
 title: Beam tutorial (part 2)
 author: Travis Athougies
-tags: haskell, beam
+tags: "haskell, beam"
+published: true
 ---
+
 
 This is the second part in my tutorial on the beam database library. This tutorial assumes you've read through the [first tutorial](post:2016-01-21-beam-tutorial-1) already. A literate haskell version of this exact tutorial can be found on [GitHub](https://github.com/tathougies/beam/blob/master/Doc/NextSteps.lhs).
 
-Introduction
-=======
+## Introduction
 
 In the previous tutorial, we created a simple database with one table. We then used
 the beam interface to add entities into that table and query them. In this tutorial, we'll see how
@@ -15,8 +16,7 @@ to update and delete rows and how to establish and query relations between table
 
 We'll then delve deeper into queries to see how to create queries that return multiple tables
 
-Where we left off
-=======
+## Where we left off
 
 When we last left off, we had a database with one table, `UserT`. We duplicate all the work up until
 this point from the last tutorial here.
@@ -51,8 +51,7 @@ type UserId = PrimaryKey UserT Identity
 deriving instance Show UserId
 ```
 
-Adding a related table
-=======
+## Adding a related table
 
 The users in our simple e-commerce application would like to ship orders to their homes. Let's build
 an addresses model to allow users to add home addresses to their profile. Our table will store
@@ -104,8 +103,7 @@ The second field of interest is `_addressForUser`, which is declared as a `Prima
 pulls in all the columns necessary for referencing a `UserT`. Later, we'll also see how Beam can use
 the field to automatically create JOINs.
 
-Specifiying Field Options
----------
+### Specifiying Field Options
 
 Above, we gave two requirements for the state and ZIP code fields. We said that state must be a
 2-digit state/territory code and ZIP must be at most 4 digits. This means we'd want to declare the
@@ -172,8 +170,7 @@ so that we can only override the parts we're interested in.
 
 This completes our `Table AddressT` instantiation.
 
-Lenses for free
-------
+### Lenses for free
 
 Above we presumed the existence of lenses that let us access the `Columnar (TableField Address) x`
 members of our table type. Here, we'll see how we can make these lenses using generics. First we
@@ -191,8 +188,8 @@ Address (LensFor addressIdC)
 
 This is a pattern match at the top level. `tableConfigLenses` uses GHC's generics mechanism and a
 special column tag to automatically replace all instances of `Columnar f x` in the data structure
-with the `LensFor` newtype. Note how it even replaced the `Colunmar f x`s that were embedded in
-`_addressForUser` embedded primary key field.
+with the `LensFor` newtype. Note how it even replaced the `Colunmar f x`s that were embedded in the
+`_addressForUser` primary key field.
 
 We can ask GHC for the types of the derived lenses. As a reminder, the type of a simple van
 Laarhoven lens from a data structure `a` to a substructure `b` is
@@ -220,8 +217,7 @@ addressZipC
 
 which is equivalent to the above.
 
-Working with relations
-========
+## Working with relations
 
 Now, let's see how we can add related addresses to our database. First, we'll define a type for our
 new database and declare an instance of the database, using the default beam settings. We'll then
@@ -300,8 +296,7 @@ Address {_addressId = AssignedId 2, _addressLine1 = "222 Main Street", _addressL
 Address {_addressId = AssignedId 3, _addressLine1 = "9999 Residence Ave", _addressLine2 = Nothing, _addressCity = "Sugarland", _addressState = "TX", _addressZip = "8989", _addressForUser = UserId "betty@example.com"}
 ```
 
-A note about queries
-=======
+## A note about queries
 
 In the last tutorial, we saw how queries and list supported similar interfaces. Namely we saw how
 `limit_` is like `take`, `offset_` like `drop`, `orderBy` like an enhanced `sortBy`, and `aggregate`
@@ -314,8 +309,7 @@ three-way, four-way, etc. cartesian products.
 Those familiar with lists in Haskell will note that there is an easy construct for taking n-ary
 cartesian products over lists: the monad.
 
-The list monad
---------
+### The list monad
 
 If we open GHCi, we can see this construct in action. Type the following into GHCi
 
@@ -347,8 +341,7 @@ element. For example,
 [((1,"james"),(1,"address1")),((1,"james"),(1,"address2")),((3,"tom"),(3,"address3"))]
 ```
 
-Using monads to express joins.
------
+### The query monad
 
 As I claimed in the first tutorial, queries support many of the same interfaces and operations lists
 do. It follows that queries also expose a monadic interface.
@@ -479,8 +472,7 @@ Address {_addressId = AssignedId 3, _addressLine1 = "9999 Residence Ave", _addre
 ----
 ```
 
-Updates and deletions
-=======
+## Updates and deletions
 
 So far we've only seen how to insert data and query it. There are two other SQL operations that we
 have not covered: updates and deletions. Beam has full support for these manipulations as well.
@@ -495,8 +487,7 @@ deleteFrom :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> tbl Identity -> 
 deleteWhere :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> (tbl QExpr -> QExpr Bool) -> BeamT db m ()
 ```
 
-Updates
--------
+### Updates
 
 Let's first look at updating passwords given a `User`. For this we can use the `saveTo`
 function. Suppose James wants to change his password to the md5 hash of "supersecure", which is
@@ -557,8 +548,7 @@ address.
           putStrLn ("Got new address " ++ show address ++ "\n")
 ```
 
-Deletions
----------
+### Deletions
 
 Now suppose that Betty has decided to give up her place in Houston. We can use the `delete` function
 to remove a row if we have that row's primary key.
@@ -592,8 +582,7 @@ Deleting Sam
 Will execute DELETE FROM cart_users WHERE first_name == ? with [SqlString "Sam"]
 ```
 
-Conclusion
-=======
+## Conclusion
 
 In this tutorial we created our first beam relationship. We saw how to use `tableConfigLenses` and
 the `microlens` library to change the default storage options beam chose for us. We used the monadic
