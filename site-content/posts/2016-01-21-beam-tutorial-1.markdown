@@ -1,9 +1,10 @@
 ---
 title: Beam Tutorial (part 1)
 author: Travis Athougies
-tags: haskell, beam
+tags: "haskell, beam"
 published: true
 ---
+
 
 Beam is a type-safe Haskell database interface that does not use Template Haskell. It aims to have an intuitive interface and produce human readable SQL. I described an early version of beam in a [previous post](post:2015-01-12-beam-typesafe-haskell-database-interface). Over the past few months, I've greatly simplified the interface and the internal code. This is the first installment in a series of tutorials I hope will make it easy to use Beam.
 
@@ -11,8 +12,7 @@ Thanks to [reddit](https://www.reddit.com/r/haskell/comments/2witfl/beam_an_type
 
 Beam source is available on [GitHub](https://github.com/tathougies/beam), and a literate haskell version of this tutorial is available [here](https://github.com/tathougies/beam/blob/master/Doc/BasicTutorial.lhs).
 
-Introduction
-============
+## Introduction
 
 In this tutorial sequence, I'll walk through creating a schema for a simple shopping cart database.
 
@@ -24,8 +24,7 @@ One bit of administrivia: Although this file is literate Haskell and can be comp
 GHC, I'll sometimes include output from a GHCi session with the appropriate declarations. If you'd
 like, feel free to follow along in GHCi.
 
-Beam Module Structure
-=======
+## Beam Module Structure
 
 Beam makes extensive use of GHC's Generics mechanism. This extension means beam does not need to
 rely on template haskell.
@@ -46,8 +45,7 @@ import Database.Beam.Backend.Sqlite3
 import Data.Text (Text)
 ```
 
-Defining our first table
-========
+## Defining our first table
 
 Beam tables are regular Haskell data types with a bit of scaffolding. Thankfully, the magic of the
 modern Haskell type system allows us to remove the overhead and the syntactic fuzz of the
@@ -115,8 +113,7 @@ us to use the "regular" `User` constructor to construct values of type `User`. W
 deriving instance Show User
 ```
 
-Teaching Beam about our table
-=========
+## Teaching Beam about our table
 
 We've defined a type that can represent our the data in our table. Now, let's inform beam that we'd like to
 use `UserT' as a table.
@@ -147,8 +144,7 @@ type UserId = PrimaryKey UserT Identity
 deriving instance Show UserId
 ```
 
-Defining our database
-========
+## Defining our database
 
 Now that we have our table, we're going to define a type to hold information about our
 database. Defining our database is going to follow the same pattern as defining a table. We'll
@@ -174,8 +170,7 @@ shoppingCartDb :: DatabaseSettings ShoppingCartDb
 shoppingCartDb = autoDbSettings
 ```
 
-Adding users to our database
-========
+## Adding users to our database
 
 Let's add some users to our database. First, we'll open a connection to a SQLite3 database using
 beam.  The `openDatabase` function will open the database and then automatically attempt to make the
@@ -225,8 +220,7 @@ Will execute INSERT INTO cart_users VALUES (?, ?, ?, ?) with [SqlString "betty@e
 Will execute INSERT INTO cart_users VALUES (?, ?, ?, ?) with [SqlString "sam@example.com",SqlString "Sam",SqlString "Taylor",SqlString "332532dcfaa1cbf61e2a266bd723612c"]
 ```
 
-Querying the database
-=======
+## Querying the database
 
 Now let's write some queries for the database. You can think of queries in Beam as similar to lists.
 Like lists you can filter them (SQL WHERE clauses), take only a certain number of items from them
@@ -307,8 +301,7 @@ Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`pas
 User {_userEmail = "james@example.com", _userFirstName = "James", _userLastName = "Smith", _userPassword = "b4cc344d25a2efe540adbf2678e2304c"}
 ```
 
-Aggregations
-==========
+## Aggregations
 
 Sometimes we also want to group our data together and perform calculations over the groups of data. SQL calls these aggregations.
 
@@ -358,8 +351,7 @@ Will execute SELECT `t0`.`first_name`, COUNT(`t0`.`email`) FROM  cart_users AS t
 ----
 ```
 
-Conclusion
-=======
+## Conclusion
 
 In this tutorial, we've covered creating a database schema, opening up a beam database, inserting
 values into the database, and querying values from them. We used the knowledge we learned to create
