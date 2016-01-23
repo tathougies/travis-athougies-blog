@@ -355,24 +355,27 @@ do. It follows that queries also expose a monadic interface.
 
 For example, to retrieve every pair of user and address, we can write the following query:
 
-```h
->           putStrLn "All pairs of users and addresses"
->           Success allPairs <-
->               beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->                 queryList $
->                 do user <- all_ usersT
->                    address <- all_ addressesT
->                    return (user, address)
->           mapM_ (putStrLn . show) allPairs
->           putStrLn "----\n\n"
+```haskell
+          putStrLn "All pairs of users and addresses"
+          Success allPairs <-
+              beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+                queryList $
+                do user <- all_ usersT
+                   address <- all_ addressesT
+                   return (user, address)
+          mapM_ (putStrLn . show) allPairs
+          putStrLn "----\n\n"
+```
 
 You'll get output like the following
 
-< Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password`, `t1`.`id`, `t1`.`line1`, `t1`.`line2`, `t1`.`city`, `t1`.`state`, `t1`.`zip`, `t1`.`for_user__email` FROM  cart_users AS t0 INNER JOIN cart_user_addresses AS t1 with []
-< (User {_userEmail = "james@example.com", _userFirstName = "James", _userLastName = "Smith", _userPassword = "b4cc344d25a2efe540adbf2678e2304c"},Address {_addressId = AssignedId 1, _addressLine1 = "123 Little Street", _addressLine2 = Nothing, _addressCity = "Boston", _addressState = "MA", _addressZip = "12345", _addressForUser = UserId "james@example.com"})
-< (User {_userEmail = "james@example.com", _userFirstName = "James", _userLastName = "Smith", _userPassword = "b4cc344d25a2efe540adbf2678e2304c"},Address {_addressId = AssignedId 2, _addressLine1 = "222 Main Street", _addressLine2 = Just "Ste 1", _addressCity = "Houston", _addressState = "TX", _addressZip = "8888", _addressForUser = UserId "betty@example.com"})
-< ...
-< ----
+```
+Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password`, `t1`.`id`, `t1`.`line1`, `t1`.`line2`, `t1`.`city`, `t1`.`state`, `t1`.`zip`, `t1`.`for_user__email` FROM  cart_users AS t0 INNER JOIN cart_user_addresses AS t1 with []
+(User {_userEmail = "james@example.com", _userFirstName = "James", _userLastName = "Smith", _userPassword = "b4cc344d25a2efe540adbf2678e2304c"},Address {_addressId = AssignedId 1, _addressLine1 = "123 Little Street", _addressLine2 = Nothing, _addressCity = "Boston", _addressState = "MA", _addressZip = "12345", _addressForUser = UserId "james@example.com"})
+(User {_userEmail = "james@example.com", _userFirstName = "James", _userLastName = "Smith", _userPassword = "b4cc344d25a2efe540adbf2678e2304c"},Address {_addressId = AssignedId 2, _addressLine1 = "222 Main Street", _addressLine2 = Just "Ste 1", _addressCity = "Houston", _addressState = "TX", _addressZip = "8888", _addressForUser = UserId "betty@example.com"})
+...
+----
+```
 
 Just like with lists we can also use a construct similar to guard to ensure that we only retrieve
 users and addresses that are related. The `guard_` function takes in expression of type `QExpr Bool`
@@ -380,40 +383,46 @@ which represents a SQL expression that returns a boolean. `QExpr Bool`s support 
 operators we have on regular `Bool`, except they're suffixed with a `.`. For example, where you'd
 use `(&&)` on two Haskell-level `Bool`s, we'd use `(&&.)` on `QExpr`-level bools.
 
->           putStrLn "All pairs of users with their related addresses"
->           Success usersAndRelatedAddresses <-
->               beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->                   queryList $
->                   do user@(User { _userEmail = userEmail }) <- all_ usersT
->                      address@(Address {_addressForUser = UserId addressForUser}) <- all_ addressesT
->
->                      guard_ (addressForUser ==. userEmail)
->                      pure (user, address)
->           mapM_ (putStrLn . show) usersAndRelatedAddresses
->           putStrLn "----\n\n"
+```haskell
+          putStrLn "All pairs of users with their related addresses"
+          Success usersAndRelatedAddresses <-
+              beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+                  queryList $
+                  do user@(User { _userEmail = userEmail }) <- all_ usersT
+                     address@(Address {_addressForUser = UserId addressForUser}) <- all_ addressesT
+
+                     guard_ (addressForUser ==. userEmail)
+                     pure (user, address)
+          mapM_ (putStrLn . show) usersAndRelatedAddresses
+          putStrLn "----\n\n"
+```
 
 The output for this query is
 
-< Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password`, `t1`.`id`, `t1`.`line1`, `t1`.`line2`, `t1`.`city`, `t1`.`state`, `t1`.`zip`, `t1`.`for_user__email` FROM  cart_users AS t0 INNER JOIN cart_user_addresses AS t1 WHERE `t1`.`for_user__email` == `t0`.`email` with []
-< (User {_userEmail = "james@example.com", _userFirstName = "James", _userLastName = "Smith", _userPassword = "b4cc344d25a2efe540adbf2678e2304c"},Address {_addressId = AssignedId 1, _addressLine1 = "123 Little Street", _addressLine2 = Nothing, _addressCity = "Boston", _addressState = "MA", _addressZip = "12345", _addressForUser = UserId "james@example.com"})
-< (User {_userEmail = "betty@example.com", _userFirstName = "Betty", _userLastName = "Jones", _userPassword = "82b054bd83ffad9b6cf8bdb98ce3cc2f"},Address {_addressId = AssignedId 2, _addressLine1 = "222 Main Street", _addressLine2 = Just "Ste 1", _addressCity = "Houston", _addressState = "TX", _addressZip = "8888", _addressForUser = UserId "betty@example.com"})
-< (User {_userEmail = "betty@example.com", _userFirstName = "Betty", _userLastName = "Jones", _userPassword = "82b054bd83ffad9b6cf8bdb98ce3cc2f"},Address {_addressId = AssignedId 3, _addressLine1 = "9999 Residence Ave", _addressLine2 = Nothing, _addressCity = "Sugarland", _addressState = "TX", _addressZip = "8989", _addressForUser = UserId "betty@example.com"})
+```
+Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password`, `t1`.`id`, `t1`.`line1`, `t1`.`line2`, `t1`.`city`, `t1`.`state`, `t1`.`zip`, `t1`.`for_user__email` FROM  cart_users AS t0 INNER JOIN cart_user_addresses AS t1 WHERE `t1`.`for_user__email` == `t0`.`email` with []
+(User {_userEmail = "james@example.com", _userFirstName = "James", _userLastName = "Smith", _userPassword = "b4cc344d25a2efe540adbf2678e2304c"},Address {_addressId = AssignedId 1, _addressLine1 = "123 Little Street", _addressLine2 = Nothing, _addressCity = "Boston", _addressState = "MA", _addressZip = "12345", _addressForUser = UserId "james@example.com"})
+(User {_userEmail = "betty@example.com", _userFirstName = "Betty", _userLastName = "Jones", _userPassword = "82b054bd83ffad9b6cf8bdb98ce3cc2f"},Address {_addressId = AssignedId 2, _addressLine1 = "222 Main Street", _addressLine2 = Just "Ste 1", _addressCity = "Houston", _addressState = "TX", _addressZip = "8888", _addressForUser = UserId "betty@example.com"})
+(User {_userEmail = "betty@example.com", _userFirstName = "Betty", _userLastName = "Jones", _userPassword = "82b054bd83ffad9b6cf8bdb98ce3cc2f"},Address {_addressId = AssignedId 3, _addressLine1 = "9999 Residence Ave", _addressLine2 = Nothing, _addressCity = "Sugarland", _addressState = "TX", _addressZip = "8989", _addressForUser = UserId "betty@example.com"})
+```
 
 Of course this is kind of messy because it involves manually matching the primary key of `User` with
 the reference in `Address`. Alternatively, we can use the `references_` combinator to have Beam
 automatically generate a `QExpr` expression that can match primary keys together.
 
->           putStrLn "All pairs of users with their related addresses (using references_)"
->           Success usersAndRelatedAddressesUsingReferences <-
->               beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->                   queryList $
->                   do user <- all_ usersT
->                      address <- all_ addressesT
->
->                      guard_ (_addressForUser address `references_` user)
->                      pure (user, address)
->           mapM_ (putStrLn . show) usersAndRelatedAddressesUsingReferences
->           putStrLn "----\n\n"
+```haskell
+          putStrLn "All pairs of users with their related addresses (using references_)"
+          Success usersAndRelatedAddressesUsingReferences <-
+              beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+                  queryList $
+                  do user <- all_ usersT
+                     address <- all_ addressesT
+
+                     guard_ (_addressForUser address `references_` user)
+                     pure (user, address)
+          mapM_ (putStrLn . show) usersAndRelatedAddressesUsingReferences
+          putStrLn "----\n\n"
+```
 
 The debug output shows that we get the same query and same output as above.
 
@@ -422,45 +431,53 @@ joined the tables together, and then used the `WHERE` clause to filter out resul
 you'd like to use the `ON` clause to make the SQL clearer or save a line in your code, beam offers
 the `related_` combinator to pull related tables directly into the query monad.
 
->           putStrLn "All pairs of users with their related addresses (using related_)"
->           Success usersAndRelatedAddressesUsingRelated <-
->               beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->                   queryList $
->                   do address <- all_ addressesT
->                      user <- related_ usersT (_addressForUser address)
->                      pure (user, address)
->           mapM_ (putStrLn . show) usersAndRelatedAddressesUsingRelated
->           putStrLn "----\n\n"
+```haskell
+          putStrLn "All pairs of users with their related addresses (using related_)"
+          Success usersAndRelatedAddressesUsingRelated <-
+              beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+                  queryList $
+                  do address <- all_ addressesT
+                     user <- related_ usersT (_addressForUser address)
+                     pure (user, address)
+          mapM_ (putStrLn . show) usersAndRelatedAddressesUsingRelated
+          putStrLn "----\n\n"
+```
 
 The output shows us that the correct `ON` clause has been generated, and you can verify that the
 results are the same.
 
-< Will execute SELECT `t1`.`email`, `t1`.`first_name`, `t1`.`last_name`, `t1`.`password`, `t0`.`id`, `t0`.`line1`, `t0`.`line2`, `t0`.`city`, `t0`.`state`, `t0`.`zip`, `t0`.`for_user__email` FROM  cart_user_addresses AS t0 INNER JOIN cart_users AS t1 ON `t0`.`for_user__email` == `t1`.`email` with []
-< ...
-< ----
+```
+Will execute SELECT `t1`.`email`, `t1`.`first_name`, `t1`.`last_name`, `t1`.`password`, `t0`.`id`, `t0`.`line1`, `t0`.`line2`, `t0`.`city`, `t0`.`state`, `t0`.`zip`, `t0`.`for_user__email` FROM  cart_user_addresses AS t0 INNER JOIN cart_users AS t1 ON `t0`.`for_user__email` == `t1`.`email` with []
+...
+----
+```
 
 We can also query the addresses for a particular user given a `UserId`.
 
->           -- This is a contrived example to show how we can use an arbitrary UserId to fetch a particular user.
->           -- We don't always have access to the full 'User' lying around. For example we may be in a function that
->           -- only accepts 'UserId's.
->           let bettyId = UserId "betty@example.com" :: UserId
->           putStrLn "All addresses for 'betty@example.com'"
->           Success bettysAddresses <-
->               beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->                   queryList $
->                   do address <- all_ addressesT
->                      guard_ (_addressForUser address ==. val_ bettyId)
->                      pure address
->           mapM_ (putStrLn . show) bettysAddresses
->           putStrLn "----\n\n"
+```haskell
+          -- This is a contrived example to show how we can use an arbitrary UserId to fetch a particular user.
+          -- We don't always have access to the full 'User' lying around. For example we may be in a function that
+          -- only accepts 'UserId's.
+          let bettyId = UserId "betty@example.com" :: UserId
+          putStrLn "All addresses for 'betty@example.com'"
+          Success bettysAddresses <-
+              beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+                 queryList $
+                  do address <- all_ addressesT
+                     guard_ (_addressForUser address ==. val_ bettyId)
+                     pure address
+          mapM_ (putStrLn . show) bettysAddresses
+          putStrLn "----\n\n"
+```
 
 Again the correct SQL and results are generated.
 
-< Will execute SELECT `t0`.`id`, `t0`.`line1`, `t0`.`line2`, `t0`.`city`, `t0`.`state`, `t0`.`zip`, `t0`.`for_user__email` FROM  cart_user_addresses AS t0 WHERE `t0`.`for_user__email` == ? with [SqlString "betty@example.com"]
-< Address {_addressId = AssignedId 2, _addressLine1 = "222 Main Street", _addressLine2 = Just "Ste 1", _addressCity = "Houston", _addressState = "TX", _addressZip = "8888", _addressForUser = UserId "betty@example.com"}
-< Address {_addressId = AssignedId 3, _addressLine1 = "9999 Residence Ave", _addressLine2 = Nothing, _addressCity = "Sugarland", _addressState = "TX", _addressZip = "8989", _addressForUser = UserId "betty@example.com"}
-< ----
+```
+Will execute SELECT `t0`.`id`, `t0`.`line1`, `t0`.`line2`, `t0`.`city`, `t0`.`state`, `t0`.`zip`, `t0`.`for_user__email` FROM  cart_user_addresses AS t0 WHERE `t0`.`for_user__email` == ? with [SqlString "betty@example.com"]
+Address {_addressId = AssignedId 2, _addressLine1 = "222 Main Street", _addressLine2 = Just "Ste 1", _addressCity = "Houston", _addressState = "TX", _addressZip = "8888", _addressForUser = UserId "betty@example.com"}
+Address {_addressId = AssignedId 3, _addressLine1 = "9999 Residence Ave", _addressLine2 = Nothing, _addressCity = "Sugarland", _addressState = "TX", _addressZip = "8989", _addressForUser = UserId "betty@example.com"}
+----
+```
 
 Updates and deletions
 =======
@@ -471,10 +488,12 @@ have not covered: updates and deletions. Beam has full support for these manipul
 There are four functions that we're interested in: `save`, `updateWhere`, `deleteFrom`, and
 `deleteWhere`. Let's look at their type signatures to see how they work.
 
-< save :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> tbl Identity -> BeamT db m ()
-< updateWhere :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> (tbl QExpr -> tbl SetExpr) -> (tbl QExpr -> QExpr Bool) -> BeamT db m ()
-< deleteFrom :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> tbl Identity -> BeamT db m ()
-< deleteWhere :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> (tbl QExpr -> QExpr Bool) -> BeamT db m ()
+```haskell
+save :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> tbl Identity -> BeamT db m ()
+updateWhere :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> (tbl QExpr -> tbl SetExpr) -> (tbl QExpr -> QExpr Bool) -> BeamT db m ()
+deleteFrom :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> tbl Identity -> BeamT db m ()
+deleteWhere :: (MonadIO m, Table tbl) => DatabaseTable db tbl -> (tbl QExpr -> QExpr Bool) -> BeamT db m ()
+```
 
 Updates
 -------
@@ -484,21 +503,25 @@ function. Suppose James wants to change his password to the md5 hash of "superse
 `52a516ca6df436828d9c0d26e31ef704`. We have a `User` object representing James so we can simply call
 `saveTo` on the update value to update the corresponding record in the database.
 
->           putStrLn "Updating james' password"
->           beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->               saveTo usersT (james { _userPassword = "52a516ca6df436828d9c0d26e31ef704" })
->           Success newPassword <- beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->                                  getOne $ do james <- lookup_ usersT (val_ (UserId "james@example.com" :: UserId))
->                                              return (_userPassword james)
->           putStrLn ("Verified that james's new password is " ++ show newPassword)
->           putStrLn "----\n"
+```haskell
+          putStrLn "Updating james' password"
+          beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+              saveTo usersT (james { _userPassword = "52a516ca6df436828d9c0d26e31ef704" })
+          Success newPassword <- beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+                                 getOne $ do james <- lookup_ usersT (val_ (UserId "james@example.com" :: UserId))
+                                             return (_userPassword james)
+          putStrLn ("Verified that james's new password is " ++ show newPassword)
+          putStrLn "----\n"
+```
 
 When this runs, you'll see that the password pulled from the database matches the one we just saved.
 
-< Updating james' password
-< Will execute UPDATE cart_users SET email=?, first_name=?, last_name=?, password=? WHERE email == ? with [SqlString "james@example.com",SqlString "James",SqlString "Smith",SqlString "52a516ca6df436828d9c0d26e31ef704",SqlString "james@example.com"]
-< Will execute SELECT `t0`.`password` FROM  cart_users AS t0 WHERE ? == `t0`.`email` with [SqlString "james@example.com"]
-< Verified that james's new password is Just "52a516ca6df436828d9c0d26e31ef704"
+```
+Updating james' password
+Will execute UPDATE cart_users SET email=?, first_name=?, last_name=?, password=? WHERE email == ? with [SqlString "james@example.com",SqlString "James",SqlString "Smith",SqlString "52a516ca6df436828d9c0d26e31ef704",SqlString "james@example.com"]
+Will execute SELECT `t0`.`password` FROM  cart_users AS t0 WHERE ? == `t0`.`email` with [SqlString "james@example.com"]
+Verified that james's new password is Just "52a516ca6df436828d9c0d26e31ef704"
+```
 
 This works great, but `saveTo` requires that we have the whole `User` object at our
 disposal. Additionally, you'll notice that it causes every field to be set in the `UPDATE`
@@ -510,23 +533,29 @@ To illustrate use of this function, let's suppose the city of "Sugarland, TX" wa
 "Sugarville, TX" and had its ZIP code changed to be "12345" citywide. The following beam command
 will update all addresses in the old city to use the new name and ZIP code.
 
->           beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->               updateWhere addressesT (\address -> address { _addressCity = val_ "Sugarville"
->                                                           , _addressZip  = val_ "12345" })
->                                      (\address -> _addressCity address ==. val_ "Sugarland" &&.
->                                                   _addressState address ==. val_ "TX")
+```haskell
+          beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+              updateWhere addressesT (\address -> address { _addressCity = val_ "Sugarville"
+                                                          , _addressZip  = val_ "12345" })
+                                     (\address -> _addressCity address ==. val_ "Sugarland" &&.
+                                                  _addressState address ==. val_ "TX")
+```
 
 This will execute the expected `UPDATE` statement
 
-< Will execute UPDATE cart_user_addresses SET city=?, zip=? WHERE city == ? AND state == ? with [SqlString "Sugarville",SqlString "12345",SqlString "Sugarland",SqlString "TX"]
+```
+Will execute UPDATE cart_user_addresses SET city=?, zip=? WHERE city == ? AND state == ? with [SqlString "Sugarville",SqlString "12345",SqlString "Sugarland",SqlString "TX"]
+```
 
 We can confirm that the address was updated by reading back the database's version of Betty's second
 address.
 
->           putStrLn "\nChecking betty's second address to ensure it's updated to Sugarville, TX"
->           Success address <- beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->                              getOne (lookup_ addressesT (val_ (primaryKey bettyAddress2)))
->           putStrLn ("Got new address " ++ show address ++ "\n")
+```haskell
+          putStrLn "\nChecking betty's second address to ensure it's updated to Sugarville, TX"
+          Success address <- beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+                             getOne (lookup_ addressesT (val_ (primaryKey bettyAddress2)))
+          putStrLn ("Got new address " ++ show address ++ "\n")
+```
 
 Deletions
 ---------
@@ -534,26 +563,34 @@ Deletions
 Now suppose that Betty has decided to give up her place in Houston. We can use the `delete` function
 to remove a row if we have that row's primary key.
 
->           putStrLn "Deleting betty's first address"
->           beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->               deleteFrom addressesT (pk bettyAddress1)
+```haskell
+          putStrLn "Deleting betty's first address"
+          beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+              deleteFrom addressesT (pk bettyAddress1)
+```
 
 Beam executes an appropriate `DELETE` statement, using the primary key to reference the table.
 
-< Deleting betty's first address
-< Will execute DELETE FROM cart_user_addresses WHERE id == ? with [SqlInteger 2]
+```
+Deleting betty's first address
+Will execute DELETE FROM cart_user_addresses WHERE id == ? with [SqlInteger 2]
+```
 
 Just for fun, let's remove all users named Sam. After all, they don't have any addresses stored!
 
->           putStrLn "Deleting Sam"
->           beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
->               deleteWhere usersT (\user -> _userFirstName user ==. val_ "Sam")
->           pure ()
+```haskell
+          putStrLn "Deleting Sam"
+          beamTxn beam $ \(ShoppingCartDb usersT addressesT) ->
+              deleteWhere usersT (\user -> _userFirstName user ==. val_ "Sam")
+          pure ()
+```
 
 Again, Beam produces the SQL we'd expect
 
-< Deleting Sam
-< Will execute DELETE FROM cart_users WHERE first_name == ? with [SqlString "Sam"]
+```
+Deleting Sam
+Will execute DELETE FROM cart_users WHERE first_name == ? with [SqlString "Sam"]
+```
 
 Conclusion
 =======
