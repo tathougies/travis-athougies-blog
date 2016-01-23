@@ -6,6 +6,7 @@ published: true
 ---
 
 
+
 Beam is a type-safe Haskell database interface that does not use Template Haskell. It aims to have an intuitive interface and produce human readable SQL. I described an early version of beam in a [previous post](post:2015-01-12-beam-typesafe-haskell-database-interface). Over the past few months, I've greatly simplified the interface and the internal code. This is the first installment in a series of tutorials I hope will make it easy to use Beam.
 
 Thanks to [reddit](https://www.reddit.com/r/haskell/comments/2witfl/beam_an_typesafe_rdbms_interface_that_doesnt_use/) and friends for feedback on the first version of Beam.
@@ -194,12 +195,12 @@ This will dump the SQL CREATE TABLE statements to the console.
 
 ```
 Dumping database schema ...
-CREATE TABLE user (email VARCHAR NOT NULL, first_name VARCHAR NOT NULL, last_name VARCHAR NOT NULL, password VARCHAR NOT NULL, PRIMARY KEY( email ))
+CREATE TABLE cart_users (email VARCHAR NOT NULL, first_name VARCHAR NOT NULL, last_name VARCHAR NOT NULL, password VARCHAR NOT NULL, PRIMARY KEY( email ))
 ```
 
-Beam automatically converted our `UserT` data type to a table by creating a table named the same as
-the table type without the trailing 'T', and converting CamelCase to under_case. It also
-automatically assigned names to the columns by converting CamelCase to under_case, and dropping the prefix.
+Beam automatically converted our `UserT` table in the `_shoppingCartUsers` selector to a table named
+`cart_users`. As we stated above, this comes from un-CamelCase-ing the selector name and dropping
+the first component. Beam followed the same rule to derive the column names.
 
 Now let's add a few users. We'll give each user an MD5 encoded password too.
 
@@ -360,3 +361,5 @@ delve deeper into the some of the query types and show how we can create relatio
 tables. We'll also use the monadic query interface to create SQL joins.
 
 Until next time!
+
+If you have any questions about beam, feel free to send them to travis@athougies.net . Pull requests and bug reports are welcome on [GitHub](https://github.com/tathougies/beam).
