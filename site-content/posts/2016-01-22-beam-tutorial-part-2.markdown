@@ -6,6 +6,7 @@ published: true
 ---
 
 
+
 This is the second part in my tutorial on the beam database library. This tutorial assumes you've read through the [first tutorial](post:2016-01-21-beam-tutorial-1) already. A literate haskell version of this exact tutorial can be found on [GitHub](https://github.com/tathougies/beam/blob/master/Doc/NextSteps.lhs).
 
 ## Introduction
@@ -100,7 +101,7 @@ key. Note that depending on your backend, such a field may only be possible if i
 as the primary key, which it is in our example.
 
 The second field of interest is `_addressForUser`, which is declared as a `PrimaryKey UserT f`. This
-pulls in all the columns necessary for referencing a `UserT`. Later, we'll also see how Beam can use
+pulls in all the columns necessary for referencing a `UserT`. Later, we'll also see how beam can use
 the field to automatically create JOINs.
 
 ### Specifiying Field Options
@@ -120,10 +121,9 @@ type `TableField table x`.
 
 Because `TableField`s are deeply nested structures, it's easiest to use lenses to modify them. Beam
 does not depend on the `lens` library, but lenses are plain old polymorphic Haskell data types, so
-we can still make use of them even without that library. In this example, we pulled in the
+we can still make use of them without that library. In this example, we pulled in the
 `microlens` library, which contains many common `lens` functions, but which does not use Template
-Haskell. `microlens` is 100% compatible with `lens`, so Beam is agnostic when it comes to library
-choice.
+Haskell. `microlens` is 100% compatible with `lens`, and beam is agnostic when it comes to choice of lens library.
 
 Nevertheless, without Template Haskell we are typically left without any easy way to derive
 lenses. Luckily for us, we'll see how beam let's us automatically derive these lenses. For now,
@@ -575,7 +575,7 @@ Just for fun, let's remove all users named Sam. After all, they don't have any a
           pure ()
 ```
 
-Again, Beam produces the SQL we'd expect
+Again, beam produces the SQL we'd expect
 
 ```
 Deleting Sam
@@ -588,7 +588,7 @@ In this tutorial we created our first beam relationship. We saw how to use `tabl
 the `microlens` library to change the default storage options beam chose for us. We used the monadic
 tquery interface to write queries that used SQL joins, and we saw how beam makes it easy to
 tautomatically pull related tables into our queries. Finally we used the `updateWhere`, `saveTo`,
-t`deleteWhere`, and `deleteFrom` functions to update and delete rows in our tables.
+`deleteWhere`, and `deleteFrom` functions to update and delete rows in our tables.
 
 At this point, we've covered enough of the beam interface to start writing interesting
 programs. Take some time to explore beam and create your own databases. For more information on the
