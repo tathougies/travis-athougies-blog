@@ -7,6 +7,7 @@ published: true
 
 
 
+
 This is the second part in my tutorial on the beam database library. This tutorial assumes you've read through the [first tutorial](post:2016-01-21-beam-tutorial-1) already. A literate haskell version of this exact tutorial can be found on [GitHub](https://github.com/tathougies/beam/blob/master/Doc/NextSteps.lhs).
 
 ## Introduction
@@ -235,7 +236,7 @@ shoppingCartDb :: DatabaseSettings ShoppingCartDb
 shoppingCartDb = autoDbSettings
 
 main :: IO ()
-main = do beam <- openDatabaseDebug shoppingCartDb (Sqlite3Settings "shoppingcart2.db")
+main = do beam <- openDatabaseDebug shoppingCartDb AutoMigrate (Sqlite3Settings "shoppingcart2.db")
           dumpSchema shoppingCartDb -- Just to see what it's like
 ```
 
