@@ -25,7 +25,7 @@ A series of tutorial for the current version of beam can be found in these tutor
 
 - [Beam Tutorial (part 1)](post:2016-01-21-beam-tutorial-1)
 - [Beam Tutorial (part 2)](post:2016-01-22-beam-tutorial-part-2)
-- [Beam Tutorial (part 3)](post:2016-01-25-beam-tutorial-part-3
+- [Beam Tutorial (part 3)](post:2016-01-25-beam-tutorial-part-3)
 
 You may also be interested in the [API reference on hackage](http://hackage.haskell.org/package/beam) and in the [GitHub sources](https://github.com/tathougies/beam).
 
