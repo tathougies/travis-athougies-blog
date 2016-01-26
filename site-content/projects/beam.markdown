@@ -13,6 +13,7 @@ published: true
 
 
 
+
 Beam is a Haskell interface to relational databases. Its key strengths are its type-safety and
 intuitive syntax. Beam is written in pure Haskell, and doesn't make use of Template Haskell or
 non-intuitive embedded domain specific languages. Instead it makes extensive use of Generics, Closed
@@ -48,7 +49,6 @@ Please send any bug reports or pull requests to [GitHub](https://github.com/tath
 
 - **Beam has simpler data types.** Opaleye requires that each table type is parameterized over each column in the table. This means that if your table contains 16 columns, it needs to have 16 type-level parameters. As you can imagine, this leads to incredibly long types. On the other hand, beam types are parameterized over only one type.
 - **Beam does not need Template Haskell to derive instances and simplify types.** Hiding type definitions behind Template Haskell makes it difficult to understand what is going on with the code behind the scenes. Beam uses generics and regular Haskell types which are easy to reason about.
-- **Beam is not postgres specific.** Opaleye is very clear about targeting PostgreSQL only. Beam can work over an database supported by HDBC (although only a sqlite3 driver ships right now). Backends can export their own backend-specific operators, functions, and aggregations.
 - **Beam generates readable SQL.** Opaleye's SQL can be very difficult to understand (see the example output on [GitHub](https://github.com/tomjaguarpaw/haskell-opaleye/tree/master/Doc/Tutorial)). Beam's SQL is easy to read and reason about. This makes it easier to debug.
 
 ### `HaskellDB`
