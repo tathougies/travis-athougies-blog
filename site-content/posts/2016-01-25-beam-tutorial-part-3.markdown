@@ -6,6 +6,7 @@ published: true
 ---
 
 
+
 In the [last tutorial](post:2016-01-22-beam-tutorial-part-2) in the sequence, we saw how to create and query our first relation. In this tutorial, we're going to add the remaining tables into our database and write some more complicated queries on them to explore more of beam's features.
 
 ## Where we left off
@@ -14,7 +15,7 @@ Because this file is [literate haskell](https://github.com/tathougies/beam/tree/
 I've duplicated all the schema work we've done up until this point below.
 
 ```haskell
-{-# LANGUAGE StandaloneDeriving, TypeSynonymInstances, FlexibleInstances, TypeFamilies, DeriveGeneric, OverloadedStrings #-}
+{-# LANGUAGE StandaloneDeriving, TypeSynonymInstances, FlexibleInstances, TypeFamilies, DeriveGeneric, OverloadedStrings, PartialTypeSignatures #-}
 module Main where
 
 import Database.Beam
@@ -427,7 +428,7 @@ Let's count up all shipped and unshipped orders by user, including users who hav
                 aggregate (\(user, order) ->
                                let ShippingInfoId shippingInfoId = _orderShippingInfo order
                                in ( group_ user
-                                  , count_ (maybe_ (just_ 1 :: QExpr (Maybe Int)) (\_ -> nothing_) shippingInfoId)
+                                  , count_ (maybe_ (just_ 1) (\_ -> nothing_) shippingInfoId :: QExpr _ (Maybe Int))
                                   , count_ shippingInfoId )) $
                 do user <- all_ (_shoppingCartUsers db)
 
