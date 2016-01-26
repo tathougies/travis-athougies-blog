@@ -10,6 +10,7 @@ published: true
 
 
 
+
 Beam is a type-safe Haskell database interface that does not use Template Haskell. It aims to have an intuitive interface and produce human readable SQL. I described an early version of beam in a [previous post](post:2015-01-12-beam-typesafe-haskell-database-interface). Over the past few months, I've greatly simplified the interface and the internal code. This is the first installment in a series of tutorials I hope will make it easy to use Beam.
 
 Thanks to [reddit](https://www.reddit.com/r/haskell/comments/2witfl/beam_an_typesafe_rdbms_interface_that_doesnt_use/) and friends for feedback on the first version of Beam.
@@ -38,7 +39,7 @@ rely on template haskell.
 module Main where
 ```
 
-To start defining beam schemas and queries, you only need to import the `Database.Beam`.
+To start defining beam schemas and queries, you only need to import the `Database.Beam` module.
 To interface with an actual database, you'll need to import one of the database backends.
 Beam ships with a default sqlite3 backend in the standard package.
 
