@@ -9,6 +9,7 @@ published: true
 
 
 
+
 Beam is a type-safe Haskell database interface that does not use Template Haskell. It aims to have an intuitive interface and produce human readable SQL. I described an early version of beam in a [previous post](post:2015-01-12-beam-typesafe-haskell-database-interface). Over the past few months, I've greatly simplified the interface and the internal code. This is the first installment in a series of tutorials I hope will make it easy to use Beam.
 
 Thanks to [reddit](https://www.reddit.com/r/haskell/comments/2witfl/beam_an_typesafe_rdbms_interface_that_doesnt_use/) and friends for feedback on the first version of Beam.
@@ -176,7 +177,7 @@ shoppingCartDb = autoDbSettings
 ## Adding users to our database
 
 Let's add some users to our database. First, we'll open a connection to a SQLite3 database using
-beam.  The `openDatabase` function will open the database and then automatically attempt to make the
+beam.  The `openDatabase` function will open the database and optionally attempt to make the
 schema of the opened database match the schema implied by the data types. Below we use the
 `openDatabaseDebug` function to put beam into debug mode. This will cause beam to log every sql
 statement executed. `openDatabaseDebug` and `openDatabase` have the same type signature, so they can
