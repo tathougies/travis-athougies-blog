@@ -98,7 +98,7 @@ For orders, we want to store an id, date created, and the user who made the orde
 create an optional link to a shipping information table. When the shipping information is created,
 we'll fill in the shipping information in the order. In order to create the optional reference,
 we're going to use the `Nullable` tag modifier to modify the column tag. `Nullable` will turn all
-fields of type `x` into `Maybe x`. It leaves fields of type `Maybe x` alone. Note that we could also
+fields of type `x` into `Maybe x`. Note that we could also
 create this relation by installing a primary key on the shipping info table, and this is arguably
 the better option. However, we'll go with a nullable foreign key here to show the full breadth of
 beam's features, and because this sort of relation exists in many existing databases.
