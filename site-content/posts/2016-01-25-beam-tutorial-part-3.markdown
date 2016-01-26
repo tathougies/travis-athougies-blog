@@ -1,8 +1,10 @@
 ---
 title: Beam tutorial (part 3)
 author: Travis Athougies
-tags: haskell, beam
+tags: "haskell, beam"
+published: true
 ---
+
 
 In the [last tutorial](post:2016-01-22-beam-tutorial-part-2) in the sequence, we saw how to create and query our first relation. In this tutorial, we're going to add the remaining tables into our database and write some more complicated queries on them to explore more of beam's features.
 
@@ -397,8 +399,7 @@ Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`pas
 ----
 ```
 
-Queries with nullable foreign keys
-=======
+## Queries with nullable foreign keys
 
 Recall that our schema contains a nullable foreign key from `OrderT` to `ShippingInfoT`. Above, we've seen how `leftJoin_` introduces nullable tables into our queries. Below, we'll see how to use nullable primary keys to optionally include information.
 
@@ -498,8 +499,7 @@ Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`pas
 ----
 ```
 
-Conclusion
-=======
+## Conclusion
 
 This tutorial completes our sequence on creating a shopping cart. Throughout the tutorials, we saw
 how to create tables using regular Haskell data types, how to link those tables up using relations,
