@@ -8,11 +8,12 @@ published: true
 
 
 
+
 Beam is a type-safe Haskell database interface that does not use Template Haskell. It aims to have an intuitive interface and produce human readable SQL. I described an early version of beam in a [previous post](post:2015-01-12-beam-typesafe-haskell-database-interface). Over the past few months, I've greatly simplified the interface and the internal code. This is the first installment in a series of tutorials I hope will make it easy to use Beam.
 
 Thanks to [reddit](https://www.reddit.com/r/haskell/comments/2witfl/beam_an_typesafe_rdbms_interface_that_doesnt_use/) and friends for feedback on the first version of Beam.
 
-Beam source is available on [GitHub](https://github.com/tathougies/beam), and a literate haskell version of this tutorial is available [here](https://github.com/tathougies/beam/blob/master/Doc/BasicTutorial.lhs).
+Beam source is available on [GitHub](https://github.com/tathougies/beam), and a literate haskell version of this tutorial is available [here](https://github.com/tathougies/beam/blob/master/Doc/01-BasicTutorial.lhs).
 
 ## Introduction
 
@@ -33,7 +34,7 @@ rely on template haskell.
 
 ```haskell
 {-# LANGUAGE StandaloneDeriving, TypeSynonymInstances, FlexibleInstances, TypeFamilies, DeriveGeneric, OverloadedStrings #-}
-module BasicTutorial where
+module Main where
 ```
 
 To start defining beam schemas and queries, you only need to import the `Database.Beam`.
