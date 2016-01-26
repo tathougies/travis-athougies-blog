@@ -9,6 +9,7 @@ published: true
 
 
 
+
 This is the second part in my tutorial on the beam database library. This tutorial assumes you've read through the [first tutorial](post:2016-01-21-beam-tutorial-1) already. A literate haskell version of this exact tutorial can be found on [GitHub](https://github.com/tathougies/beam/blob/master/Doc/02-NextSteps.lhs).
 
 ## Introduction
@@ -602,4 +603,4 @@ supported by Beam, see the module source for `Database.Beam.Fields`.
 Until next time!
 
 As always, if you have any questions, feel free to e-mail me at travis@athougies.net. Bugs and
-Apatches should go to [GitHub](https://github.com/tathougies/beam).
+patches should go to [GitHub](https://github.com/tathougies/beam).
