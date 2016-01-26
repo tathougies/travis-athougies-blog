@@ -8,7 +8,8 @@ published: true
 
 
 
-This is the second part in my tutorial on the beam database library. This tutorial assumes you've read through the [first tutorial](post:2016-01-21-beam-tutorial-1) already. A literate haskell version of this exact tutorial can be found on [GitHub](https://github.com/tathougies/beam/blob/master/Doc/NextSteps.lhs).
+
+This is the second part in my tutorial on the beam database library. This tutorial assumes you've read through the [first tutorial](post:2016-01-21-beam-tutorial-1) already. A literate haskell version of this exact tutorial can be found on [GitHub](https://github.com/tathougies/beam/blob/master/Doc/02-NextSteps.lhs).
 
 ## Introduction
 
@@ -25,7 +26,7 @@ this point from the last tutorial here.
 
 ```haskell
 {-# LANGUAGE StandaloneDeriving, TypeSynonymInstances, FlexibleInstances, TypeFamilies, DeriveGeneric, OverloadedStrings #-}
-module NextSteps where
+module Main where
 
 import Database.Beam
 import Database.Beam.Backend.Sqlite3
@@ -139,19 +140,20 @@ We also have the following lenses of interest to interface with `TableField tabl
 
 ```haskell
 fieldName :: Lens' (TableField table ty) Text
-fieldSettings :: Lens (TableField table a) (TableField table b) (FieldSettings a) (FieldSettings b)
+fieldSchema :: Lens (TableField table a) (TableField table b) (FieldSchema a) (FieldSchema b)
 ```
 
-`FieldSettings a` is the type of settings beam will except for a field of type `a`. It is declared
-as an associated type family of the `FieldSchema` class. See `Database.Beam.Schema.Fields` for more
-information.
+A `FieldSchema a` is a record type that contains information on how to
+serialize and deserialize the particular column. Beam automatically
+chooses a default field schema for you using the
+`HasDefaultFieldSchema` type class.
 
-For our purposes, we need only look at the definition of `FieldSettings Text`
+For our purposes, we need only look at the `textSchema` column schema
+constructor. It takes in a sum type `CharOrVarchar` and produces the
+appropriate schema for a `Text` field.
 
 ```haskell
-data FieldSettings Text = TextFieldSettings
-                        { charOrVarChar :: CharOrVarchar }
-                          deriving Show
+textSchema :: CharOrVarchar -> FieldSchema Text
 
 data CharOrVarchar = Char (Maybe Int)
                    | Varchar (Maybe Int)
@@ -165,8 +167,8 @@ so that we can only override the parts we're interested in.
 
 ```haskell
     tblFieldSettings = defTblFieldSettings
-                       & addressStateC . fieldSettings .~ TextFieldSettings (Char (Just 2))
-                       & addressZipC . fieldSettings .~ TextFieldSettings (Varchar (Just 5))
+                       & addressStateC . fieldSchema .~ textSchema (Char (Just 2))
+                       & addressZipC . fieldSchema .~ textSchema (Varchar (Just 5))
 ```
 
 This completes our `Table AddressT` instantiation.
