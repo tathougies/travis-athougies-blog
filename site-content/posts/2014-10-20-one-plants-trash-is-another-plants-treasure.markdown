@@ -1,5 +1,5 @@
 ---
-title: One Plant's Trash Is Another Plant's Treasure: Pondering the Use of Compost Tea as a Hydroponic Nutrient
+title: "One Plant's Trash Is Another Plant's Treasure: Pondering the Use of Compost Tea as a Hydroponic Nutrient"
 author: Travis Athougies
 tags: "hydroponics,sustainability"
 published: true
