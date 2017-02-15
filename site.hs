@@ -1,8 +1,9 @@
-{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
-import           Control.Applicative ((<$>), empty)
+{-# LANGUAGE OverloadedStrings, RecordWildCards, FlexibleContexts #-}
+import           Control.Applicative ((<$>), (<*>), empty)
 import           Control.Monad
 import           Control.Monad.Writer
 import           Data.Monoid (mappend, mempty)
+import           Data.Aeson
 import           Data.Ord
 import           Hakyll
 import           Hakyll.Core.Util.String
@@ -20,7 +21,7 @@ import           Data.Function
 import           Data.Maybe
 import           System.FilePath
 
-import           Text.Blaze.Html5 hiding (map)
+import           Text.Blaze.Html5 hiding (map, main)
 import           Text.Blaze.Html5.Attributes hiding (span)
 import           Text.Blaze.Html.Renderer.String
 import           Text.EditDistance
@@ -87,7 +88,7 @@ pandocMathCompiler' allPosts customTransform =
           in RawBlock (Format "html") (renderHtml raw)
         handleLargeQuotes x = x
 
-        interpostLinks (Link t (url, title))
+        interpostLinks (Link t _ (url, title))
             | "post:" `isPrefixOf` url = let postName = drop 5 url
                                              postURL = "/posts/" ++ postName ++ ".html"
                                          in if postName `S.member` allPostsSet -- take the trailing '/' off
@@ -95,7 +96,7 @@ pandocMathCompiler' allPosts customTransform =
                                             else error (concat ["Unknown post referenced: ", postName, "\nPerhaps you meant:\n", intercalate "\n" (map ("    - " ++) (suggestNames 5 postName allPostsFixed))])
             | "image:" `isPrefixOf` url = let imgName = drop 6 url
                                           in Link t ("/images/" ++ imgName, title)
-        interpostLinks (Image t (url, title))
+        interpostLinks (Image t _ (url, title))
             | "image:" `isPrefixOf` url = let imgName = drop 6 url
                                           in Image t ("/images/" ++ imgName, title)
         interpostLinks x = x
@@ -170,8 +171,9 @@ main = hakyllWith myHakyllConfig $ do
     posts <- map toFilePath <$> getMatches "posts/*"
     -- Project pages! :D
     projectIdentifiers <- getProjects
-    projects <- sortBy (comparing projectPriority) <$>
-                mapM (liftM mkProjectDescription . getMetadata) projectIdentifiers
+    projects <- sortBy (comparing projectPriority) .
+                mapMaybe (\x -> case x of { Success x -> Just x; _ -> Nothing }) <$>
+                mapM (fmap (fromJSON . Object) . getMetadata) projectIdentifiers
 
     let travisContext = listField "globalTags" tagCtx tagsAsItems `mappend`
                         listField "projects" projectAsItem (mapM makeItem projects) `mappend`
@@ -290,17 +292,16 @@ data ProjectDescription = ProjectDescription {
       projectGithub   :: Maybe String
     } deriving Show
 
-mkProjectDescription :: M.Map String String -> ProjectDescription
-mkProjectDescription metadata =
-    let Just projectTitle    = M.lookup "title"    metadata
-        Just projectSlug     = M.lookup "slug"     metadata
-        Just projectSummary  = M.lookup "summary"  metadata
-        Just projectLanguage = M.lookup "language" metadata
-        Just projectVersion  = M.lookup "version"  metadata
-        projectPriority      = read . fromJust $ M.lookup "priority" metadata
-        projectStatus        = M.lookup "status"   metadata
-        projectGithub        = M.lookup "github"   metadata
-    in ProjectDescription { .. }
+instance FromJSON ProjectDescription where
+    parseJSON = withObject "ProjectDescription" $ \v ->
+                ProjectDescription <$> v .: "title"
+                                   <*> v .: "slug"
+                                   <*> v .: "summary"
+                                   <*> v .: "language"
+                                   <*> v .:? "status"
+                                   <*> v .: "version"
+                                   <*> v .: "priority"
+                                   <*> v .:? "github"
 
 projectCtx :: ProjectDescription -> Context String
 projectCtx (ProjectDescription { .. }) =
