@@ -26,6 +26,7 @@ contentPaddingTopNarrow = miniHeaderHeight + 10
 contentPaddingLeftNarrow = 10
 contentPaddingRightNarrow = 10
 normalBodyPadding = 190
+miniHeaderHeight :: Num a => a
 miniHeaderHeight = 50
 
 siteMinWidth = headerWidth - headerRightSpace + contentMinWidth + contentPaddingLeft + normalBodyPadding * 2
