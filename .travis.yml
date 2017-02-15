@@ -1,17 +1,32 @@
-language: haskell
+sudo: false
+language: generic
+cache:
+  directories:
+    - $HOME/.stack
+    - $HOME/py
+addons:
+  apt:
+    packages:
+      - libgmp-dev
+      - s3cmd
+      - python-virtualenv
+
 before_install:
     - openssl aes-256-cbc -K $encrypted_20ea0b3ef7d9_key -iv $encrypted_20ea0b3ef7d9_iv -in s3cfg.enc -out s3cfg -d
     - mv s3cfg ~/.s3cfg
-    - sudo apt-get update
-install:
-    - sudo apt-get install s3cmd python-virtualenv
-    - virtualenv --system-site-packages py
-    - source py/bin/activate
+    - mkdir -p ~/.local/bin
+    - export PATH=$HOME/.local/bin:$PATH
+    - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+    - virtualenv --system-site-packages $HOME/py
+    - source $HOME/py/bin/activate
     - easy_install Pillow
     - python -c "from PIL import Image; print 'hello'"
-    - cabal install clay
-    - cabal install --max-backjumps=-1 --flags="-previewServer -watchServer"
-    - cd site-content
-script: travisblog build && travisblog deploy
+install:
+    - stack --no-terminal --install-ghc test --only-dependencies
+
+script:
+# Build the package, its tests, and its docs and run the tests
+    - stack --no-terminal test --haddock --no-haddock-deps
+    - stack exec travisblog build && stack exec travisblog deploy
 after_script:
     - cd ..
