@@ -7,6 +7,7 @@ import           Data.Aeson
 import           Data.Ord
 import           Hakyll
 import           Hakyll.Core.Util.String
+import           Hakyll.Core.Metadata
 
 import           Text.Pandoc.Options
 import           Text.Pandoc.Walk
@@ -88,17 +89,17 @@ pandocMathCompiler' allPosts customTransform =
           in RawBlock (Format "html") (renderHtml raw)
         handleLargeQuotes x = x
 
-        interpostLinks (Link t _ (url, title))
+        interpostLinks (Link t inlines (url, title))
             | "post:" `isPrefixOf` url = let postName = drop 5 url
                                              postURL = "/posts/" ++ postName ++ ".html"
                                          in if postName `S.member` allPostsSet -- take the trailing '/' off
-                                            then Link t (postURL, title)
+                                            then Link t inlines (postURL, title)
                                             else error (concat ["Unknown post referenced: ", postName, "\nPerhaps you meant:\n", intercalate "\n" (map ("    - " ++) (suggestNames 5 postName allPostsFixed))])
             | "image:" `isPrefixOf` url = let imgName = drop 6 url
-                                          in Link t ("/images/" ++ imgName, title)
-        interpostLinks (Image t _ (url, title))
+                                          in Link t inlines ("/images/" ++ imgName, title)
+        interpostLinks (Image t inlines (url, title))
             | "image:" `isPrefixOf` url = let imgName = drop 6 url
-                                          in Image t ("/images/" ++ imgName, title)
+                                          in Image t inlines ("/images/" ++ imgName, title)
         interpostLinks x = x
 
         collectImageAttributes inlines = filterM selectAttributes inlines
@@ -107,28 +108,29 @@ pandocMathCompiler' allPosts customTransform =
         selectAttributes (Strikeout [Str "ALIGNRIGHT"]) = tell (S.singleton ImageAlignRight) >> return False
         selectAttributes _ = return True
 
-        useThumbnails (Image caption target) = let (url, title) = target
-                                                   (urlFp, urlExt) = splitExtension url
-                                                   url' = addExtension (urlFp ++ "-small") urlExt
-                                                   url'' = if "/images/" `isPrefixOf` url' then url' else url
+        useThumbnails (Image caption inlines target) =
+            let (url, title) = target
+                (urlFp, urlExt) = splitExtension url
+                url' = addExtension (urlFp ++ "-small") urlExt
+                url'' = if "/images/" `isPrefixOf` url' then url' else url
 
-                                                   (caption', attributes) = runWriter (collectImageAttributes caption)
-                                                   compiledCaption = writeHtmlString writerOptions (Pandoc mempty [Plain caption'])
+                (caption', attributes) = runWriter (collectImageAttributes caption)
+                compiledCaption = writeHtmlString writerOptions (Pandoc mempty [Plain caption'])
 
-                                                   isCentered = ImageCentered   `S.member` attributes
-                                                   isFlow     = ImageFlow       `S.member` attributes
-                                                   isRight    = ImageAlignRight `S.member` attributes
+                isCentered = ImageCentered   `S.member` attributes
+                isFlow     = ImageFlow       `S.member` attributes
+                isRight    = ImageAlignRight `S.member` attributes
 
-                                                   htmlClasses = execWriter $
-                                                                 do when isCentered $ tell ["figure-centered"]
-                                                                    when isFlow     $ tell ["figure-flow"]
-                                                                    when isRight    $ tell ["figure-right"]
+                htmlClasses = execWriter $
+                              do when isCentered $ tell ["figure-centered"]
+                                 when isFlow     $ tell ["figure-flow"]
+                                 when isRight    $ tell ["figure-right"]
 
-                                                   raw = div ! class_ (fromString $ intercalate " " ("figure":htmlClasses)) $ do
-                                                           a ! href (fromString url) $ do
-                                                             img ! src (fromString url'') ! alt (fromString compiledCaption)
-                                                           p ! class_ "caption" $ preEscapedToHtml compiledCaption
-                                               in RawInline (Format "html") (renderHtml raw)
+                raw = div ! class_ (fromString $ intercalate " " ("figure":htmlClasses)) $ do
+                        a ! href (fromString url) $ do
+                          img ! src (fromString url'') ! alt (fromString compiledCaption)
+                        p ! class_ "caption" $ preEscapedToHtml compiledCaption
+            in RawInline (Format "html") (renderHtml raw)
         useThumbnails x = x
     in pandocCompilerWithTransform defaultHakyllReaderOptions writerOptions (generateThumbnailsAndPostLinks . customTransform)
 
@@ -358,7 +360,7 @@ getProjects = getMatches "projects/*.markdown"
 getTagsQuoted :: MonadMetadata m => Identifier -> m [String]
 getTagsQuoted identifier = do
     metadata <- getMetadata identifier
-    return $ maybe [] (map trim . splitAll "," . unQuote) $ M.lookup "tags" metadata
+    return $ maybe [] (map trim . splitAll "," . unQuote) $ lookupString "tags" metadata
 
 -- Takes a string possibly wrapped in qutoes and removes them
 unQuote :: String -> String
