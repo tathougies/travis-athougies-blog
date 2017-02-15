@@ -89,17 +89,17 @@ pandocMathCompiler' allPosts customTransform =
           in RawBlock (Format "html") (renderHtml raw)
         handleLargeQuotes x = x
 
-        interpostLinks (Link t inlines (url, title))
+        interpostLinks (Link attrs t (url, title))
             | "post:" `isPrefixOf` url = let postName = drop 5 url
                                              postURL = "/posts/" ++ postName ++ ".html"
                                          in if postName `S.member` allPostsSet -- take the trailing '/' off
-                                            then Link t inlines (postURL, title)
+                                            then Link attrs t (postURL, title)
                                             else error (concat ["Unknown post referenced: ", postName, "\nPerhaps you meant:\n", intercalate "\n" (map ("    - " ++) (suggestNames 5 postName allPostsFixed))])
             | "image:" `isPrefixOf` url = let imgName = drop 6 url
-                                          in Link t inlines ("/images/" ++ imgName, title)
-        interpostLinks (Image t inlines (url, title))
+                                          in Link attrs t ("/images/" ++ imgName, title)
+        interpostLinks (Image attrs t (url, title))
             | "image:" `isPrefixOf` url = let imgName = drop 6 url
-                                          in Image t inlines ("/images/" ++ imgName, title)
+                                          in Image attrs t ("/images/" ++ imgName, title)
         interpostLinks x = x
 
         collectImageAttributes inlines = filterM selectAttributes inlines
@@ -108,7 +108,7 @@ pandocMathCompiler' allPosts customTransform =
         selectAttributes (Strikeout [Str "ALIGNRIGHT"]) = tell (S.singleton ImageAlignRight) >> return False
         selectAttributes _ = return True
 
-        useThumbnails (Image caption inlines target) =
+        useThumbnails (Image attrs caption target) =
             let (url, title) = target
                 (urlFp, urlExt) = splitExtension url
                 url' = addExtension (urlFp ++ "-small") urlExt
@@ -328,7 +328,7 @@ projectAsItem =
 getMetadataMaybe f transform key _ item
     | key == f = do
        metadata <- getMetadata $ itemIdentifier item
-       maybe empty (return . StringField . transform) $ M.lookup f metadata
+       maybe empty (return . StringField . transform) $ lookupString f metadata
     | otherwise = empty
 
 headerImageField :: Context String
