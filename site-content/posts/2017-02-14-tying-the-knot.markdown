@@ -1,5 +1,5 @@
 ---
-title: Tying the knot: persistent graphs
+title: "Tying the knot: persistent graphs"
 author: Travis Athougies
 tags: "haskell"
 published: false
