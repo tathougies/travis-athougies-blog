@@ -5,3 +5,5 @@ flags:
   hakyll:
     previewserver: false
     watchserver: false
+extra-deps:
+  - hakyll-4.9.5.1
