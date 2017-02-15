@@ -280,7 +280,7 @@ main = putCss $ do
                   titleFamily
                   star # "#show-header" ? do
                     color white
-                    fontSize (px (miniHeaderHeight `P.div` 2))
+                    fontSize (px (miniHeaderHeight / 2))
                     width    (px (miniHeaderHeight `P.div` 2))
                     sym margin (px 7)
                     float floatRight
