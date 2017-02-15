@@ -167,7 +167,7 @@ main = hakyllWith myHakyllConfig $ do
 
     match "css/*.hs" $ do
         route   $ setExtension "css"
-        compile $ getResourceString >>= withItemBody (unixFilter "stack runghc --" [])
+        compile $ getResourceString >>= withItemBody (unixFilter "stack" ["runghc", "--"])
 
     tags <- buildTagsWith getTagsQuoted "posts/*" (fromCapture "tags/*.html")
     posts <- map toFilePath <$> getMatches "posts/*"
