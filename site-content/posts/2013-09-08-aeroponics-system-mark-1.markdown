@@ -1,7 +1,7 @@
 ---
 title: First Aeroponics Sprouts!
 author: Travis Athougies
-tags: hydroponics, sustainability
+tags: "hydroponics, sustainability"
 ---
 
 This past summer, my brother and I worked on a simple aeroponics system. Currently, we have five

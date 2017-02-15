@@ -1,7 +1,7 @@
 ---
 title: Measurements Every Hydroponics Grower Should Take
 author: Travis Athougies
-tags: hydroponics, sustainability
+tags: "hydroponics, sustainability"
 ---
 
 As I've learned from my hydroponics grows, making sure you keep good records is extremely

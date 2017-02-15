@@ -1,7 +1,7 @@
 ---
-title: Overwatering: A Lesson for New Hydroponic Growers
+title: "Overwatering: A Lesson for New Hydroponic Growers"
 author: Travis Athougies
-tags: hydroponics, sustainability
+tags: "hydroponics, sustainability"
 ---
 
 I recently set up a new flood and drain hydro system to start growing some things right outside my dorm room. Initially, I had a full-blown bell siphon which took a few weeks to perfect, but worked very reliably afterwards. I had about two square feet of growing space, and even set up a supplementary LED grow light to provide additional light.

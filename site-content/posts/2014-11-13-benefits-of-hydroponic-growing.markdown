@@ -1,9 +1,9 @@
 ---
 title: 3 Disadvantages of Traditional Agriculture &mdash; And How Hydroponics Fixes Them
 author: Travis Athougies
-tags: hydroponics,sustainability
-header-image: image:headings/hydroponic-onions-nasa.jpg
-header-image-caption: Although hydroponics won't totally replace our food supply anytime soon, it holds many advantages &mdash; both economic and environmental &mdash; over traditional methods.
+tags: "hydroponics,sustainability"
+header-image: "image:headings/hydroponic-onions-nasa.jpg"
+header-image-caption: "Although hydroponics won't totally replace our food supply anytime soon, it holds many advantages &mdash; both economic and environmental &mdash; over traditional methods."
 ---
 
 When I was in kindergarten, my class took a trip to a local farm.

@@ -5,14 +5,6 @@ tags: "haskell, databases"
 published: false
 ---
 
-
----
-title: Functional databases and zippers
-author: Travis Athougies
-tags: haskell, databases
-published: false
----
-
 Zippers are a transformation of an arbitrary algebraic data structure that enable O(1) updates to deeply nested structures even in purely functional languages.
 
 In his articles on the subject, Oleg Kiselyov [lays the ground work](http://okmij.org/ftp/Haskell/Zipper2.lhs) for using zippers to enable concurrent, transactionalized access to a persistent, algebraic data structure.

@@ -1,7 +1,7 @@
 ---
 title: New NFT Hydroponics System
 author: Travis Athougies
-tags: hydroponics,gardening
+tags: "hydroponics,gardening"
 ---
 
 This is my promised blog post on my new, portable hydroponics system. This is an NFT system

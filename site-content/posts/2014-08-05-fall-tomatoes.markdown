@@ -1,7 +1,7 @@
 ---
 title: Fall tomatoes here we come!
 author: Travis Athougies
-tags: gardening, hydroponics
+tags: "gardening, hydroponics"
 ---
 
 Now that I've finished moving, I'm once again ready to start growing. Luckily, I'm in California
