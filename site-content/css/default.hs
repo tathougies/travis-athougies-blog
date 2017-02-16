@@ -281,7 +281,7 @@ main = putCss $ do
                   star # "#show-header" ? do
                     color white
                     fontSize (px (miniHeaderHeight / 2))
-                    width    (px (miniHeaderHeight `P.div` 2))
+                    width    (px (miniHeaderHeight / 2))
                     sym margin (px 7)
                     float floatRight
                     "cursor" -: "pointer"
