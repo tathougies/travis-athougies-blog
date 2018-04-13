@@ -208,11 +208,12 @@ choose :: [a] -> (a -> b) -> Combinatorial a
 choose d f = fmap f (domain d)
 ```
 
-So, in other words, `Combinatorial` needs to have only two fundamental operations.
+So, in other words, `Combinatorial` needs to have only three fundamental operations.
 
 ```haskell
 domain :: [a] -> Combinatorial a
 fmap :: (a -> b) -> Combinatorial a -> Combinatorial b
+join :: Combinatorial (Combinatorial a) -> Combinatorial a
 ```
 
 Let's get real
@@ -241,9 +242,18 @@ domain :: [a] -> [a]
 domain = id
 ```
 
-and `fmap` is from the standard `Functor` instance for list.
+and `fmap` is from the standard `Functor` instance for list and `join` is from
+the standard `Monad` instance.
 
-Going back to our original problem, we can express it using lists.
+```haskell
+fmap :: (a -> b) -> [a] -> [b]
+fmap = map
+
+join :: [ [a] ] -> [a]
+join = concat
+```
+
+Going back to our original problem, we can express it using lists:
 
 > simpleOpt :: [Double]
 > simpleOpt =
@@ -275,7 +285,7 @@ our objective function
 [4.0,5.0,5.0,6.0]
 ```
 
-Evaluating every soluton is the most straightforward way to solve these
+Evaluating every solution is the most straightforward way to solve these
 problems, but it quickly becomes intractable as the problems get larger.
 
 For example, the [traveling salesman
@@ -607,7 +617,7 @@ Running it gives (results will obviously vary due to randomness):
 488.0
 ```
 
-This is certainly better than the naive solution of visiting every city in order:
+This is certainly better than the naïve solution of visiting every city in order:
 
 ```haskell
 *Main> head (tsp allCities distFunc)
