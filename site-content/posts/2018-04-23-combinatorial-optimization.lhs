@@ -13,7 +13,9 @@ Monads offer us a way to abstract over the notion of variable assignment via the
 bind (`>>=`) operator, and thus form a natural way to express an optimization
 problem in Haskell.
 
-This file is Literate Haskell, so we'll need some imports and one extension.
+This file is [Literate
+Haskell](https://github.com/tathougies/travis-athougies-blog/blob/master/site-content/posts/2018-04-23-combinatorial-optimization.lhs),
+so we'll need some imports and one extension.
 
 > {-# LANGUAGE DeriveFunctor #-}
 > {-# LANGUAGE FlexibleContexts #-}
