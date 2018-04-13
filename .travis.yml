@@ -23,11 +23,11 @@ before_install:
     - python -c "from PIL import Image; print 'hello'"
     - sudo apt-get install graphviz
 install:
-    - stack --no-terminal --install-ghc test --only-dependencies -j1
+    - stack --no-terminal --only-dependencies
 
 script:
 # Build the package, its tests, and its docs and run the tests
-    - stack --no-terminal test --haddock --no-haddock-deps
+    - stack --no-terminal test
     - cd site-content
     - stack runghc -- css/default.hs
     - stack exec travisblog build && stack exec travisblog deploy
