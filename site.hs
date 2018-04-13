@@ -136,7 +136,7 @@ pandocMathCompiler' allPosts customTransform =
     in pandocCompilerWithTransform defaultHakyllReaderOptions writerOptions (generateThumbnailsAndPostLinks . customTransform)
 
 myHakyllConfig = defaultConfiguration {
-                   deployCommand = "s3cmd sync --acl-public --delete-removed ./_site/ s3://travis.athougies.net/"
+                   deployCommand = "s3cmd sync --acl-public --delete-removed ./_site/ s3://travis.athougies.net/ --exclude haddocks/*"
                  }
 
 thumbnailMaxSize = 200

@@ -29,7 +29,7 @@ In the mathematical notation above, our $f$ takes $n$ arguments. In Haskell,
 functions only take one argument and return one value. We can achieve
 higher-arity functions by writing functions that return functions.
 
-We can extend this this concept to our optimization problems. We'll restrict
+We can extend this concept to our optimization problems. We'll restrict
 each optimization problem to optimize over only one variable:
 
 \\[
