@@ -39,7 +39,7 @@ plainLinks =
 
 narrowW = query all [Mq.maxWidth (px siteMinWidth)]
 normalW = query all [Mq.minWidth (px siteMinWidth)]
-figureShadow = insetBoxShadow    inset 0 0 (px 10) (setA 64 gray)
+figureShadow = pure ()
 
 -- Related speciically to projects
 projects = do
@@ -181,7 +181,7 @@ main = putCss $ do
       sym margin (px 0)
       marginBottom (px 10)
     div # ".figure" ? do
-      figureShadow
+--      figureShadow
       sym padding       (px 10)
       border            solid (px 1) travisLightGray
       sym margin        (px 5)

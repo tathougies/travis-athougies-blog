@@ -5,9 +5,13 @@ tags: "haskell, beam"
 published: true
 ---
 
+In the [last tutorial](post:2016-01-22-beam-tutorial-part-2) in the
+sequence, we saw how to create and query our first relation. In this
+tutorial, we're going to add the remaining tables into our database
+and write some more complicated queries on them to explore more of
+beam's features.
 
-
-In the [last tutorial](post:2016-01-22-beam-tutorial-part-2) in the sequence, we saw how to create and query our first relation. In this tutorial, we're going to add the remaining tables into our database and write some more complicated queries on them to explore more of beam's features.
+Author's note: This has been superseded by the [Beam manual](https://tathougies.github.io/beam).
 
 ## Where we left off
 

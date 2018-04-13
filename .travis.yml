@@ -21,6 +21,7 @@ before_install:
     - source $HOME/py/bin/activate
     - easy_install Pillow
     - python -c "from PIL import Image; print 'hello'"
+    - sudo apt-get install graphviz
 install:
     - stack --no-terminal --install-ghc test --only-dependencies -j1
 

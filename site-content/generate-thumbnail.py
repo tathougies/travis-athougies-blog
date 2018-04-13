@@ -29,4 +29,6 @@ elif orientation == 6:
 elif orientation == 8:
     img = img.rotate(90)
 
-img.save(sys.stdout, oimg.format)
+output = StringIO.StringIO()
+img.save(output, oimg.format)
+sys.stdout.write(output.getvalue())

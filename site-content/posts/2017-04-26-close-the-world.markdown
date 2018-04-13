@@ -50,7 +50,7 @@ We can define a function
 
 ```haskell
 only :: forall a. Typeable a => [MyDynamic] -> [a]
-only = mapMaybe cast
+only = mapMaybe (\(MyDynamic x) -> cast x)
 ```
 
 Now, we can ask GHC for only the `Int` values in `myList`

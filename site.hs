@@ -15,6 +15,7 @@ import           Text.Pandoc
 
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.Text as T
 import           Data.List hiding (span)
 import           Data.Ord
 import           Data.String
@@ -52,9 +53,9 @@ suggestNames max name names = take max sortedSuggestions
 --------------------------------------------------------------------------------
 pandocMathCompiler' allPosts customTransform =
     let mathExtensions = [Ext_tex_math_dollars, Ext_tex_math_double_backslash,
-                          Ext_latex_macros, Ext_implicit_figures]
+                          Ext_latex_macros, Ext_implicit_figures, Ext_smart ]
         defaultExtensions = writerExtensions defaultHakyllWriterOptions
-        newExtensions = foldr S.insert defaultExtensions mathExtensions
+        newExtensions =  defaultExtensions `mappend` pandocExtensions `mappend` extensionsFromList mathExtensions
         writerOptions = defaultHakyllWriterOptions {
                           writerExtensions = newExtensions,
                           writerHTMLMathMethod = MathJax ""
@@ -80,8 +81,8 @@ pandocMathCompiler' allPosts customTransform =
                               Para (_:x):xs -> Plain x:xs
                               _             -> afterSource
 
-              compiledContent = writeHtmlString writerOptions (Pandoc mempty beforeSource)
-              compiledSource = writeHtmlString writerOptions (Pandoc mempty fixedSource)
+              Right compiledContent = runPure $ writeHtml5String writerOptions (Pandoc mempty beforeSource)
+              Right compiledSource  = runPure $ writeHtml5String writerOptions (Pandoc mempty fixedSource)
 
               raw = div ! class_ "large-quote" $ do
                 span ! class_ "quote-content" $ preEscapedToHtml compiledContent
@@ -112,10 +113,10 @@ pandocMathCompiler' allPosts customTransform =
             let (url, title) = target
                 (urlFp, urlExt) = splitExtension url
                 url' = addExtension (urlFp ++ "-small") urlExt
-                url'' = if "/images/" `isPrefixOf` url' then url' else url
+                url'' = if "/images/" `isPrefixOf` url' && urlExt `elem` [ ".jpg", ".jpeg" ] then url' else url
 
                 (caption', attributes) = runWriter (collectImageAttributes caption)
-                compiledCaption = writeHtmlString writerOptions (Pandoc mempty [Plain caption'])
+                Right compiledCaption = runPure (writeHtml5String writerOptions (Pandoc mempty [Plain caption']))
 
                 isCentered = ImageCentered   `S.member` attributes
                 isFlow     = ImageFlow       `S.member` attributes
@@ -128,7 +129,7 @@ pandocMathCompiler' allPosts customTransform =
 
                 raw = div ! class_ (fromString $ intercalate " " ("figure":htmlClasses)) $ do
                         a ! href (fromString url) $ do
-                          img ! src (fromString url'') ! alt (fromString compiledCaption)
+                          img ! src (fromString url'') ! alt (fromString (T.unpack compiledCaption))
                         p ! class_ "caption" $ preEscapedToHtml compiledCaption
             in RawInline (Format "html") (renderHtml raw)
         useThumbnails x = x
@@ -147,11 +148,11 @@ main = hakyllWith myHakyllConfig $ do
       route idRoute
       compile copyFileCompiler
 
-    match ("images/**" .&&. complement "images/stock/**") $ do
+    match ("images/**" .&&. complement "images/stock/**" .&&. complement "images/dot/**.dot") $ do
         route   idRoute
         compile $ do getResourceLBS >>= withItemBody (unixFilterLBS "python" ["./generate-thumbnail.py", show imageMaxSize])
 
-    match ("images/**" .&&. complement "images/stock/**") $ version "small" $ do
+    match ("images/**" .&&. complement "images/stock/**" .&&. complement "images/dot/**.dot") $ version "small" $ do
       route $ customRoute $ \i -> let (path, ext) = splitExtension $ toFilePath i
                                       fp = addExtension (path ++ "-small") ext
                                   in fp
@@ -160,6 +161,11 @@ main = hakyllWith myHakyllConfig $ do
     match "images/stock/**" $ do
       route idRoute
       compile copyFileCompiler
+
+    -- Dot images
+    match "images/dot/**.dot" $ do
+        route   $ setExtension "png"
+        compile $ getResourceLBS >>= traverse (unixFilterLBS "dot" ["-Tpng"])
 
     match "css/*.css" $ do
         route   idRoute
@@ -337,7 +343,7 @@ headerImageField = headerImageF `mappend` headerImageCaptionF
         headerImageCaptionF = Context (getMetadataMaybe "header-image-caption" Prelude.id)
 
         mkImgLink link
-          | "image:" `isPrefixOf` link = "/images/" ++ drop 6 link
+          | Just link' <- stripPrefix "image:" link = "/images/" ++ link'
           | otherwise = link
 
 postCtx :: Context String

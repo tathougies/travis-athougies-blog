@@ -5,13 +5,13 @@ tags: "haskell, beam"
 published: true
 ---
 
+This is the second part in my tutorial on the beam database library. This
+tutorial assumes you've read through the [first
+tutorial](post:2016-01-21-beam-tutorial-1) already. A literate haskell version
+of this exact tutorial can be found on
+[GitHub](https://github.com/tathougies/beam/blob/master/Doc/02-NextSteps.lhs).
 
-
-
-
-
-
-This is the second part in my tutorial on the beam database library. This tutorial assumes you've read through the [first tutorial](post:2016-01-21-beam-tutorial-1) already. A literate haskell version of this exact tutorial can be found on [GitHub](https://github.com/tathougies/beam/blob/master/Doc/02-NextSteps.lhs).
+Author's note: This has been superseded by the [Beam manual](https://tathougies.github.io/beam).
 
 ## Introduction
 
