@@ -23,7 +23,7 @@ before_install:
     - python -c "from PIL import Image; print 'hello'"
     - sudo apt-get install graphviz
 install:
-    - stack --no-terminal --only-dependencies --fast
+    - stack --no-terminal --only-dependencies --fast install
 
 script:
 # Build the package, its tests, and its docs and run the tests
