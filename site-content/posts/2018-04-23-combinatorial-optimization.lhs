@@ -197,6 +197,10 @@ into
 With that in place, we can actually get rid of the second argument in
 `choose`. Let's define a new combinator, called `domain`.
 
+```haskell
+domain :: [a] -> Combinatorial a
+```
+
 Now we can write `choose` in terms of `domain` and `fmap`.
 
 ```haskell
@@ -262,9 +266,9 @@ Main*> minimum simpleOpt
 4.0
 ```
 
-The way this works is that lists cause us to consider every single solution. If
-we print out the value of `simpleOpt`, we'll see that it is a list containing
-every possible outcome of our objective function
+The list monad causes us to consider every solution. If we print out the value
+of `simpleOpt`, we'll see that it is a list containing every possible outcome of
+our objective function
 
 ```console
 *Main> simpleOpt
@@ -664,16 +668,17 @@ lists as our `Combinatorial` monad let us evaluate an optimization problem by
 examining every possible value of the objective function. We saw that our own
 custom `Combinatorial` monad allowed us to think of the set of solutions as a
 tree which can be searched through lazily. Finally, we used simulated annealing
-to search through the tree to achieve good enough optimizations of arbitrary problems.q
+to search through the tree to achieve good enough optimizations of arbitrary
+problems.
 
 Our annealing function is not limited to traveling salesman problems. We can
 encode any NP-complete problem where we can form an appropriate optimization
-metric. This is not just of theoretical significance. These problems came up
-daily. For example, database engines face the issue of join ordering for optimal
-query performance. Our little framework provides a way to describe these
-problems, and then to evaluate them fully when the search space is small or use
-an appropriate search method when they become intractable. This is similar to
-how RDBMSes like PostgreSQL optimize joins.
+metric. This is not just of theoretical significance. Database engines, for
+example, face the issue of join ordering for optimal query performance. Our
+little framework provides a way to describe these problems, and then to evaluate
+them fully when the search space is small or use an appropriate search method
+when they become intractable. This is similar to how RDBMSes like PostgreSQL
+optimize joins.
 
 Because our tree structure comes with monadic operations, we don't need to worry
 about coming up with specific representations of these problems, as libraries in
