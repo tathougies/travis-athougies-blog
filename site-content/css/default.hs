@@ -221,6 +221,11 @@ main = putCss $ do
                         textAlign     justify
                         "last-child" & do
                              marginBottom (px 0))
+
+    forM_ [ul, ol] $ \el ->
+      el ? (forM_ [ul, ol] $ \el ->
+               el ? marginTop (em 1))
+
     h1 ? do
       normalW $ do bodyFamily
                    fontWeight normal

@@ -53,7 +53,7 @@ suggestNames max name names = take max sortedSuggestions
 --------------------------------------------------------------------------------
 pandocMathCompiler' allPosts customTransform =
     let mathExtensions = [Ext_tex_math_dollars, Ext_tex_math_double_backslash,
-                          Ext_latex_macros, Ext_implicit_figures, Ext_smart ]
+                          Ext_latex_macros, Ext_implicit_figures, Ext_smart, Ext_footnotes ]
         defaultExtensions = writerExtensions defaultHakyllWriterOptions
         newExtensions =  defaultExtensions `mappend` pandocExtensions `mappend` extensionsFromList mathExtensions
         writerOptions = defaultHakyllWriterOptions {
