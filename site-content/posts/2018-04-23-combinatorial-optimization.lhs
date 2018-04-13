@@ -16,7 +16,7 @@ In general, a combinatorial optimization problem has the form:
     & \\underset{v_1,v_2, \\ldots v_n}{\\text{minimize}}
     & & f(v_1, v_2, \\ldots v_n) \\\\
     & \\text{subject to}
-    & & v_1 \\in D_1, v_2 \\in D_2, \\ldots v_3 \\in D_3
+    & & v_1 \\in D_1, v_2 \\in D_2, \\ldots v_n \\in D_n
 \\end{aligned}
 \\]
 
