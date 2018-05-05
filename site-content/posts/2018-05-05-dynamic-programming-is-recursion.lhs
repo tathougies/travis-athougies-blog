@@ -56,9 +56,10 @@ backwards, we'll iterate forwards.
 These implementations both have a runtime of $O\left( n 2^m \right)$
 given inputs of length $m$ and $n$.
 
-This post is Literate Haskell. You can download this [file]() and load
-it into GHC without modification. If we evaluate `naiveLCS` with our
-first example, we get the answer fairly quickly:
+This post is Literate Haskell. You can download this
+[file](https://github.com/tathougies/travis-athougies-blog/blob/master/site-content/posts/2018-05-05-dynamic-programming-is-recursion.lhs)
+and load it into GHC without modification. If we evaluate `naiveLCS` with
+our first example, we get the answer fairly quickly:
 
 ```console
 *Main> naiveLCS "babba" "abca"
