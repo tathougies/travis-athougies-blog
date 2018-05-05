@@ -1,0 +1,18 @@
+graph {
+x1 [label="", color="red"]; x2 [label=""];
+so [label="simpleOpt"];
+so -- x1 [label="x=1", color="red"];
+so -- x2 [label="x=2"];
+
+x1y3 [label="4", color="red"];
+x1 -- x1y3 [label="y=3", color="red"];
+
+x1y4 [label="5"];
+x1 -- x1y4 [label="y=4"];
+
+x2y3 [label="5"];
+x2 -- x2y3 [label="y=3"];
+
+x2y4 [label="6"];
+x2 -- x2y4 [label="y=4"];
+}

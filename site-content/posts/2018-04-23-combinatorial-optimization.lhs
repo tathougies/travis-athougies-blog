@@ -223,7 +223,7 @@ Enough theory. Let's actually do this.
 
 This file is [Literate
 Haskell](https://github.com/tathougies/travis-athougies-blog/blob/master/site-content/posts/2018-04-23-combinatorial-optimization.lhs),
-so we'll need some imports and two extqensions.
+so we'll need some imports and two extensions.
 
 > {-# LANGUAGE DeriveFunctor #-}
 > {-# LANGUAGE FlexibleContexts #-}

@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards, FlexibleContexts #-}
-import           Control.Applicative ((<$>), (<*>), empty)
+import           Control.Applicative ((<$>), (<*>), (<|>), empty)
 import           Control.Monad
 import           Control.Monad.Writer
 import           Data.Monoid (mappend, mempty)
@@ -43,6 +43,7 @@ maxPostCount = 5
 data ImageAttribute = ImageCentered
                     | ImageFlow
                     | ImageAlignRight
+                    | ImageWidth String
                       deriving (Eq, Ord, Show, Read)
 
 suggestNames max name names = take max sortedSuggestions
@@ -107,6 +108,7 @@ pandocMathCompiler' allPosts customTransform =
         selectAttributes (Strikeout [Str "CENTERED"]) = tell (S.singleton ImageCentered) >> return False
         selectAttributes (Strikeout [Str "FLOWED"]) = tell (S.singleton ImageFlow) >> return False
         selectAttributes (Strikeout [Str "ALIGNRIGHT"]) = tell (S.singleton ImageAlignRight) >> return False
+        selectAttributes (Strikeout [Str ('W':'I':'D':'T':'H':':':w)]) = tell (S.singleton (ImageWidth w)) >> return False
         selectAttributes _ = return True
 
         useThumbnails (Image attrs caption target) =
@@ -127,9 +129,14 @@ pandocMathCompiler' allPosts customTransform =
                                  when isFlow     $ tell ["figure-flow"]
                                  when isRight    $ tell ["figure-right"]
 
+                widthA = Prelude.head
+                           (do { ImageWidth w <- S.toList attributes
+                               ; pure w } <|> pure "auto")
+
                 raw = div ! class_ (fromString $ intercalate " " ("figure":htmlClasses)) $ do
                         a ! href (fromString url) $ do
                           img ! src (fromString url'') ! alt (fromString (T.unpack compiledCaption))
+                              ! width (fromString widthA)
                         p ! class_ "caption" $ preEscapedToHtml compiledCaption
             in RawInline (Format "html") (renderHtml raw)
         useThumbnails x = x

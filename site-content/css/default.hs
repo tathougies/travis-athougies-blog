@@ -188,6 +188,7 @@ main = putCss $ do
       width             (px 200)
       textAlign         (alignSide sideCenter)
       ".figure-centered" & do
+        border          solid (px 0) transparent
         marginLeft      auto
         marginRight     auto
         width           auto
@@ -269,7 +270,6 @@ main = putCss $ do
 
     pre ? do
       overflowX       auto
-      width           (pct 100)
       marginLeft      (px 20)
       sym padding     (em 1)
       lineHeight      (em 1.2)

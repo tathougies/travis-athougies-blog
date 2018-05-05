@@ -1,0 +1,35 @@
+graph {
+so [label="exampleTsp"];
+
+x1 [ label="", color="red" ];
+x2 [ label=".." ];
+x3 [ label=".." ];
+x4 [ label="..." ];
+
+so -- x1 [label="nextCity = 0", color="red"];
+so -- x2 [label="nextCity = 1"];
+so -- x3 [label="nextCity = 2"];
+so -- x4 [label="nextCity = .."];
+
+ell2 [ label=".."];
+ell3 [ label=".."];
+x2 -- ell2;
+x3 -- ell3;
+
+x11 [  label="..", color="red"];
+x12 [  label=".."];
+ell4 [ label=".."];
+x1 -- x11 [label="nextCity = 1", color="red"];
+x1 -- x12 [label="nextCity = 2"];
+x1 -- ell4 [label="nextCity = .."];
+
+sol0 [ label="[0,1,2,..,14]", color="red" ];
+sol1 [ label="[0,2,1,..,14]" ];
+ell5 [ label=".." ];
+x11 -- sol0 [label = "..", color="red"];
+x11 -- ell5;
+
+ell6 [ label=".." ];
+x12 -- sol1 [label=".."];
+x12 -- ell6;
+}

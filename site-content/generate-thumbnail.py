@@ -14,7 +14,7 @@ oimg = img
 maxSize = int(maxSize)
 img.thumbnail((maxSize, maxSize))
 
-exif = img._getexif()
+exif = img._getexif() if hasattr(img, '_getexif') else None
 if exif is None:
     orientation = 0
 else:
