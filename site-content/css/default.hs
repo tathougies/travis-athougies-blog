@@ -196,6 +196,8 @@ main = putCss $ do
                  height auto
                  maxWidth none
                  maxHeight none
+        ".caption" ? do
+           display      none
       ".figure-flow" & do
         marginRight     (em 2)
         float           floatLeft
