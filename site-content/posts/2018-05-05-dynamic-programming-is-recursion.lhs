@@ -12,7 +12,7 @@ For those of you unfamiliar, [dynamic
 programming](https://en.wikipedia.org/wiki/Dynamic_programming) is an
 algorithmic technique where you solve a problem by building up some
 kind of intermediate data structure to reduce redundant work. This can
-sometimes turn exponential-time algoritms into polynomial-time ones.
+sometimes turn exponential-time algorithms into polynomial-time ones.
 
 One classical example of a problem requiring dynamic programming for
 manageable run-times is the longest common subsequence problem. This
@@ -25,7 +25,7 @@ from the longest common substring problem (a trivially polynomial
 algorithm) in that the items in $L$ need not be contiguous in $S$.
 
 For example, the longest common subsequence of `"babba"` and `"abca"`
-Fis `"aba"`, so our algorithm should return 3.
+is `"aba"`, so our algorithm should return 3.
 
 In an imperative programming language like C, a naïve programming
 solution might be [^1].
@@ -58,7 +58,7 @@ given inputs of length $m$ and $n$.
 
 This post is Literate Haskell. You can download this
 [file](https://github.com/tathougies/travis-athougies-blog/blob/master/site-content/posts/2018-05-05-dynamic-programming-is-recursion.lhs)
-and load it into GHC without modification. If we evaluate `naiveLCS` with
+and load it into GHCi without modification. If we evaluate `naiveLCS` with
 our first example, we get the answer fairly quickly:
 
 ```console
@@ -130,7 +130,7 @@ instructions on how to mutate bits.
 
 However, this conclusion is premature. Dynamic programming is no more
 difficult to implement in Haskell than in C. In fact, dynamic
-progamming in Haskell seems trivially simple, because it takes the
+programming in Haskell seems trivially simple, because it takes the
 form of regular old Haskell recursion.
 
 Mutation is everywhere
@@ -159,7 +159,9 @@ the same unevaluated thunk `f a b c`. When `x` is demanded once in
 pointed to by `x` simply use the cached value. This is demonstrated in
 the figure below.
 
-![~~CENTERED~~](image:mmm/heaplayoutf.png)
+![~~CENTERED~~ The heap layout of the expression `let x = f a b c in g
+ x x x`. Notice how each occurrence of `x` in the invocation of `g`
+ points to the same thunk for `f`.](image:mmm/heaplayoutf.png)
 
 This feature is called 'sharing'. You may think this sounds
 suspiciously like mutation in a pure language, and you'd be absolutely
@@ -171,7 +173,7 @@ changes its semantics. This is known as *referential transparency*.
 
 We can use this technique to cache values. A common example of this is
 the one-line Fibonacci many Haskell beginners encounter. Firstly, the
-naive fibonacci function. This has complexity $O(\phi^n)$, where
+naive Fibonacci function. This has complexity $O(\phi^n)$, where
 $\phi$ is the golden ratio.
 
 > naiveFib :: Int -> Int
@@ -179,7 +181,7 @@ $\phi$ is the golden ratio.
 > naiveFib 1 = 1
 > naiveFib n = naiveFib (n - 1) * naiveFib (n - 2)
 
-The one-line solution uses a lazy list to represent all fibonacci
+The one-line solution uses a lazy list to represent all Fibonacci
 numbers, and then list lookups to compute the $n^{\text{th}}$
 number.
 
@@ -190,7 +192,10 @@ number.
 Note that, aside from the first two entries, each entry depends on the
 values of the entry *computed within the list*, as illustrated below.
 
-![~~CENTERED~~](image:mmm/fibdeps.png)
+![~~CENTERED~~ Dependencies for the fibonnaci 'one-liner'. When we
+ evaluate `fibs !! 4`, we get a reference to a thunk that depends on
+ other thunks in the `fibs` list. This causes each thunk to only be
+ computed once.](image:mmm/fibdeps.png)
 
 When we compute `fibs !! 4`, we get a reference for a thunk that has
 yet to be computed. When we force the value, each referenced cell is
@@ -201,7 +206,7 @@ Finding subsequences
 ----
 
 We can apply the exact same optimization to the
-longest-common-subequence as the fibonacci problem. The data flow is a
+longest-common-subequence as the Fibonacci problem. The data flow is a
 bit harder to visualize, because the LCS problem uses a
 'two-dimensional' data structure to hold unevaluated thunks.
 
@@ -223,7 +228,12 @@ illustrated in the diagram below. Notice also how each column
 corresponds to a specific index into the second string, and each row
 to a specific index in the first.
 
-![~~CENTERED~~  ~~WIDTH:400px~~](image:mmm/tbldeps.png)
+![~~CENTERED~~ ~~WIDTH:400px~~ The table built up by the imperative
+ algorithm for the inputs "nematode knowledge" and "empty bottle". The
+ arrows point to cells that were necessary to compute the cell they
+ originate from. Dark arrows represent dependencies actually used to
+ compute this cell. Red boxes are cells where we added one because the
+ corresponding characters matched.](image:mmm/tbldeps.png)
 
 With that in mind, we can construct a function to construct a row in
 this table, given the row directly above and the character in the
@@ -296,7 +306,7 @@ Now, if we run `dpLCS` on our little problem, we get the answer instantaneously.
 ```
 
 
-For clarity's sake, the complete implentation of `dpLCS` is given below:
+For clarity's sake, the complete implementation of `dpLCS` is given below:
 
 
 ```haskell
