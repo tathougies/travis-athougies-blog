@@ -1,4 +1,8 @@
+nix:
+  enable: true
 packages:
   - .
-resolver: lts-10.3
+resolver:  nightly-2020-01-21
+extra-deps:
+  - hakyll-4.13.4.0
 

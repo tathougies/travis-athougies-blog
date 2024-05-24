@@ -7,11 +7,12 @@ published: false
 
 Haskell data structures are *persistent*. That means you cannot update the
 fields of a record 'in-place'. Instead, you modify a record by constructing a
-*new* version of that record with a field changed. This works well for common
-data structures such as simple sum or record types or nested data types. It also
-works very well for recursive data structures, such as lists, trees, sequences,
-tries, and most of the other 'container' data structures we're all familiar
-with.
+*new* version of that record with a field changed.
+
+This works well for common data structures such as simple sum or record types or
+nested data types. It also works very well for recursive data structures, such
+as lists, trees, sequences, tries, and most of the other 'container' data
+structures we're all familiar with.
 
 Under the hood, these data structures are represented as pointers in the same
 manner you would expect in a more 'traditional' language like C. However, since
@@ -151,7 +152,7 @@ We've lost quite a bit of data with this approach. For example, we've lost any
 sort of sense of which direction each edge is leading. Consider, the context of
 B in the final graph.
 
-```
+```haskell
 let bContext = ([((), aId), ((), cId), ((), eId)], 200, 1, [((), aId), ((), cId), ((), eId)])
 ```
 
@@ -236,4 +237,19 @@ special way.
 ```haskell
 type GridPoint x = GridPointF x (Fix (GridPointF x))
 ```
+
+Where `Fix` is a somewhat odd looking `newtype`.
+
+```haskell
+newtype Fix f = Fix (f (Fix f))
+```
+
+Let's visualize what this looks like in terms of objects and pointers. Whereas
+our initial grid may have looked like this.
+
+Our `GridPointF` grid conceptually looks like this.
+
+However, due to the magic of `newtype`, in reality the `Fix` constructor incurs
+no runtime overhead, so the pointer diagrams are identical.
+
 
