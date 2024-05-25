@@ -1,8 +1,0 @@
-nix:
-  enable: true
-packages:
-  - .
-resolver:  nightly-2020-01-21
-extra-deps:
-  - hakyll-4.13.4.0
-
