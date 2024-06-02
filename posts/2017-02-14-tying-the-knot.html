@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -110,94 +116,178 @@
 
 
 <div id="post">
-<p>Haskell data structures are <em>persistent</em>. That means you cannot update the fields of a record ‘in-place’. Instead, you modify a record by constructing a <em>new</em> version of that record with a field changed. This works well for common data structures such as simple sum or record types or nested data types. It also works very well for recursive data structures, such as lists, trees, sequences, tries, and most of the other ‘container’ data structures we’re all familiar with.</p>
-<p>Under the hood, these data structures are represented as pointers in the same manner you would expect in a more ‘traditional’ language like C. However, since Haskell will never update a pointer in-place, inserting a node into a tree usually involves reconstructing the <em>spine</em> of the data structure, as illustrated below, where the spine of the updated node is illustrated in red. For lists, modifying the <em>n</em>th element involves constructing the entirety of the list up to that element.</p>
-<p>Notice that in both our examples of updating trees and lists, we end up with pointers to two trees and two lists – a new version and an old version. This behavior is very convenient for reasoning and concurrency purposes, and, for the most part, GHC can perform these updates efficiently.</p>
-<p>Notice also that for both trees and lists, it is indeed possible to construct a new structure by only updating nodes along the path between the root and the target node. Not all data structures have this property. For example, graphs are a common data structure that do not meet this property.</p>
+<p>Haskell data structures are <em>persistent</em>. That means you cannot update the
+fields of a record ‘in-place’. Instead, you modify a record by constructing a
+<em>new</em> version of that record with a field changed.</p>
+<p>This works well for common data structures such as simple sum or record types or
+nested data types. It also works very well for recursive data structures, such
+as lists, trees, sequences, tries, and most of the other ‘container’ data
+structures we’re all familiar with.</p>
+<p>Under the hood, these data structures are represented as pointers in the same
+manner you would expect in a more ‘traditional’ language like C. However, since
+Haskell will never update a pointer in-place, inserting a node into a tree
+usually involves reconstructing the <em>spine</em> of the data structure, as
+illustrated below, where the spine of the updated node is illustrated in
+red. For lists, modifying the <em>n</em>th element involves constructing the entirety
+of the list up to that element.</p>
+<p>Notice that in both our examples of updating trees and lists, we end up with
+pointers to two trees and two lists – a new version and an old version. This
+behavior is very convenient for reasoning and concurrency purposes, and, for the
+most part, GHC can perform these updates efficiently.</p>
+<p>Notice also that for both trees and lists, it is indeed possible to construct a
+new structure by only updating nodes along the path between the root and the
+target node. Not all data structures have this property. For example, graphs are
+a common data structure that do not meet this property.</p>
 <p>Let’s see what we mean by this.</p>
 <h2 id="constructing-a-graph">Constructing a graph</h2>
-<p>Suppose you had the following graph, where each node is of type <code>GridPoint</code>, defined by the ADT:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">data</span> <span class="dt">GridPoint</span> x</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">    <span class="fu">=</span> <span class="dt">GridPoint</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3">    { north, east, south,<span class="ot"> west ::</span> <span class="dt">Maybe</span> <span class="dt">GridPoint</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4">    ,<span class="ot"> payload ::</span> x }</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5">    <span class="kw">deriving</span> <span class="dt">Show</span></a></code></pre></div>
-<p>In an imperative language, you can construct such a graph by relying on mutation. For example in python you might do</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co"># Construct points using whatever neighbors we have available</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">a <span class="op">=</span> GridPoint()</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">b <span class="op">=</span> GridPoint(west<span class="op">=</span>a)</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">c <span class="op">=</span> GridPoint(west<span class="op">=</span>b)</a>
-<a class="sourceLine" id="cb2-5" data-line-number="5">d <span class="op">=</span> GridPoint(north<span class="op">=</span>a)</a>
-<a class="sourceLine" id="cb2-6" data-line-number="6">e <span class="op">=</span> GridPoint(north<span class="op">=</span>b,west<span class="op">=</span>d)</a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">f <span class="op">=</span> GridPoint(north<span class="op">=</span>c,west<span class="op">=</span>e)</a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">g <span class="op">=</span> GridPoint(north<span class="op">=</span>d)</a>
-<a class="sourceLine" id="cb2-9" data-line-number="9">h <span class="op">=</span> GridPoint(north<span class="op">=</span>e,west<span class="op">=</span>g)</a>
-<a class="sourceLine" id="cb2-10" data-line-number="10">i <span class="op">=</span> GridPoint(north<span class="op">=</span>f,west<span class="op">=</span>h)</a>
-<a class="sourceLine" id="cb2-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co"># Fix up pointers</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13">a.south <span class="op">=</span> d</a>
-<a class="sourceLine" id="cb2-14" data-line-number="14">a.east <span class="op">=</span> b</a>
-<a class="sourceLine" id="cb2-15" data-line-number="15">b.south <span class="op">=</span> e</a>
-<a class="sourceLine" id="cb2-16" data-line-number="16">b.east <span class="op">=</span> c</a>
-<a class="sourceLine" id="cb2-17" data-line-number="17">c.south <span class="op">=</span> f</a>
-<a class="sourceLine" id="cb2-18" data-line-number="18">...</a></code></pre></div>
-<p>Luckily, in Haskell, we can construct this graph using very straightforward syntax</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">let</span> a <span class="fu">=</span> <span class="dt">GridPoint</span> <span class="dt">Nothing</span>  (<span class="dt">Just</span> b) (<span class="dt">Just</span> d) <span class="dt">Nothing</span>  <span class="dv">100</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">    b <span class="fu">=</span> <span class="dt">GridPoint</span> <span class="dt">Nothing</span>  (<span class="dt">Just</span> c) (<span class="dt">Just</span> e) (<span class="dt">Just</span> a) <span class="dv">200</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">    c <span class="fu">=</span> <span class="dt">GridPoint</span> <span class="dt">Nothing</span>  <span class="dt">Nothing</span>  (<span class="dt">Just</span> f) (<span class="dt">Just</span> b) <span class="dv">300</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">    d <span class="fu">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> a) (<span class="dt">Just</span> e) (<span class="dt">Just</span> g) <span class="dt">Nothing</span>  <span class="dv">400</span></a>
-<a class="sourceLine" id="cb3-5" data-line-number="5">    e <span class="fu">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> b) (<span class="dt">Just</span> f) (<span class="dt">Just</span> h) (<span class="dt">Just</span> d) <span class="dv">500</span></a>
-<a class="sourceLine" id="cb3-6" data-line-number="6">    f <span class="fu">=</span> <span class="dt">Gridpoint</span> (<span class="dt">Just</span> c) <span class="dt">Nothing</span>  (<span class="dt">Just</span> i) (<span class="dt">Just</span> e) <span class="dv">600</span></a>
-<a class="sourceLine" id="cb3-7" data-line-number="7">    g <span class="fu">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> d) (<span class="dt">Just</span> h) <span class="dt">Nothing</span>  <span class="dt">Nothing</span>  <span class="dv">700</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8">    h <span class="fu">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> e) (<span class="dt">Just</span> i) <span class="dt">Nothing</span>  (<span class="dt">Just</span> g) <span class="dv">800</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9">    i <span class="fu">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> f) <span class="dt">Nothing</span>  <span class="dt">Nothing</span>  (<span class="dt">Just</span> h) <span class="dv">900</span></a></code></pre></div>
-<p>Notice that the definition for <code>a</code> relies on the value of <code>b</code> and <code>d</code>, which haven’t been defined yet at the syntactic location of <code>a</code>. We can do this in Haskell and not in Python because Haskell is a lazy language.</p>
-<p>However, there are a few things that make me sad about this definition. Firstly, using typical Haskell functions on it may result in infinite recursion. For example, if you used the standard <code>deriving Show</code> instance for <code>GridPoint</code> and then tried to evaluate <code>show a</code>, it will quickly go into an infinite loop as it attempts to continuously reprint <code>a</code> as the <code>west</code> field of <code>b</code>.</p>
-<p>Secondly, this ‘breaks’ record update syntax. For example, suppose you have a reference to <code>a</code> and now want to construct a new graph where the vaue of <code>b</code> is 201. You might think it is as easy as the following</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">let</span> a' <span class="fu">=</span> a { north <span class="fu">=</span> north a { payload <span class="fu">=</span> <span class="dv">201</span> } }</a></code></pre></div>
-<p>However, as the diagram below illustrates, the value pointed to by <code>a'</code> now points into a structure that still contains links to the old <code>a</code>! This is not the behavior we would expect, but it is the behavior we are forced to tolerate in a language with persistent data structures – Haskell simply cannot mutate the inner links. We may hope that the language will eventually ‘figure this out’, but alas, this kind of reasoning about code is impossible to perform in an automated and terminating way.</p>
+<p>Suppose you had the following graph, where each node is of type <code>GridPoint</code>,
+defined by the ADT:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">GridPoint</span> x</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">GridPoint</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    { north, east, south,<span class="ot"> west ::</span> <span class="dt">Maybe</span> <span class="dt">GridPoint</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    ,<span class="ot"> payload ::</span> x }</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">deriving</span> <span class="dt">Show</span></span></code></pre></div>
+<p>In an imperative language, you can construct such a graph by relying on
+mutation. For example in python you might do</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct points using whatever neighbors we have available</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> GridPoint()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> GridPoint(west<span class="op">=</span>a)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> GridPoint(west<span class="op">=</span>b)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> GridPoint(north<span class="op">=</span>a)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>e <span class="op">=</span> GridPoint(north<span class="op">=</span>b,west<span class="op">=</span>d)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>f <span class="op">=</span> GridPoint(north<span class="op">=</span>c,west<span class="op">=</span>e)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> GridPoint(north<span class="op">=</span>d)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>h <span class="op">=</span> GridPoint(north<span class="op">=</span>e,west<span class="op">=</span>g)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>i <span class="op">=</span> GridPoint(north<span class="op">=</span>f,west<span class="op">=</span>h)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix up pointers</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>a.south <span class="op">=</span> d</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>a.east <span class="op">=</span> b</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>b.south <span class="op">=</span> e</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>b.east <span class="op">=</span> c</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>c.south <span class="op">=</span> f</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>...</span></code></pre></div>
+<p>Luckily, in Haskell, we can construct this graph using very straightforward
+syntax</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> a <span class="ot">=</span> <span class="dt">GridPoint</span> <span class="dt">Nothing</span>  (<span class="dt">Just</span> b) (<span class="dt">Just</span> d) <span class="dt">Nothing</span>  <span class="dv">100</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    b <span class="ot">=</span> <span class="dt">GridPoint</span> <span class="dt">Nothing</span>  (<span class="dt">Just</span> c) (<span class="dt">Just</span> e) (<span class="dt">Just</span> a) <span class="dv">200</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    c <span class="ot">=</span> <span class="dt">GridPoint</span> <span class="dt">Nothing</span>  <span class="dt">Nothing</span>  (<span class="dt">Just</span> f) (<span class="dt">Just</span> b) <span class="dv">300</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> a) (<span class="dt">Just</span> e) (<span class="dt">Just</span> g) <span class="dt">Nothing</span>  <span class="dv">400</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    e <span class="ot">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> b) (<span class="dt">Just</span> f) (<span class="dt">Just</span> h) (<span class="dt">Just</span> d) <span class="dv">500</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">=</span> <span class="dt">Gridpoint</span> (<span class="dt">Just</span> c) <span class="dt">Nothing</span>  (<span class="dt">Just</span> i) (<span class="dt">Just</span> e) <span class="dv">600</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    g <span class="ot">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> d) (<span class="dt">Just</span> h) <span class="dt">Nothing</span>  <span class="dt">Nothing</span>  <span class="dv">700</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    h <span class="ot">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> e) (<span class="dt">Just</span> i) <span class="dt">Nothing</span>  (<span class="dt">Just</span> g) <span class="dv">800</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">=</span> <span class="dt">GridPoint</span> (<span class="dt">Just</span> f) <span class="dt">Nothing</span>  <span class="dt">Nothing</span>  (<span class="dt">Just</span> h) <span class="dv">900</span></span></code></pre></div>
+<p>Notice that the definition for <code>a</code> relies on the value of <code>b</code> and <code>d</code>, which
+haven’t been defined yet at the syntactic location of <code>a</code>. We can do this in
+Haskell and not in Python because Haskell is a lazy language.</p>
+<p>However, there are a few things that make me sad about this definition. Firstly,
+using typical Haskell functions on it may result in infinite recursion. For
+example, if you used the standard <code>deriving Show</code> instance for <code>GridPoint</code> and
+then tried to evaluate <code>show a</code>, it will quickly go into an infinite loop as it
+attempts to continuously reprint <code>a</code> as the <code>west</code> field of <code>b</code>.</p>
+<p>Secondly, this ‘breaks’ record update syntax. For example, suppose you have a
+reference to <code>a</code> and now want to construct a new graph where the vaue of <code>b</code>
+is 201. You might think it is as easy as the following</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> a' <span class="ot">=</span> a { north <span class="ot">=</span> north a { payload <span class="ot">=</span> <span class="dv">201</span> } }</span></code></pre></div>
+<p>However, as the diagram below illustrates, the value pointed to by <code>a'</code> now
+points into a structure that still contains links to the old <code>a</code>! This is not
+the behavior we would expect, but it is the behavior we are forced to tolerate
+in a language with persistent data structures – Haskell simply cannot mutate
+the inner links. We may hope that the language will eventually ‘figure this
+out’, but alas, this kind of reasoning about code is impossible to perform in an
+automated and terminating way.</p>
 <h2 id="current-approaches">Current approaches</h2>
-<p>It seems we’ve hit a conundrum – a data structure that seems impossible to update in the way Haskell wants us to. So how are graphs represented in Haskell today?</p>
-<p>The most common approach is to use a library like <code>fgl</code>, which provides an abstract interface to graphs. <code>fgl</code> is based on the concept of a <code>Context</code> which includes a node, its label, and all labeled edges into and out of the node. It treats graphs abstractly as algebraic combinations of these <code>Context</code>s. Graph consumption is achieved via a <code>matchAny</code> function, which, given a graph, extracts an arbitrary <code>Context</code> and returns that <code>Context</code> plus a new graph representing the original graph sans the <code>Context</code>.</p>
-<p>Under the hood, the graphs are represented in their mathematical definition as a list of nodes and a list of edges. Each node is assigned a unique integer id, and mapping is kept between ids and nodes. Thus, if we were to use FGL for our grid point data above, we would have to redefine our <code>GridPoint</code> structure to get rid of the explicit <code>north</code>, <code>east</code>, <code>south</code>, and <code>west</code> pointers:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">data</span> <span class="dt">GridPointFGL</span> x</a>
-<a class="sourceLine" id="cb5-2" data-line-number="2">    <span class="fu">=</span> <span class="dt">GridPointFGL</span></a>
-<a class="sourceLine" id="cb5-3" data-line-number="3">    {<span class="ot"> payloadFgl ::</span> x }</a></code></pre></div>
+<p>It seems we’ve hit a conundrum – a data structure that seems impossible to
+update in the way Haskell wants us to. So how are graphs represented in Haskell
+today?</p>
+<p>The most common approach is to use a library like <code>fgl</code>, which provides an
+abstract interface to graphs. <code>fgl</code> is based on the concept of a <code>Context</code> which
+includes a node, its label, and all labeled edges into and out of the node. It
+treats graphs abstractly as algebraic combinations of these <code>Context</code>s. Graph
+consumption is achieved via a <code>matchAny</code> function, which, given a graph,
+extracts an arbitrary <code>Context</code> and returns that <code>Context</code> plus a new graph
+representing the original graph sans the <code>Context</code>.</p>
+<p>Under the hood, the graphs are represented in their mathematical definition as a
+list of nodes and a list of edges. Each node is assigned a unique integer id,
+and mapping is kept between ids and nodes. Thus, if we were to use FGL for our
+grid point data above, we would have to redefine our <code>GridPoint</code> structure to
+get rid of the explicit <code>north</code>, <code>east</code>, <code>south</code>, and <code>west</code> pointers:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">GridPointFGL</span> x</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">GridPointFGL</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    {<span class="ot"> payloadFgl ::</span> x }</span></code></pre></div>
 <p>Now we can construct a representation of this graph by combining <code>Context</code>s:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">let</span> fglGraph <span class="fu">=</span> ([], <span class="dv">100</span>, <span class="dv">0</span>, [])                          <span class="fu">&amp;</span> <span class="co">-- A</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2">               ([((), <span class="dv">0</span> <span class="ot">{-# ID for A #-}</span> )], <span class="dv">200</span>, <span class="dv">1</span>, [((), <span class="dv">0</span>)]) <span class="fu">&amp;</span> <span class="co">--B</span></a>
-<a class="sourceLine" id="cb6-3" data-line-number="3">               <span class="fu">...</span></a></code></pre></div>
-<p>We’ve lost quite a bit of data with this approach. For example, we’ve lost any sort of sense of which direction each edge is leading. Consider, the context of B in the final graph.</p>
-<pre><code>let bContext = ([((), aId), ((), cId), ((), eId)], 200, 1, [((), aId), ((), cId), ((), eId)])</code></pre>
-<p>Notice that we’ve completely lost all information on whether <code>a</code> is to the north, south, east, or west of us. Certainly, we could use edge labels to get this information, but we would still be forced to lookup the correct label in the adjacency lists.</p>
-<p>The bindings in fgl seem a bit ‘lose’, and it seems like we’ve lost a lot of the advantages of having a type system – being forced to look up values in a list is akin to accessing JavaScript object fields, and we know where that kind of thinking leads us.. Indeed, it’s possible to construct an invalid graph using the functions available in fgl library – a graph with edges between existing and non-existing nodes or even between two non-existing nodes.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> fglGraph <span class="ot">=</span> ([], <span class="dv">100</span>, <span class="dv">0</span>, [])                          <span class="op">&amp;</span> <span class="co">-- A</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>               ([((), <span class="dv">0</span> <span class="ot">{-# ID for A #-}</span> )], <span class="dv">200</span>, <span class="dv">1</span>, [((), <span class="dv">0</span>)]) <span class="op">&amp;</span> <span class="co">--B</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>               <span class="op">...</span></span></code></pre></div>
+<p>We’ve lost quite a bit of data with this approach. For example, we’ve lost any
+sort of sense of which direction each edge is leading. Consider, the context of
+B in the final graph.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> bContext <span class="ot">=</span> ([((), aId), ((), cId), ((), eId)], <span class="dv">200</span>, <span class="dv">1</span>, [((), aId), ((), cId), ((), eId)])</span></code></pre></div>
+<p>Notice that we’ve completely lost all information on whether <code>a</code> is to the
+north, south, east, or west of us. Certainly, we could use edge labels to get
+this information, but we would still be forced to lookup the correct label in
+the adjacency lists.</p>
+<p>The bindings in fgl seem a bit ‘lose’, and it seems like we’ve lost a lot of the
+advantages of having a type system – being forced to look up values in a list
+is akin to accessing JavaScript object fields, and we know where that kind of
+thinking leads us.. Indeed, it’s possible to construct an invalid graph using
+the functions available in fgl library – a graph with edges between existing
+and non-existing nodes or even between two non-existing nodes.</p>
 <h2 id="can-we-do-better">Can we do better?</h2>
-<p>Let’s try to do better. Instead of thinking about a potential solution, let’s approach the problem by attempting to write a solution, pretending we are working in a language that could just do everything we wanted.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="ot">modifyAsNeighbor ::</span> <span class="dt">GridPoint</span> <span class="ot">-&gt;</span> <span class="dt">GridPoint</span></a>
-<a class="sourceLine" id="cb8-2" data-line-number="2">modifyAsNeighbor a <span class="fu">=</span></a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">  <span class="kw">let</span> a' <span class="fu">=</span> a { north <span class="fu">=</span> fixUpAllReferencesToA a a' (north a { payload <span class="fu">=</span> <span class="dv">201</span> })</a>
-<a class="sourceLine" id="cb8-4" data-line-number="4">             , south <span class="fu">=</span> fixUpAllReferencesToA a a' (south a)</a>
-<a class="sourceLine" id="cb8-5" data-line-number="5">             , east <span class="fu">=</span> fixUpAllReferencesToA a a' (east a)</a>
-<a class="sourceLine" id="cb8-6" data-line-number="6">             , west <span class="fu">=</span> fixUpAllReferencesToA a a' (west a) }</a>
-<a class="sourceLine" id="cb8-7" data-line-number="7">  <span class="kw">in</span> a'</a></code></pre></div>
-<p>In the above example the <code>fixUpAllReferencesToA</code> function takes the old <code>a</code> and the new <code>a</code> and returns its third argument, but with all references to the old <code>a</code> replaced by the new <code>a'</code>. Lets write this function.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="ot">fixUpAllReferencesToA ::</span> <span class="dt">GridPoint</span> <span class="ot">-&gt;</span> <span class="dt">GridPoint</span> <span class="ot">-&gt;</span> <span class="dt">GridPoint</span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">fixUpAllReferencesToA a a' x <span class="fu">=</span></a>
-<a class="sourceLine" id="cb9-3" data-line-number="3">    x { north <span class="fu">=</span> <span class="kw">if</span> north x <span class="fu">==</span> a <span class="kw">then</span> a' <span class="kw">else</span> a</a>
-<a class="sourceLine" id="cb9-4" data-line-number="4">      , <span class="fu">...</span> }</a></code></pre></div>
-<p>Wow! Syntactically, that seems to work, and semantically it does as well. However, remember what we said above about the default <code>Show</code> instance no longer terminating for <code>a</code>? Unfortunately, the same can be said for <code>Eq</code>. Thus, the best that can be said about the above piece of code is that after Haskell has verified that <code>north x</code> is the same as <code>a</code>, it will replace <code>north x</code> with <code>a'</code>. While true and offering what we want, this is an empty promise.</p>
-<p>What we really want is an operator <code>==*</code> that return <code>True</code> if and only if its two arguments <em>point</em> to the same value, regardless of whether or not their value is equal.</p>
-<p>Unfortunately, since Haskell objects are referentially transparent, such an operator is impossible to construct outside of <code>IO</code>, and even there, such an operator can’t be constructed with many guarantees.</p>
+<p>Let’s try to do better. Instead of thinking about a potential solution, let’s
+approach the problem by attempting to write a solution, pretending we are
+working in a language that could just do everything we wanted.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ot">modifyAsNeighbor ::</span> <span class="dt">GridPoint</span> <span class="ot">-&gt;</span> <span class="dt">GridPoint</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>modifyAsNeighbor a <span class="ot">=</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> a' <span class="ot">=</span> a { north <span class="ot">=</span> fixUpAllReferencesToA a a' (north a { payload <span class="ot">=</span> <span class="dv">201</span> })</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>             , south <span class="ot">=</span> fixUpAllReferencesToA a a' (south a)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>             , east <span class="ot">=</span> fixUpAllReferencesToA a a' (east a)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>             , west <span class="ot">=</span> fixUpAllReferencesToA a a' (west a) }</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> a'</span></code></pre></div>
+<p>In the above example the <code>fixUpAllReferencesToA</code> function takes the old <code>a</code> and
+the new <code>a</code> and returns its third argument, but with all references to the old
+<code>a</code> replaced by the new <code>a'</code>. Lets write this function.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ot">fixUpAllReferencesToA ::</span> <span class="dt">GridPoint</span> <span class="ot">-&gt;</span> <span class="dt">GridPoint</span> <span class="ot">-&gt;</span> <span class="dt">GridPoint</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>fixUpAllReferencesToA a a' x <span class="ot">=</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    x { north <span class="ot">=</span> <span class="kw">if</span> north x <span class="op">==</span> a <span class="kw">then</span> a' <span class="kw">else</span> a</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>      , <span class="op">...</span> }</span></code></pre></div>
+<p>Wow! Syntactically, that seems to work, and semantically it does as
+well. However, remember what we said above about the default <code>Show</code> instance no
+longer terminating for <code>a</code>? Unfortunately, the same can be said for <code>Eq</code>. Thus,
+the best that can be said about the above piece of code is that after Haskell
+has verified that <code>north x</code> is the same as <code>a</code>, it will replace <code>north x</code> with
+<code>a'</code>. While true and offering what we want, this is an empty promise.</p>
+<p>What we really want is an operator <code>==*</code> that return <code>True</code> if and only if its
+two arguments <em>point</em> to the same value, regardless of whether or not their
+value is equal.</p>
+<p>Unfortunately, since Haskell objects are referentially transparent, such an
+operator is impossible to construct outside of <code>IO</code>, and even there, such an
+operator can’t be constructed with many guarantees.</p>
 <h2 id="stepping-back">Stepping back</h2>
-<p>Let’s try approaching our problem by taking a step back and examining what it means for a data type to refer to itself, since it seems that’s where our problem stems from. In fact, it seems like our problem would simply not exist in a language that didn’t have recursive data structures.</p>
-<p>This is a great place to start, so let’s start by making <code>GridPoint</code> non-recursive. We can do this for every Haskell data type with a simple transformation:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="kw">data</span> <span class="dt">GridPointF</span> x f</a>
-<a class="sourceLine" id="cb10-2" data-line-number="2">    <span class="fu">=</span> <span class="dt">GridPointF</span></a>
-<a class="sourceLine" id="cb10-3" data-line-number="3">    { north, east, south,<span class="ot"> west ::</span> <span class="dt">Maybe</span> f</a>
-<a class="sourceLine" id="cb10-4" data-line-number="4">    ,<span class="ot"> payload ::</span> x }</a></code></pre></div>
-<p>Notice that we removed all recursive references to <code>GridPoint</code> and instead added a new type parameter that we put in its place.</p>
-<p>We can get back our original <code>GridPoint</code> by parameterizing <code>GridPointF</code> in a special way.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="kw">type</span> <span class="dt">GridPoint</span> x <span class="fu">=</span> <span class="dt">GridPointF</span> x (<span class="dt">Fix</span> (<span class="dt">GridPointF</span> x))</a></code></pre></div>
+<p>Let’s try approaching our problem by taking a step back and examining what it
+means for a data type to refer to itself, since it seems that’s where our
+problem stems from. In fact, it seems like our problem would simply not exist in
+a language that didn’t have recursive data structures.</p>
+<p>This is a great place to start, so let’s start by making <code>GridPoint</code>
+non-recursive. We can do this for every Haskell data type with a simple
+transformation:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">GridPointF</span> x f</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=</span> <span class="dt">GridPointF</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    { north, east, south,<span class="ot"> west ::</span> <span class="dt">Maybe</span> f</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    ,<span class="ot"> payload ::</span> x }</span></code></pre></div>
+<p>Notice that we removed all recursive references to <code>GridPoint</code> and instead added
+a new type parameter that we put in its place.</p>
+<p>We can get back our original <code>GridPoint</code> by parameterizing <code>GridPointF</code> in a
+special way.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">GridPoint</span> x <span class="ot">=</span> <span class="dt">GridPointF</span> x (<span class="dt">Fix</span> (<span class="dt">GridPointF</span> x))</span></code></pre></div>
+<p>Where <code>Fix</code> is a somewhat odd looking <code>newtype</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">newtype</span> <span class="dt">Fix</span> f <span class="ot">=</span> <span class="dt">Fix</span> (f (<span class="dt">Fix</span> f))</span></code></pre></div>
+<p>Let’s visualize what this looks like in terms of objects and pointers. Whereas
+our initial grid may have looked like this.</p>
+<p>Our <code>GridPointF</code> grid conceptually looks like this.</p>
+<p>However, due to the magic of <code>newtype</code>, in reality the <code>Fix</code> constructor incurs
+no runtime overhead, so the pointer diagrams are identical.</p>
 </div>
 
 <div id="disqus_thread"></div>

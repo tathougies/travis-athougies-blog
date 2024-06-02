@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -114,34 +120,60 @@
 
 
 <div id="post">
-<p><a href="http://jaspervdj.be/hakyll">Hakyll</a> is a really powerful static website tool written in Haskell. Basically, it takes a bunch of text files in Markdown and puts them together into an awesome static website (like this one!). Out of the box, Hakyll already does a lot, but one thing it doesn’t do is math formulae.</p>
-<p>Luckily this isn’t too hard to set up. Hakyll uses the wonderful <a href="http://johnmacfarlane.net/pandoc/">Pandoc</a> package to generate HTML, and Pandoc supports embedding math in HTML. According to <a href>this page</a>, all we need to do is enable the <code>tex_math_dollars</code> option. Just for extra swag, we’ll enable the <code>tex_math_double_backslash</code> and <code>latex_macros</code> options. This will let Pandoc understand latex block math and to expand latex macros that we define in our Markdown files!</p>
-<p>To do this, we’re going to modify the Pandoc compiler shipped with Hakyll. First we need to import some modules</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.Set</span> <span class="kw">as</span> <span class="dt">S</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">import</span>           <span class="dt">Text.Pandoc.Options</span></a></code></pre></div>
-<p>Now we’re going to define our new compiler. By default, Hakyll uses the <code>pandocCompiler</code> function to compile Markdown files into HTML. This function uses the default Hakyll options to generate HTML. There’s also the <code>pandocCompilerWith</code> function, which does take options. Its type signature is</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="ot">pandocCompilerWith ::</span> <span class="dt">ReaderOptions</span> <span class="ot">-&gt;</span> <span class="dt">WriterOptions</span> <span class="ot">-&gt;</span> <span class="dt">Compiler</span> (<span class="dt">Item</span> <span class="dt">String</span>)</a></code></pre></div>
-<p>Since we’re only going to want to change how Pandoc outputs HTML, we’re going to use the default reader options in <code>defaultHakyllReaderOptions</code>. If we take a look at the <a href="http://hackage.haskell.org/packages/archive/pandoc/1.10.0.4/doc/html/Text-Pandoc-Options.html#t:WriterOptions"><code>WriterOptions</code> data type</a>, we find two fields that we might be interested in: <code>writerHTMLMathMethod</code> and <code>writerExtensions</code>. The <code>writerHTMLMathMethod</code> field tells Pandoc how we want it to output the math in HTML. I found the easiest way to be using <a href="http://mathjax.org">Mathjax</a>. Looking at the <code>HTMLMathMethod</code> type, it looks like we’ll need to set this field to <code>MathJax &quot;&quot;</code>. Now, to enable the three extensions in our compiler, we’ll need to add <code>Ext_tex_math_dollars</code>, <code>Ext_tex_math_double_backslash</code>, and <code>Ext_latex_macros</code> into the <code>writerExtensions</code> set. We can do this by folding with the <code>Data.Set.insert</code> function.</p>
+<p><a href="http://jaspervdj.be/hakyll">Hakyll</a> is a really powerful static website tool written in
+Haskell. Basically, it takes a bunch of text files in Markdown and puts them together into an
+awesome static website (like this one!). Out of the box, Hakyll already does a lot, but one thing it
+doesn’t do is math formulae.</p>
+<p>Luckily this isn’t too hard to set up. Hakyll uses the wonderful
+<a href="http://johnmacfarlane.net/pandoc/">Pandoc</a> package to generate HTML, and Pandoc supports embedding
+math in HTML. According to <a href>this page</a>, all we need to do is enable the <code>tex_math_dollars</code>
+option. Just for extra swag, we’ll enable the <code>tex_math_double_backslash</code> and <code>latex_macros</code>
+options. This will let Pandoc understand latex block math and to expand latex macros that we define
+in our Markdown files!</p>
+<p>To do this, we’re going to modify the Pandoc compiler shipped with Hakyll. First we need to import
+some modules</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.Set</span> <span class="kw">as</span> <span class="dt">S</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span>           <span class="dt">Text.Pandoc.Options</span></span></code></pre></div>
+<p>Now we’re going to define our new compiler. By default, Hakyll uses the <code>pandocCompiler</code> function to
+compile Markdown files into HTML. This function uses the default Hakyll options to generate
+HTML. There’s also the <code>pandocCompilerWith</code> function, which does take options. Its type signature is</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">pandocCompilerWith ::</span> <span class="dt">ReaderOptions</span> <span class="ot">-&gt;</span> <span class="dt">WriterOptions</span> <span class="ot">-&gt;</span> <span class="dt">Compiler</span> (<span class="dt">Item</span> <span class="dt">String</span>)</span></code></pre></div>
+<p>Since we’re only going to want to change how Pandoc outputs HTML, we’re going to use the default
+reader options in <code>defaultHakyllReaderOptions</code>. If we take a look at the
+<a href="http://hackage.haskell.org/packages/archive/pandoc/1.10.0.4/doc/html/Text-Pandoc-Options.html#t:WriterOptions"><code>WriterOptions</code> data type</a>,
+we find two fields that we might be interested in: <code>writerHTMLMathMethod</code> and <code>writerExtensions</code>. The
+<code>writerHTMLMathMethod</code> field tells Pandoc how we want it to output the math in HTML. I found the
+easiest way to be using <a href="http://mathjax.org">Mathjax</a>. Looking at the <code>HTMLMathMethod</code> type, it
+looks like we’ll need to set this field to <code>MathJax ""</code>. Now, to enable the three extensions in our
+compiler, we’ll need to add <code>Ext_tex_math_dollars</code>, <code>Ext_tex_math_double_backslash</code>, and
+<code>Ext_latex_macros</code> into the <code>writerExtensions</code> set. We can do this by folding with the
+<code>Data.Set.insert</code> function.</p>
 <p>Let’s define our new Pandoc math compiler!</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1">pandocMathCompiler <span class="fu">=</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">    <span class="kw">let</span> mathExtensions <span class="fu">=</span> [<span class="dt">Ext_tex_math_dollars</span>, <span class="dt">Ext_tex_math_double_backslash</span>,</a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">                          <span class="dt">Ext_latex_macros</span>]</a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">        defaultExtensions <span class="fu">=</span> writerExtensions defaultHakyllWriterOptions</a>
-<a class="sourceLine" id="cb3-5" data-line-number="5">        newExtensions <span class="fu">=</span> foldr S.insert defaultExtensions mathExtensions</a>
-<a class="sourceLine" id="cb3-6" data-line-number="6">        writerOptions <span class="fu">=</span> defaultHakyllWriterOptions {</a>
-<a class="sourceLine" id="cb3-7" data-line-number="7">                          writerExtensions <span class="fu">=</span> newExtensions,</a>
-<a class="sourceLine" id="cb3-8" data-line-number="8">                          writerHTMLMathMethod <span class="fu">=</span> <span class="dt">MathJax</span> <span class="st">&quot;&quot;</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9">                        }</a>
-<a class="sourceLine" id="cb3-10" data-line-number="10">    <span class="kw">in</span> pandocCompilerWith defaultHakyllReaderOptions writerOptions</a></code></pre></div>
-<p>Most of this should be self-explanatory, but essentially, we modify the default Hakyll Pandoc options to use the new math output method and to use the appropriate math extensions.</p>
-<p>Now, all we have to do is replace all instances of <code>pandocCompiler</code> with <code>pandocMathCompiler</code> in our site’s <code>main</code> function, and we’re almost good to go! I say almost, because you will probably need to add the following line into your <code>templates/default.html</code> (or whatever template contains your HTML <code>&lt;head&gt;</code> element):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">&lt;script</span><span class="ot"> type=</span><span class="st">&quot;text/javascript&quot;</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="ot">        src=</span><span class="st">&quot;http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML&quot;</span><span class="kw">&gt;&lt;/script&gt;</span></a></code></pre></div>
-<p>Now, try adding math to one of your pages and see if it works. A quick word of warning though: to do the LaTeX <code>\[</code> and <code>\]</code> you need to double up on slashes, and you need to double the slashes before each command.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pandocMathCompiler <span class="ot">=</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> mathExtensions <span class="ot">=</span> [<span class="dt">Ext_tex_math_dollars</span>, <span class="dt">Ext_tex_math_double_backslash</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                          <span class="dt">Ext_latex_macros</span>]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        defaultExtensions <span class="ot">=</span> writerExtensions defaultHakyllWriterOptions</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        newExtensions <span class="ot">=</span> <span class="fu">foldr</span> S.insert defaultExtensions mathExtensions</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        writerOptions <span class="ot">=</span> defaultHakyllWriterOptions {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                          writerExtensions <span class="ot">=</span> newExtensions,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                          writerHTMLMathMethod <span class="ot">=</span> <span class="dt">MathJax</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                        }</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">in</span> pandocCompilerWith defaultHakyllReaderOptions writerOptions</span></code></pre></div>
+<p>Most of this should be self-explanatory, but essentially, we modify the default Hakyll Pandoc
+options to use the new math output method and to use the appropriate math extensions.</p>
+<p>Now, all we have to do is replace all instances of <code>pandocCompiler</code> with <code>pandocMathCompiler</code> in our
+site’s <code>main</code> function, and we’re almost good to go! I say almost, because you will probably need to
+add the following line into your <code>templates/default.html</code> (or whatever template contains your HTML
+<code>&lt;head&gt;</code> element):</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">script</span><span class="ot"> type=</span><span class="st">&quot;text/javascript&quot;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ot">        src</span><span class="op">=</span><span class="st">&quot;http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">script</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Now, try adding math to one of your pages and see if it works. A quick word of warning though: to do
+the LaTeX <code>\[</code> and <code>\]</code> you need to double up on slashes, and you need to double the slashes before
+each command.</p>
 <p>As a quick proof, here’s what it looks like rendering one definition of the natural log.</p>
 <p>\[ \ln x = \int_{-\infty}^x \frac 1 y \, dy . \]</p>
 <p>This was generated from the code:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode markdown"><code class="sourceCode markdown"><a class="sourceLine" id="cb5-1" data-line-number="1">\\[ \\ln x = \\int_{-\\infty}^x \\frac 1 y \\, dy . \\]</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span><span class="co">[</span><span class="ot"> \\ln x = \\int_{-\\infty}^x \\frac 1 y \\, dy . \\]</span></span></code></pre></div>
 <p>Great! You’re all set to use math on your shiny new Hakyll blog! Happy blogging! :D</p>
 </div>
 

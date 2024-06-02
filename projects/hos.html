@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -97,37 +103,62 @@
 <p>Hos is an operating system for X86-64, written in mainly Haskell 98 for the JHC compiler. It consists of a microkernel and a few user-space drivers, including a simple ATA driver, but no filesystem.</p>
 
 <h1 id="introduction">Introduction</h1>
-<p>Hos is an operating system consisting of a microkernel and a few user-space programs. It is written mostly in JHC-compatible Haskell 98, with fallbacks to C when necessary (garbage collection, for example).</p>
+<p>Hos is an operating system consisting of a microkernel and a few user-space programs.
+It is written mostly in JHC-compatible Haskell 98, with fallbacks to C when necessary (garbage collection, for example).</p>
 <p>For an overview of how to build and run Hos, see the project page on <a href="https://github.com/tathougies/hos">Github</a>.</p>
 <p>Continue reading for a quick tour around the source code.</p>
 <h2 id="to-long-mode-and-beyond">To Long Mode and Beyond…</h2>
-<p>The main Hos kernel runs in long mode. We use ISOLINUX to start a small multiboot-compatible kernel written in X86-64 assembler that takes us from protected mode directly into long mode. This can be found at <code>cbits/boot.S</code>. This file also initializes the garbage collector (<code>bootstrap_kernel</code>), JHC run-time system (see the call to <code>jhc_hs_init</code>), and finally calls the <code>main</code> haskell function (see call to <code>_amain</code>).</p>
-<p>This boot code also maps our kernel into the address space at <code>0xffffff7f00000000</code>. This gives the kernel 4 GB of room, because the top 512 GB are used for a self-referential mapping of the page tables themselves.</p>
+<p>The main Hos kernel runs in long mode. We use ISOLINUX to start a small multiboot-compatible kernel written in X86-64 assembler
+that takes us from protected mode directly into long mode. This can be found at <code>cbits/boot.S</code>. This file also initializes the
+garbage collector (<code>bootstrap_kernel</code>), JHC run-time system (see the call to <code>jhc_hs_init</code>), and finally calls the <code>main</code> haskell
+function (see call to <code>_amain</code>).</p>
+<p>This boot code also maps our kernel into the address space at <code>0xffffff7f00000000</code>. This gives the kernel 4 GB of room,
+because the top 512 GB are used for a self-referential mapping of the page tables themselves.</p>
 <h2 id="dealing-with-memory">Dealing with memory</h2>
-<p>Operating systems have to be familiar with the intimate details of memory, but Haskell is a garbage collected language. This means we must resort to C for the garbage collector.</p>
-<p>The <code>bootstrap_kernel</code> function in <code>cbits/multiboot.c</code> deals with all the memory setup prior to running the main kernel. This function maps the multiboot modules into visible address space and initializes the buddy page allocator (<code>initalize_regions</code>).</p>
-<p>The page allocator allows us to allocate and free physical pages. We tie this into the JHC run-time system by mapping the allocated physical pages into the next available address in the kernel memory region. Once a kernel page is allocated it is never freed, but the memory is re-used. This should eventually change if we were to make Hos into a “real” OS.</p>
-<p>The code for the page allocator is in <code>cbits/multiboot.c</code> in the <code>alloc_from_regions</code> and <code>free_from_regions</code>. The allocator is initialized in the <code>initialize_regions</code> function in the same file, which uses the multiboot memory map to create the proper free regions.</p>
+<p>Operating systems have to be familiar with the intimate details of memory, but Haskell is a garbage collected language. This
+means we must resort to C for the garbage collector.</p>
+<p>The <code>bootstrap_kernel</code> function in <code>cbits/multiboot.c</code> deals with all the memory setup prior to running the main kernel.
+This function maps the multiboot modules into visible address space and initializes the buddy page allocator (<code>initalize_regions</code>).</p>
+<p>The page allocator allows us to allocate and free physical pages. We tie this into the JHC run-time system by mapping the
+allocated physical pages into the next available address in the kernel memory region. Once a kernel page is allocated it
+is never freed, but the memory is re-used. This should eventually change if we were to make Hos into a “real” OS.</p>
+<p>The code for the page allocator is in <code>cbits/multiboot.c</code> in the <code>alloc_from_regions</code> and <code>free_from_regions</code>. The allocator
+is initialized in the <code>initialize_regions</code> function in the same file, which uses the multiboot memory map to create the
+proper free regions.</p>
 <p>The page allocation system used is a simple buddy based allocator, explained in depth <a href="http://wiki.osdev.org/Page_Frame_Allocation#Buddy_Allocation_System">here</a>.</p>
 <h2 id="the-run-time-system">The run-time system</h2>
-<p>A modified version of the JHC run-time system is in the <code>rts</code> directory. The JHC garbage collector only needs three calls to integrate with a new memory system. These calls are <code>ext_page_aligned_alloc</code> which returns the virtual address of newly allocated pages, <code>ext_free</code> which frees an allocation made by <code>ext_page_aligned_alloc</code>, and <code>ext_alloc_megablock</code> which returns a new megablock. Essentially, these calls all delegate to the buddy physical page allocator, and then establish the correct virtual mapping.</p>
+<p>A modified version of the JHC run-time system is in the <code>rts</code> directory. The JHC garbage collector only needs three calls to
+integrate with a new memory system. These calls are <code>ext_page_aligned_alloc</code> which returns the virtual address of newly
+allocated pages, <code>ext_free</code> which frees an allocation made by <code>ext_page_aligned_alloc</code>, and <code>ext_alloc_megablock</code> which returns
+a new megablock. Essentially, these calls all delegate to the buddy physical page allocator, and then establish the correct
+virtual mapping.</p>
 <p>This is all we need to run Haskell bare bones!</p>
 <h2 id="the-main-kernel">The main kernel</h2>
-<p>The main kernel is located in the <code>src</code> directory. The entry point is at <code>src/main.hs</code>. The <code>hosMain</code> function takes in an <code>Arch</code> record, corresponding to architecture-specific calls, and produces an IO action that will run the operating system.</p>
-<p>It begins by parsing the init tasks ELF headers from the multiboot module using the C code to locate the module. It then creates a new init task, adds it to the task table, prepares the system to enter userspace, and switches to user space almost immediately.</p>
-<p>The kernel is structured as a co-routine with user space. Essentially, we yield to userspace using the <code>archSwitchToUserspace</code> function, which runs the userspace continuation, until a system call is made or a trap is hit. We then handle the specific details, and switch back into userspace. This entire system is in the <code>kernelize</code> function in <code>main.hs</code>. Note the large case expression in this function, which handles all the reasons we may have come back from userspace.</p>
+<p>The main kernel is located in the <code>src</code> directory. The entry point is at <code>src/main.hs</code>. The <code>hosMain</code> function takes in
+an <code>Arch</code> record, corresponding to architecture-specific calls, and produces an IO action that will run the operating system.</p>
+<p>It begins by parsing the init tasks ELF headers from the multiboot module using the C code to locate the module.
+It then creates a new init task, adds it to the task table, prepares the system to enter userspace, and switches to user
+space almost immediately.</p>
+<p>The kernel is structured as a co-routine with user space. Essentially, we yield to userspace using the <code>archSwitchToUserspace</code>
+function, which runs the userspace continuation, until a system call is made or a trap is hit. We then handle the specific
+details, and switch back into userspace. This entire system is in the <code>kernelize</code> function in <code>main.hs</code>. Note the large
+case expression in this function, which handles all the reasons we may have come back from userspace.</p>
 <p>I won’t deal with the architecture-specific code here, but it should look familiar to anyone with experience in operating systems.</p>
 <h2 id="user-space">User space</h2>
-<p>Just as we have a kernel-level run-time system, there is also a user-level one at <code>progs/hos</code>. This re-exports enough C standard library functions to let the vanilla JHC run-time system run in Hos userspace. Notably, it uses dlmalloc to provide memory management and a C-level Hos system call library to provide <code>sbrk</code> functionality (see <code>progs/hos/hos.c</code>).</p>
+<p>Just as we have a kernel-level run-time system, there is also a user-level one at <code>progs/hos</code>. This re-exports enough C standard
+library functions to let the vanilla JHC run-time system run in Hos userspace. Notably, it uses dlmalloc to provide memory management
+and a C-level Hos system call library to provide <code>sbrk</code> functionality (see <code>progs/hos/hos.c</code>).</p>
 <p>Currently, I’ve written four user-level drivers:</p>
 <ul>
 <li><em>init</em> which handles message routing between the drivers, as well as auto-starting the other drivers</li>
 <li><em>storage</em> which exposes what will become our file system. This server exposes a simple key-value store that allows querying via tags.</li>
 <li><em>pci</em> which reads in PCI configuration data and uses <em>storage</em> to auto-start appropriate servers</li>
-<li><em>ata</em> which scans the ATA Bus discovered by <em>pci</em>, and reads the first 8 kilobytes of our ATAPI CD-ROM into memory at 0x18000000000. You can verify that it works by using the virtual box debugging console.</li>
+<li><em>ata</em> which scans the ATA Bus discovered by <em>pci</em>, and reads the first 8 kilobytes of our ATAPI CD-ROM into memory at 0x18000000000.
+You can verify that it works by using the virtual box debugging console.</li>
 </ul>
 <h1 id="conclusion">Conclusion</h1>
-<p>Hos is still unfinished. I would like to make the ATA driver auto-start an ISO9660 filesystem driver which will expose the CD objects to <em>storage</em> as objects. Then, I would like to create a simple VGA text console driver, and load it from the CD using <em>init</em>.</p>
+<p>Hos is still unfinished. I would like to make the ATA driver auto-start an ISO9660 filesystem driver which will expose the CD objects
+to <em>storage</em> as objects. Then, I would like to create a simple VGA text console driver, and load it from the CD using <em>init</em>.</p>
 <p>This would allow us to make a much more impressive demo. Patches welcome. <a href="mailto:travis@athougies.net">Ping me</a> if you have any questions. Happy hacking!</p>
         </div>
         <!-- Google Analytics Tracking -->

@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -110,44 +116,67 @@
 
 
 <div id="post">
-<p>As I was working on some projects in Haskell (a new Haskell web framework to be exact), I stumbled across a seemingly impossible Haskell problem. I wanted to write a function, let’s call it <code>monadifyFirstArg</code> that took any function of the form</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="ot">f ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="fu">...</span> <span class="ot">-&gt;</span> an <span class="ot">-&gt;</span> m r</a></code></pre></div>
+<p>As I was working on some projects in Haskell (a new Haskell web framework to be exact), I stumbled
+across a seemingly impossible Haskell problem. I wanted to write a function, let’s call it
+<code>monadifyFirstArg</code> that took any function of the form</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">f ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="op">...</span> <span class="ot">-&gt;</span> an <span class="ot">-&gt;</span> m r</span></code></pre></div>
 <p>and converted it into one of the form</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="ot">f ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> m a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="fu">...</span> <span class="ot">-&gt;</span> an <span class="ot">-&gt;</span> m r</a></code></pre></div>
-<p>Instead of taking in the parameter <code>a1</code> directly, this new function would take a monadic action that returns this parameter (let’s call it <code>mkA1</code>) , and then the rest of the arguments. When the resulting monadic action is invoked, the result would first run <code>mkA1</code> and then pass the output to the original <code>f</code>, before passing in all the remaining arguments.</p>
-<p>This seems like a pretty easy function to write, because a human could do it quite simply. If I asked you to write this function, for some <code>f</code>, you would be able to rattle it off:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="ot">f ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="fu">...</span> <span class="ot">-&gt;</span> an <span class="ot">-&gt;</span> m r</a>
-<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="ot">monadifiedF ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> m a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="fu">...</span> <span class="ot">-&gt;</span> an <span class="ot">-&gt;</span> m r</a>
-<a class="sourceLine" id="cb3-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">monadifiedF mkA1 a2 <span class="fu">...</span> an<span class="fu">=</span> <span class="kw">do</span> a1 <span class="ot">&lt;-</span> mkA1</a>
-<a class="sourceLine" id="cb3-5" data-line-number="5">                               f a1 a2 <span class="fu">...</span> an</a></code></pre></div>
-<p>But, in this problem, we want the compiler to be able to do this for us. Namely, we want to write a function <code>monadifyFirstArg</code> such that <code>monadifyFirstArg f = monadifiedF</code> (this isn’t a formal semantic, but just something to get our thinking juices flowing). What would the type of this function be? Intuitively, it should be something like</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="ot">monadifyFirstArg ::</span> (a1 <span class="ot">-&gt;</span> <span class="fu">....</span> <span class="ot">-&gt;</span> m r) <span class="ot">-&gt;</span> m a1 <span class="ot">-&gt;</span> <span class="fu">...</span> <span class="ot">-&gt;</span> m r</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">f ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> m a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="op">...</span> <span class="ot">-&gt;</span> an <span class="ot">-&gt;</span> m r</span></code></pre></div>
+<p>Instead of taking in the parameter <code>a1</code> directly, this new function would take a monadic action that
+returns this parameter (let’s call it <code>mkA1</code>) , and then the rest of the arguments. When the
+resulting monadic action is invoked, the result would first run <code>mkA1</code> and then pass the output to
+the original <code>f</code>, before passing in all the remaining arguments.</p>
+<p>This seems like a pretty easy function to write, because a human could do it quite simply. If I
+asked you to write this function, for some <code>f</code>, you would be able to rattle it off:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ot">f ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="op">...</span> <span class="ot">-&gt;</span> an <span class="ot">-&gt;</span> m r</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ot">monadifiedF ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> m a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="op">...</span> <span class="ot">-&gt;</span> an <span class="ot">-&gt;</span> m r</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>monadifiedF mkA1 a2 <span class="op">...</span> an<span class="ot">=</span> <span class="kw">do</span> a1 <span class="ot">&lt;-</span> mkA1</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                               f a1 a2 <span class="op">...</span> an</span></code></pre></div>
+<p>But, in this problem, we want the compiler to be able to do this for us. Namely, we want to write a
+function <code>monadifyFirstArg</code> such that <code>monadifyFirstArg f = monadifiedF</code> (this isn’t a formal
+semantic, but just something to get our thinking juices flowing). What would the type of this
+function be? Intuitively, it should be something like</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ot">monadifyFirstArg ::</span> (a1 <span class="ot">-&gt;</span> <span class="op">....</span> <span class="ot">-&gt;</span> m r) <span class="ot">-&gt;</span> m a1 <span class="ot">-&gt;</span> <span class="op">...</span> <span class="ot">-&gt;</span> m r</span></code></pre></div>
 <p>Needless to say, however, this isn’t valid Haskell.</p>
 <p>What do we do now? Let’s try to write out the idealized type signature fully parenthesized</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="ot">monadifyFirstArg ::</span> (a1 <span class="ot">-&gt;</span> (a2 <span class="ot">-&gt;</span> (<span class="fu">...</span> (an <span class="ot">-&gt;</span> mr)))) <span class="ot">-&gt;</span> (a2 <span class="ot">-&gt;</span> (<span class="fu">...</span> (an <span class="ot">-&gt;</span> mr)))</a></code></pre></div>
-<p>Aha! This sheds some light on the situation.If you notice, the two parenthesized expressions (<code>(a2 -&gt; (... (an -&gt; mr)))</code>) are the result of functions (the function passed in as the first parameter and the output of the <code>monadifyFirstArg</code> function). This means that the entire type can be replaced by a type variable. Let’s call this type variable <code>o</code>. Now, we can write</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" data-line-number="1">monadifyFirstArg<span class="fu">:</span> (a1 <span class="ot">-&gt;</span> o) <span class="ot">-&gt;</span> m a1 <span class="ot">-&gt;</span> o</a></code></pre></div>
-<p>But this loses some meaning. Namely, we want to constrain <code>o</code> to only being types of the form <code>a2 -&gt; ... -&gt; m r</code>. What’s the standard Haskell solution to constraining types to a certain form? You guessed it, type classes!</p>
-<div class="large-quote"><span class="quote-content"> What’s the standard Haskell solution to constraining types for a certain form? You guessed it, <strong><em>type classes!</em></strong></span><span class="quote-source"></span></div>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">class</span> <span class="dt">ResultsInMonad</span> o</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb7-3" data-line-number="3"><span class="kw">instance</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">ResultsInMonad</span> (m o)</a>
-<a class="sourceLine" id="cb7-4" data-line-number="4"><span class="kw">instance</span> <span class="dt">ResultsInMonad</span> b <span class="ot">=&gt;</span> <span class="dt">ResultsInMonad</span> (a <span class="ot">-&gt;</span> b)</a>
-<a class="sourceLine" id="cb7-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb7-6" data-line-number="6"><span class="ot">monadifyFirstArg ::</span> <span class="dt">ResultsInMonad</span> o <span class="ot">=&gt;</span> (a1 <span class="ot">-&gt;</span> o) <span class="ot">-&gt;</span> m a1 <span class="ot">-&gt;</span> o</a></code></pre></div>
-<p>Great! By constraining <code>o</code> to be a member of the <code>ResultsInMonad</code> class, we can now place restrictions on the form of its type. We create two instances of <code>ResultsInMonad</code>. The first instance <code>Monad m =&gt; ResultsInMonad (m o)</code> means that any pure monadic action results in a monad. This allows the Haskell compiler to verify that <code>monadifyFirstArg :: (a1 -&gt; m r) -&gt; m a1 -&gt; m r</code> is a valid. The sceond instance says that any function whose result eventually results in a monad is also an instance of <code>ResultsInMonad</code>. So far, so good!</p>
-<p>There is only one problem however. The monad <code>m</code> in the <code>ResultsInMonad (m o)</code> can be any monad whatsoever. That is, <code>IO a</code> is a valid instance and so is <code>ST a</code> and <code>Maybe a</code> and <code>[a]</code>. This means that the following is a valid type for <code>monadifyFirstArg</code></p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="ot">monadifyFirstArg ::</span> (a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="dt">Maybe</span> r) <span class="ot">-&gt;</span> <span class="dt">IO</span> a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="dt">Maybe</span> r</a></code></pre></div>
-<p>Uh oh! This isn’t what we wanted, we need some way to constrain that the monad in question is a certain type. We can do this by adding a parameter to the <code>ResultsinMonad</code> class (and enable a few GHC extensions)</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="ot">{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, KindSignatures #-}</span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="kw">class</span> <span class="dt">ResultsInMonad</span> o m</a>
-<a class="sourceLine" id="cb9-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="kw">instance</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">ResultsInMonad</span> (m o) m</a>
-<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="kw">instance</span> <span class="dt">ResultsInMonad</span> b m <span class="ot">=&gt;</span> <span class="dt">ResultsInMonad</span> (a <span class="ot">-&gt;</span> b) m</a>
-<a class="sourceLine" id="cb9-7" data-line-number="7"></a>
-<a class="sourceLine" id="cb9-8" data-line-number="8"><span class="ot">monadifyFirstArg ::</span> <span class="dt">ResultsInMonad</span> o m <span class="ot">=&gt;</span> (a1 <span class="ot">-&gt;</span> o) <span class="ot">-&gt;</span> m a1 <span class="ot">-&gt;</span> o</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ot">monadifyFirstArg ::</span> (a1 <span class="ot">-&gt;</span> (a2 <span class="ot">-&gt;</span> (<span class="op">...</span> (an <span class="ot">-&gt;</span> mr)))) <span class="ot">-&gt;</span> (a2 <span class="ot">-&gt;</span> (<span class="op">...</span> (an <span class="ot">-&gt;</span> mr)))</span></code></pre></div>
+<p>Aha! This sheds some light on the situation.If you notice, the two parenthesized expressions (<code>(a2 -&gt; (... (an -&gt; mr)))</code>) are the result of functions (the function passed in as the first parameter
+and the output of the <code>monadifyFirstArg</code> function). This means that the entire type can be replaced
+by a type variable. Let’s call this type variable <code>o</code>. Now, we can write</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>monadifyFirstArg<span class="op">:</span> (a1 <span class="ot">-&gt;</span> o) <span class="ot">-&gt;</span> m a1 <span class="ot">-&gt;</span> o</span></code></pre></div>
+<p>But this loses some meaning. Namely, we want to constrain <code>o</code> to only being types of the form <code>a2 -&gt; ... -&gt; m r</code>. What’s the standard Haskell solution to constraining types to a certain form? You
+guessed it, type classes!</p>
+<div class="large-quote"><span class="quote-content">
+What’s the standard Haskell solution to constraining types for a certain form? You guessed it,
+<strong><em>type classes!</em></strong></span><span class="quote-source"></span></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">ResultsInMonad</span> o</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">ResultsInMonad</span> (m o)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">ResultsInMonad</span> b <span class="ot">=&gt;</span> <span class="dt">ResultsInMonad</span> (a <span class="ot">-&gt;</span> b)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="ot">monadifyFirstArg ::</span> <span class="dt">ResultsInMonad</span> o <span class="ot">=&gt;</span> (a1 <span class="ot">-&gt;</span> o) <span class="ot">-&gt;</span> m a1 <span class="ot">-&gt;</span> o</span></code></pre></div>
+<p>Great! By constraining <code>o</code> to be a member of the <code>ResultsInMonad</code> class, we can now place
+restrictions on the form of its type. We create two instances of <code>ResultsInMonad</code>. The first
+instance <code>Monad m =&gt; ResultsInMonad (m o)</code> means that any pure monadic action results in a monad. This
+allows the Haskell compiler to verify that <code>monadifyFirstArg :: (a1 -&gt; m r) -&gt; m a1 -&gt; m r</code> is a
+valid. The sceond instance says that any function whose result eventually results in a monad is also
+an instance of <code>ResultsInMonad</code>. So far, so good!</p>
+<p>There is only one problem however. The monad <code>m</code> in the <code>ResultsInMonad (m o)</code> can be any monad
+whatsoever. That is, <code>IO a</code> is a valid instance and so is <code>ST a</code> and <code>Maybe a</code> and <code>[a]</code>. This means
+that the following is a valid type for <code>monadifyFirstArg</code></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ot">monadifyFirstArg ::</span> (a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="dt">Maybe</span> r) <span class="ot">-&gt;</span> <span class="dt">IO</span> a1 <span class="ot">-&gt;</span> a2 <span class="ot">-&gt;</span> <span class="dt">Maybe</span> r</span></code></pre></div>
+<p>Uh oh! This isn’t what we wanted, we need some way to constrain that the monad in question is a
+certain type. We can do this by adding a parameter to the <code>ResultsinMonad</code> class (and enable a few
+GHC extensions)</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, KindSignatures #-}</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">ResultsInMonad</span> o m</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">ResultsInMonad</span> (m o) m</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">ResultsInMonad</span> b m <span class="ot">=&gt;</span> <span class="dt">ResultsInMonad</span> (a <span class="ot">-&gt;</span> b) m</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ot">monadifyFirstArg ::</span> <span class="dt">ResultsInMonad</span> o m <span class="ot">=&gt;</span> (a1 <span class="ot">-&gt;</span> o) <span class="ot">-&gt;</span> m a1 <span class="ot">-&gt;</span> o</span></code></pre></div>
 </div>
 
 <div id="disqus_thread"></div>

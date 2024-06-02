@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -112,89 +118,153 @@
 
 
 <div id="post">
-<p>I’ve recently begun investigating using Haskell in the financial sphere to do investment analysis and eventually quant trading. I’ve started by creating some APIs (like this <a href="../projects/tradeking.html">TradeKing API for Haskell</a> and this <a href="../projects/eddy.html">interface to SEC Edgar</a>). But now I’m turning my eyes towards writing full quant trading models with Haskell.</p>
-<p>However, I want to do this in the <em>most</em> beautiful way possible. What does this mean, you ask? It means I want my models to take full advantage of Haskell’s static type checking abilities. A lot of errors in other programming languages are, when you really get down to it, type errors, even when they don’t obviously seem so. In Haskell it is common to roll your own types on the fly, to make them as specific as possible for your use case. Not only does this let you prove things about your code, but it also means you won’t accidentally pass in a stock price, when you actually needed earnings per share. For example, you would use a <code>Price</code> type for the stock price and a <code>PricePerShare</code> type for the EPS, and then use a function that would take a <code>PricePerShare</code> object and the number of shares and return the total capitalization as a <code>Price</code> object, for example.</p>
-<p>Haskell also has a few other nice properties that make it suitable for quant-trading: it is compiled, so it has speed comparable with C/C++. It is probably the language <em>most</em> suited for widely parallel problems which involve a lot of I/O (i.e., monitoring thousands of different securities). However, probably the most killer feature of them all is the ability to write ad-hoc DSLs and embed the in the language by using Monads.</p>
-<p>In my Haskell quant toolbox, I want to be able to write a certain trading strategy composed of certain actions, such as “check stock price” and “sell stock A”. Additionally, I want to be able to backtest this strategy on historical data, to run it live in production, and to run it in “paper trading” mode.</p>
-<p>One way to do this would be to create a new language for quant strategies and then implement a parser to make an AST and then use some kind of interpreter to run the whole thing. This is a solution, but it seems awfully inefficient. I don’t want to be spending my time writing parsers while there are arbitrage opportunities to exploit!</p>
-<p>Luckily for us, Haskell makes it really easy to embed languages write into our source code, using a construct called <em>Free Monads</em>. I won’t go into all the theory (which you can read about <a href>here</a>), but basically this allows us to build abstract syntax trees of an arbitrary type <em>inside</em> a Haskell source file. We the write interpreters for these trees which implement the actual actions. Since these ASTs are implemented in the form of Haskell Monads, we get all the nice functions that generalize to any monad for free (for example, for and while loops!).</p>
+<p>I’ve recently begun investigating using Haskell in the financial sphere to do investment analysis
+and eventually quant trading. I’ve started by creating some APIs (like this
+<a href="../projects/tradeking.html">TradeKing API for Haskell</a> and this
+<a href="../projects/eddy.html">interface to SEC Edgar</a>). But now I’m turning my eyes towards writing full
+quant trading models with Haskell.</p>
+<p>However, I want to do this in the <em>most</em> beautiful way possible. What does this mean, you ask? It
+means I want my models to take full advantage of Haskell’s static type checking abilities. A lot of
+errors in other programming languages are, when you really get down to it, type errors, even when
+they don’t obviously seem so. In Haskell it is common to roll your own types on the fly, to make
+them as specific as possible for your use case. Not only does this let you prove things about your
+code, but it also means you won’t accidentally pass in a stock price, when you actually needed
+earnings per share. For example, you would use a <code>Price</code> type for the stock price and a
+<code>PricePerShare</code> type for the EPS, and then use a function that would take a <code>PricePerShare</code>
+object and the number of shares and return the total capitalization as a <code>Price</code> object, for
+example.</p>
+<p>Haskell also has a few other nice properties that make it suitable for quant-trading: it is
+compiled, so it has speed comparable with C/C++. It is probably the language <em>most</em> suited for
+widely parallel problems which involve a lot of I/O (i.e., monitoring thousands of different
+securities). However, probably the most killer feature of them all is the ability to write ad-hoc
+DSLs and embed the in the language by using Monads.</p>
+<p>In my Haskell quant toolbox, I want to be able to write a certain trading strategy composed of
+certain actions, such as “check stock price” and “sell stock A”. Additionally, I want to be able to
+backtest this strategy on historical data, to run it live in production, and to run it in “paper
+trading” mode.</p>
+<p>One way to do this would be to create a new language for quant strategies and then implement a
+parser to make an AST and then use some kind of interpreter to run the whole thing. This is a
+solution, but it seems awfully inefficient. I don’t want to be spending my time writing parsers
+while there are arbitrage opportunities to exploit!</p>
+<p>Luckily for us, Haskell makes it really easy to embed languages write into our source code, using a
+construct called <em>Free Monads</em>. I won’t go into all the theory (which you can read about
+<a href>here</a>), but basically this allows us to build abstract syntax trees of an arbitrary type <em>inside</em>
+a Haskell source file. We the write interpreters for these trees which implement the actual
+actions. Since these ASTs are implemented in the form of Haskell Monads, we get all the nice
+functions that generalize to any monad for free (for example, for and while loops!).</p>
 <h2 id="defining-types">Defining Types</h2>
-<p>Enough talk; let’s build something! First, we’re going to define our types. We’re going to make one type <code>StategyPart</code> which will correspond to all the different things we want our strategies to be able to do. For now, we want our strategy to be able to look at the current price of stocks and to buy or sell these securities.</p>
-<p>To begin, we’re going to define a type for stock symbols <code>Symbol</code>, a type for number of shares, and also a fixed-point (to 3 decimal places)<code>Price</code> type (using the <code>Data.Fixed</code> package).</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="ot">{-# LANGUAGE GeneralizedNewtypeDeriving, OverloadedStrings #-}</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Data.Text</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">import</span> <span class="dt">Data.Fixed</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">import</span> <span class="dt">Data.String</span></a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">newtype</span> <span class="dt">Symbol</span> <span class="fu">=</span> <span class="dt">Symbol</span> {<span class="ot"> unSymbol ::</span> <span class="dt">Text</span> }</a>
-<a class="sourceLine" id="cb1-7" data-line-number="7">    <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">IsString</span>)</a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="kw">newtype</span> <span class="dt">Price</span>  <span class="fu">=</span> <span class="dt">Price</span>  {<span class="ot"> unPrice  ::</span> <span class="dt">Fixed</span> <span class="dt">E3</span> }</a>
-<a class="sourceLine" id="cb1-9" data-line-number="9">    <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Num</span>)</a>
-<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="kw">newtype</span> <span class="dt">Shares</span> <span class="fu">=</span> <span class="dt">Shares</span> {<span class="ot"> unShares ::</span> <span class="dt">Int</span> }</a>
-<a class="sourceLine" id="cb1-11" data-line-number="11">    <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Num</span>, <span class="dt">Real</span>, <span class="dt">Bounded</span>, <span class="dt">Enum</span>)</a></code></pre></div>
-<p>Notice that we enable the <code>GenericNewtypeDeriving</code> extension. This lets us define <code>newtype</code>s that basically act as though they were members of the underlying type. This gets us type safety and convenience!</p>
+<p>Enough talk; let’s build something! First, we’re going to define our types. We’re going to make one
+type <code>StategyPart</code> which will correspond to all the different things we want our strategies to be
+able to do. For now, we want our strategy to be able to look at the current price of stocks and to
+buy or sell these securities.</p>
+<p>To begin, we’re going to define a type for stock symbols <code>Symbol</code>, a type for number of shares,
+and also a fixed-point (to 3 decimal places)<code>Price</code> type (using the <code>Data.Fixed</code> package).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE GeneralizedNewtypeDeriving, OverloadedStrings #-}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Text</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Fixed</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.String</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">newtype</span> <span class="dt">Symbol</span> <span class="ot">=</span> <span class="dt">Symbol</span> {<span class="ot"> unSymbol ::</span> <span class="dt">Text</span> }</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">IsString</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">newtype</span> <span class="dt">Price</span>  <span class="ot">=</span> <span class="dt">Price</span>  {<span class="ot"> unPrice  ::</span> <span class="dt">Fixed</span> <span class="dt">E3</span> }</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Num</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">newtype</span> <span class="dt">Shares</span> <span class="ot">=</span> <span class="dt">Shares</span> {<span class="ot"> unShares ::</span> <span class="dt">Int</span> }</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Num</span>, <span class="dt">Real</span>, <span class="dt">Bounded</span>, <span class="dt">Enum</span>)</span></code></pre></div>
+<p>Notice that we enable the <code>GenericNewtypeDeriving</code> extension. This lets us define <code>newtype</code>s
+that basically act as though they were members of the underlying type. This gets us type safety and
+convenience!</p>
 <p>With these in mind, we can define our <code>StrategyPart</code> type.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">data</span> <span class="dt">StrategyPart</span> next <span class="fu">=</span> <span class="dt">QuoteSymbol</span> <span class="dt">Symbol</span> (<span class="dt">Price</span> <span class="ot">-&gt;</span> next) <span class="fu">|</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">                         <span class="dt">Buy</span> <span class="dt">Symbol</span> <span class="dt">Shares</span>  next <span class="fu">|</span></a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">                         <span class="dt">Sell</span> <span class="dt">Symbol</span> <span class="dt">Shares</span> next</a></code></pre></div>
-<p>This type seems self explanatory, except for the last parameter to each constructor. What is that funny <code>next</code> parameter, you might ask? Notice how each of the constructors of <code>StrategyPart</code> represents a certain action to perform. The last parameter tells us what to do after these actions complete, and what to do with the result. The idea is that this <code>QuoteSymbol</code> constructor will hold a symbol that we want to quote as well as a function for performing on the result of that quote.</p>
-<p>But wait! Recall, we said we were going to be creating a <code>Monad</code> that built an AST. Right now we have a type to represent an AST, but <code>StrategyPart</code> isn’t a <code>Monad</code>! This is where the magic of free monads come to the rescue. Using the <code>Free</code> monad from the <code>free</code> package, we can get a <code>Monad</code> instance from StrategyPart for free! This is quite literally from where the name “Free monad” comes: once you define the type, the Monad can be derived for free!</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">import</span> <span class="dt">Control.Monad.Free</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">-- | A strategy that returns a value of type a</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="kw">type</span> <span class="dt">Strategy</span> a <span class="fu">=</span> <span class="dt">Free</span> <span class="dt">StrategyPart</span> a</a></code></pre></div>
-<p>Well, actually, it turns out that we don’t exactly get a <code>Monad</code> for free. In order for a <code>Monad</code> instance to be derived, we have to make <code>StrategyPart</code> a <code>Functor</code>. Don’t feel slighted though: it turns out that this is the absolute minimum you must specify in order to get a <code>Monad</code> (or so the category theorists tell us). This is easy to do though:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">StrategyPart</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2">    fmap f (<span class="dt">QuoteSymbol</span> sym g) <span class="fu">=</span> <span class="dt">QuoteSymbol</span> sym (f <span class="fu">.</span> g)</a>
-<a class="sourceLine" id="cb4-3" data-line-number="3">    fmap f (<span class="dt">Buy</span> sym shares g) <span class="fu">=</span> <span class="dt">Buy</span> sym shares (f g)</a>
-<a class="sourceLine" id="cb4-4" data-line-number="4">    fmap f (<span class="dt">Sell</span> sym shares g) <span class="fu">=</span> <span class="dt">Sell</span> sym shares (f g)</a></code></pre></div>
-<p>Hmm. Well that was do-able, but it’s not really <em>easy</em>. Luckily, we don’t even have to write out this instance! GHC is smart enough to derive it for us. All we need to is enable the <code>DeriveFunctor</code> extension.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="ot">{-# LANGUAGE GenericNewtypeDeriving, DeriveFunctor #-}</span></a>
-<a class="sourceLine" id="cb5-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb5-3" data-line-number="3"><span class="fu">...</span></a>
-<a class="sourceLine" id="cb5-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="kw">data</span> <span class="dt">StrategyPart</span> next <span class="fu">=</span> <span class="dt">QuoteSymbol</span> <span class="dt">Symbol</span> (<span class="dt">Price</span> <span class="ot">-&gt;</span> next) <span class="fu">|</span></a>
-<a class="sourceLine" id="cb5-6" data-line-number="6">                         <span class="dt">Buy</span> <span class="dt">Symbol</span> <span class="dt">Shares</span>  next <span class="fu">|</span></a>
-<a class="sourceLine" id="cb5-7" data-line-number="7">                         <span class="dt">Sell</span> <span class="dt">Symbol</span> <span class="dt">Shares</span> next</a>
-<a class="sourceLine" id="cb5-8" data-line-number="8">    <span class="kw">deriving</span> <span class="dt">Functor</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">StrategyPart</span> next <span class="ot">=</span> <span class="dt">QuoteSymbol</span> <span class="dt">Symbol</span> (<span class="dt">Price</span> <span class="ot">-&gt;</span> next) <span class="op">|</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                         <span class="dt">Buy</span> <span class="dt">Symbol</span> <span class="dt">Shares</span>  next <span class="op">|</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                         <span class="dt">Sell</span> <span class="dt">Symbol</span> <span class="dt">Shares</span> next</span></code></pre></div>
+<p>This type seems self explanatory, except for the last parameter to each constructor. What is that
+funny <code>next</code> parameter, you might ask? Notice how each of the constructors of <code>StrategyPart</code>
+represents a certain action to perform. The last parameter tells us what to do after these actions
+complete, and what to do with the result. The idea is that this <code>QuoteSymbol</code> constructor will hold
+a symbol that we want to quote as well as a function for performing on the result of that quote.</p>
+<p>But wait! Recall, we said we were going to be creating a <code>Monad</code> that built an AST. Right now we
+have a type to represent an AST, but <code>StrategyPart</code> isn’t a <code>Monad</code>! This is where the magic of
+free monads come to the rescue. Using the <code>Free</code> monad from the <code>free</code> package, we can get a
+<code>Monad</code> instance from StrategyPart for free! This is quite literally from where the name “Free monad”
+comes: once you define the type, the Monad can be derived for free!</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad.Free</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">-- | A strategy that returns a value of type a</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Strategy</span> a <span class="ot">=</span> <span class="dt">Free</span> <span class="dt">StrategyPart</span> a</span></code></pre></div>
+<p>Well, actually, it turns out that we don’t exactly get a <code>Monad</code> for free. In order for a <code>Monad</code>
+instance to be derived, we have to make <code>StrategyPart</code> a <code>Functor</code>. Don’t feel slighted though:
+it turns out that this is the absolute minimum you must specify in order to get a <code>Monad</code> (or so
+the category theorists tell us). This is easy to do though:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">StrategyPart</span> <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fmap</span> f (<span class="dt">QuoteSymbol</span> sym g) <span class="ot">=</span> <span class="dt">QuoteSymbol</span> sym (f <span class="op">.</span> g)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fmap</span> f (<span class="dt">Buy</span> sym shares g) <span class="ot">=</span> <span class="dt">Buy</span> sym shares (f g)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">fmap</span> f (<span class="dt">Sell</span> sym shares g) <span class="ot">=</span> <span class="dt">Sell</span> sym shares (f g)</span></code></pre></div>
+<p>Hmm. Well that was do-able, but it’s not really <em>easy</em>. Luckily, we don’t even have to write out
+this instance! GHC is smart enough to derive it for us. All we need to is enable the
+<code>DeriveFunctor</code> extension.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE GenericNewtypeDeriving, DeriveFunctor #-}</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">StrategyPart</span> next <span class="ot">=</span> <span class="dt">QuoteSymbol</span> <span class="dt">Symbol</span> (<span class="dt">Price</span> <span class="ot">-&gt;</span> next) <span class="op">|</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                         <span class="dt">Buy</span> <span class="dt">Symbol</span> <span class="dt">Shares</span>  next <span class="op">|</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                         <span class="dt">Sell</span> <span class="dt">Symbol</span> <span class="dt">Shares</span> next</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">deriving</span> <span class="dt">Functor</span></span></code></pre></div>
 <p>That’s it! We’re ready to make a build a real strategy.</p>
-<p>For our first strategy we’re going to be really stupid and blindly purchase 10 shares of Netflix (NFLX), and then sell them immediately.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="co">-- | Let's hope the random price fluctuations are working in our favor!</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="ot">myStupidStrategy ::</span> <span class="dt">Strategy</span> ()</a>
-<a class="sourceLine" id="cb6-3" data-line-number="3">myStupidStrategy <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb6-4" data-line-number="4">    buy (<span class="dt">Symbol</span> <span class="st">&quot;NFLX&quot;</span>) (<span class="dt">Shares</span> <span class="dv">10</span>)</a>
-<a class="sourceLine" id="cb6-5" data-line-number="5">    sell (<span class="dt">Symbol</span> <span class="st">&quot;NFLX&quot;</span>) (<span class="dt">Shares</span> <span class="dv">10</span>)</a></code></pre></div>
-<p>If we try to compile this, we’ll probably get an error about how <code>buy</code> and <code>sell</code> don’t exist, which makes sense, since we haven’t written them yet! Turns out that even though we have the <code>Buy</code> and <code>Sell</code> constructors, we can’t use them directly. They need to be <em>lifted</em> into the monad. Luckily the <code>Control.Monad.Free</code> package has our backs.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1">buy,<span class="ot"> sell ::</span> <span class="dt">Symbol</span> <span class="ot">-&gt;</span> <span class="dt">Shares</span> <span class="ot">-&gt;</span> <span class="dt">Strategy</span> ()</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">buy sym shares <span class="fu">=</span> liftF (<span class="dt">Buy</span> sym shares ())</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">sell sym shares <span class="fu">=</span> liftF (<span class="dt">Sell</span> sym shares ())</a></code></pre></div>
-<p>But wait! We have a <code>Strategy</code> but how do we run it? After all, it’s not linked to the IO monad, and presumably <code>Strategy</code>s should be able to interface with the real world? This is where the beauty of free monads come in. The free monad lets us write our own interpreters, accepting a value of type <code>Strategy</code> and then evaluating them in whatever way they want. Because this is a bad trading strategy, we wouldn’t want to run it in the real world. Luckily we can still “run” this strategy in a simple interpreter that simply reports the buying and/or selling decisions of the strategy.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="ot">logTrades ::</span> <span class="dt">Strategy</span> a <span class="ot">-&gt;</span> [(<span class="dt">Symbol</span>, <span class="dt">Shares</span>)]</a>
-<a class="sourceLine" id="cb8-2" data-line-number="2">logTrades strategy <span class="fu">=</span> doLog strategy id</a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">    <span class="kw">where</span> doLog strategy a <span class="fu">=</span> <span class="kw">do</span></a>
-<a class="sourceLine" id="cb8-4" data-line-number="4">              <span class="kw">case</span> strategy <span class="kw">of</span></a>
-<a class="sourceLine" id="cb8-5" data-line-number="5">                  <span class="dt">Free</span> (<span class="dt">Buy</span> sym shares next) <span class="ot">-&gt;</span> doLog next (((sym, shares)<span class="fu">:</span>) <span class="fu">.</span> a)</a>
-<a class="sourceLine" id="cb8-6" data-line-number="6">                  <span class="dt">Free</span> (<span class="dt">Sell</span> sym shares next) <span class="ot">-&gt;</span> doLog next (((sym, negate shares)<span class="fu">:</span>) <span class="fu">.</span> a)</a>
-<a class="sourceLine" id="cb8-7" data-line-number="7">                  <span class="dt">Free</span>  _ <span class="ot">-&gt;</span> error <span class="st">&quot;Unsupported operation run in trade logging interpreter&quot;</span></a>
-<a class="sourceLine" id="cb8-8" data-line-number="8">                  <span class="dt">Pure</span> _ <span class="ot">-&gt;</span> a []</a></code></pre></div>
+<p>For our first strategy we’re going to be really stupid and blindly purchase 10 shares of Netflix
+(NFLX), and then sell them immediately.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- | Let's hope the random price fluctuations are working in our favor!</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ot">myStupidStrategy ::</span> <span class="dt">Strategy</span> ()</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>myStupidStrategy <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    buy (<span class="dt">Symbol</span> <span class="st">&quot;NFLX&quot;</span>) (<span class="dt">Shares</span> <span class="dv">10</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    sell (<span class="dt">Symbol</span> <span class="st">&quot;NFLX&quot;</span>) (<span class="dt">Shares</span> <span class="dv">10</span>)</span></code></pre></div>
+<p>If we try to compile this, we’ll probably get an error about how <code>buy</code> and <code>sell</code> don’t exist,
+which makes sense, since we haven’t written them yet! Turns out that even though we have the <code>Buy</code>
+and <code>Sell</code> constructors, we can’t use them directly. They need to be <em>lifted</em> into the
+monad. Luckily the <code>Control.Monad.Free</code> package has our backs.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>buy,<span class="ot"> sell ::</span> <span class="dt">Symbol</span> <span class="ot">-&gt;</span> <span class="dt">Shares</span> <span class="ot">-&gt;</span> <span class="dt">Strategy</span> ()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>buy sym shares <span class="ot">=</span> liftF (<span class="dt">Buy</span> sym shares ())</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>sell sym shares <span class="ot">=</span> liftF (<span class="dt">Sell</span> sym shares ())</span></code></pre></div>
+<p>But wait! We have a <code>Strategy</code> but how do we run it? After all, it’s not linked to the IO monad,
+and presumably <code>Strategy</code>s should be able to interface with the real world? This is where the
+beauty of free monads come in. The free monad lets us write our own interpreters, accepting a value
+of type <code>Strategy</code> and then evaluating them in whatever way they want. Because this is a bad
+trading strategy, we wouldn’t want to run it in the real world. Luckily we can still “run” this
+strategy in a simple interpreter that simply reports the buying and/or selling decisions of the
+strategy.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ot">logTrades ::</span> <span class="dt">Strategy</span> a <span class="ot">-&gt;</span> [(<span class="dt">Symbol</span>, <span class="dt">Shares</span>)]</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>logTrades strategy <span class="ot">=</span> doLog strategy <span class="fu">id</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">where</span> doLog strategy a <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>              <span class="kw">case</span> strategy <span class="kw">of</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">Free</span> (<span class="dt">Buy</span> sym shares next) <span class="ot">-&gt;</span> doLog next (((sym, shares)<span class="op">:</span>) <span class="op">.</span> a)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">Free</span> (<span class="dt">Sell</span> sym shares next) <span class="ot">-&gt;</span> doLog next (((sym, <span class="fu">negate</span> shares)<span class="op">:</span>) <span class="op">.</span> a)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">Free</span>  _ <span class="ot">-&gt;</span> <span class="fu">error</span> <span class="st">&quot;Unsupported operation run in trade logging interpreter&quot;</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">Pure</span> _ <span class="ot">-&gt;</span> a []</span></code></pre></div>
 <p>There is quite a bit going on here, so let’s take it one bit at a time. The first line</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="ot">logTrades ::</span> <span class="dt">Strategy</span> a <span class="ot">-&gt;</span> [(<span class="dt">Symbol</span>, <span class="dt">Shares</span>)]</a></code></pre></div>
-<p>says that we have a function <code>logTrades</code> which takes a strategy producing any value and produces a list of symbol and share pairs. The next two lines</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" data-line-number="1">logTrades strategy <span class="fu">=</span> doLog strategy id</a>
-<a class="sourceLine" id="cb10-2" data-line-number="2">    <span class="kw">where</span> doLog strategy a <span class="fu">=</span> <span class="kw">do</span></a></code></pre></div>
-<p>are where we set ourselves up for the tail-recursive function <code>doLog</code>. This function will thread the trade log state through our strategy. The accumulator will be a function of type <code>[(Symbol, Shares)] -&gt; [(Symbol, Shares)]</code>. The trick we use to pass the accumulator is a common Haskell idiom for building up a list in order (if we used the cons operator <code>(:)</code> by itself, we ’d end up building the list backwards). Finally, the next lines implement the actual interpreter.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb11-1" data-line-number="1">              <span class="kw">case</span> strategy <span class="kw">of</span></a>
-<a class="sourceLine" id="cb11-2" data-line-number="2">                  <span class="dt">Free</span> (<span class="dt">Buy</span> sym shares next) <span class="ot">-&gt;</span> doLog next (((sym, shares)<span class="fu">:</span>) <span class="fu">.</span> a)</a>
-<a class="sourceLine" id="cb11-3" data-line-number="3">                  <span class="dt">Free</span> (<span class="dt">Sell</span> sym shares next) <span class="ot">-&gt;</span> doLog next (((sym, negate shares)<span class="fu">:</span>) <span class="fu">.</span> a)</a></code></pre></div>
-<p>These two lines handle the buy and sell commands by adding them to the end of the list. The buy command adds a symbol-share pair with a positive share value, while the sell command adds one with a negative value.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ot">logTrades ::</span> <span class="dt">Strategy</span> a <span class="ot">-&gt;</span> [(<span class="dt">Symbol</span>, <span class="dt">Shares</span>)]</span></code></pre></div>
+<p>says that we have a function <code>logTrades</code> which takes a strategy producing any value and produces a
+list of symbol and share pairs. The next two lines</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>logTrades strategy <span class="ot">=</span> doLog strategy <span class="fu">id</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">where</span> doLog strategy a <span class="ot">=</span> <span class="kw">do</span></span></code></pre></div>
+<p>are where we set ourselves up for the tail-recursive function <code>doLog</code>. This function will thread
+the trade log state through our strategy. The accumulator will be a function of type
+<code>[(Symbol, Shares)] -&gt; [(Symbol, Shares)]</code>. The trick we use to pass the accumulator is a common
+Haskell idiom for building up a list in order (if we used the cons operator <code>(:)</code> by itself, we ’d
+end up building the list backwards). Finally, the next lines implement the actual interpreter.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>              <span class="kw">case</span> strategy <span class="kw">of</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">Free</span> (<span class="dt">Buy</span> sym shares next) <span class="ot">-&gt;</span> doLog next (((sym, shares)<span class="op">:</span>) <span class="op">.</span> a)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">Free</span> (<span class="dt">Sell</span> sym shares next) <span class="ot">-&gt;</span> doLog next (((sym, <span class="fu">negate</span> shares)<span class="op">:</span>) <span class="op">.</span> a)</span></code></pre></div>
+<p>These two lines handle the buy and sell commands by adding them to the end of the list. The buy
+command adds a symbol-share pair with a positive share value, while the sell command adds one with a
+negative value.</p>
 <p>The next line</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb12-1" data-line-number="1">                  <span class="dt">Free</span>  _ <span class="ot">-&gt;</span> error <span class="st">&quot;Unsupported operation run in trade logging interpreter&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">Free</span>  _ <span class="ot">-&gt;</span> <span class="fu">error</span> <span class="st">&quot;Unsupported operation run in trade logging interpreter&quot;</span></span></code></pre></div>
 <p>throws an error if any command other than buy or sell, like a stock quote, is run in the strategy.</p>
 <p>Finally, the last line handles the base case, when our strategy finishes executing.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb13-1" data-line-number="1">                  <span class="dt">Pure</span> _ <span class="ot">-&gt;</span> a []</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>                  <span class="dt">Pure</span> _ <span class="ot">-&gt;</span> a []</span></code></pre></div>
 <p>Now, if we run this interpreter on our strategy we should get something like the following</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="dt">Prelude</span><span class="fu">&gt;</span> logTrades myStupidStrategy</a>
-<a class="sourceLine" id="cb14-2" data-line-number="2">[(<span class="dt">Stock</span> {unStock<span class="fu">=</span><span class="st">&quot;NFLX&quot;</span>}, <span class="dt">Shares</span> {unShares<span class="fu">=</span><span class="dv">10</span>}), (<span class="dt">Stock</span> {nStock<span class="fu">=</span><span class="st">&quot;NFLX&quot;</span>}, <span class="dt">Shares</span> {unShares<span class="fu">=-</span><span class="dv">10</span>})]</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="dt">Prelude</span><span class="op">&gt;</span> logTrades myStupidStrategy</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>[(<span class="dt">Stock</span> {unStock<span class="ot">=</span><span class="st">&quot;NFLX&quot;</span>}, <span class="dt">Shares</span> {unShares<span class="ot">=</span><span class="dv">10</span>}), (<span class="dt">Stock</span> {nStock<span class="ot">=</span><span class="st">&quot;NFLX&quot;</span>}, <span class="dt">Shares</span> {unShares<span class="op">=-</span><span class="dv">10</span>})]</span></code></pre></div>
 <p>That’s it for this post. Check out part 2 (coming soon) for more!.</p>
 </div>
 

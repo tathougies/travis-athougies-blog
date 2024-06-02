@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -137,10 +143,10 @@ DATA Product ==
 	CONS PhysicalProduct sku=Text title=Text description=Text price=Float weight=Float
     CONS DownloadableProduct sku=Text title=Text description=Text price=Float url=Text</code></pre>
 <p>Save the file, and run</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="ex">zippy-serve</span> -r database1.roots -d database1.data -Z ./database1.zephyr -T Product 9123</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zippy-serve</span> <span class="at">-r</span> database1.roots <span class="at">-d</span> database1.data <span class="at">-Z</span> ./database1.zephyr <span class="at">-T</span> Product 9123</span></code></pre></div>
 <p>This tells zippy to start serving the database in files <code>database1.roots</code> and <code>database1.data</code> and type <code>Product</code> on port 9123. The <code>-Z</code> flag loads the file we just created.</p>
 <p>Now run</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="ex">telnet</span> localhost 9123</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">telnet</span> localhost 9123</span></code></pre></div>
 <p>This should open a prompt where you can type zippy commands. Type <code>cur</code> and hit enter. You should receive a message</p>
 <pre><code>cur
 CurHasTag 0</code></pre>
@@ -150,7 +156,7 @@ CurHasTag 0</code></pre>
 <p>Type the <code>down 0</code> into the telnet session. This tells zippy to go into the first field of the <code>PhysicalProduct</code>. This is the <code>sku</code> field and it has type <code>Text</code>. You should receive a <code>Moved</code> back from zippy to indicate that the move succeeded. Now type <code>cur</code> again, you should receive back</p>
 <pre><code>cur
 CurIsAtom TextD &quot;&quot;</code></pre>
-<p>This indicates that the current <em>focus</em> of the transaction is a primitive type (a <code>Text</code> in this case) with value “”, the empty string. Let’s go ahead and replace the sku with the string “gadget”. Type <code>replace &quot;gadget&quot;</code> into the session. You should see the familiar <code>Moved</code> message. Now type <code>cur</code> again. You should now see</p>
+<p>This indicates that the current <em>focus</em> of the transaction is a primitive type (a <code>Text</code> in this case) with value ““, the empty string. Let’s go ahead and replace the sku with the string”gadget”. Type <code>replace "gadget"</code> into the session. You should see the familiar <code>Moved</code> message. Now type <code>cur</code> again. You should now see</p>
 <pre><code>cur
 CurIsAtom TextD &quot;gadget&quot;</code></pre>
 <p>Type <code>commit</code> to save the changes to the database. You should get back a <code>TxCommitted</code> message indicating that the changes made have been writted to disk and will now be visible to other transactions. Congratulations, you’ve successfully manipulated your first data in Zippy!</p>

@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -96,8 +102,15 @@
 
 <p>An in-memory time-series database written over AcidState, with on-disk or Amazon S3 archival support</p>
 
-<p>HQuant-State is a time series database for HQuant, meant to store historical stock and option quotes and historical balances and incomes. It is meant to be run as a separate service, and it is expected that it will be written to by a DEQ client handling a quote stream (perhaps from hdeq-tradeking or some other stock data provider).</p>
-<p>HQuant-State is a hybrid in-memory/persistent storage database. Due to the nature of time series, it is append only, meaning that it can make several optimizations that other databases can’t. Most notably, it only keeps a set amount of historical data in memory, and puts the rest into storage somewhere else. Currently, this storage can be either the local disk or an Amazon S3 bucket. This behavior is entirely configurable.</p>
+<p>HQuant-State is a time series database for HQuant, meant to store historical stock and option
+quotes and historical balances and incomes. It is meant to be run as a separate service, and it is
+expected that it will be written to by a DEQ client handling a quote stream (perhaps from
+hdeq-tradeking or some other stock data provider).</p>
+<p>HQuant-State is a hybrid in-memory/persistent storage database. Due to the nature of time series, it
+is append only, meaning that it can make several optimizations that other databases can’t. Most
+notably, it only keeps a set amount of historical data in memory, and puts the rest into storage
+somewhere else. Currently, this storage can be either the local disk or an Amazon S3 bucket. This
+behavior is entirely configurable.</p>
 <h2 id="configuration-file">Configuration File</h2>
 <p>There is an example configuration file in the Git repository at <code>config.example</code>. More documentation coming!</p>
 <h2 id="potential-uses">Potential Uses</h2>

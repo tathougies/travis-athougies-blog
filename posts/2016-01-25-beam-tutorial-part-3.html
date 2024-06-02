@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -112,263 +118,292 @@
 
 
 <div id="post">
-<p>In the <a href="../posts/2016-01-22-beam-tutorial-part-2.html">last tutorial</a> in the sequence, we saw how to create and query our first relation. In this tutorial, we’re going to add the remaining tables into our database and write some more complicated queries on them to explore more of beam’s features.</p>
+<p>In the <a href="../posts/2016-01-22-beam-tutorial-part-2.html">last tutorial</a> in the
+sequence, we saw how to create and query our first relation. In this
+tutorial, we’re going to add the remaining tables into our database
+and write some more complicated queries on them to explore more of
+beam’s features.</p>
 <p>Author’s note: This has been superseded by the <a href="https://tathougies.github.io/beam">Beam manual</a>.</p>
 <h2 id="where-we-left-off">Where we left off</h2>
-<p>Because this file is <a href="https://github.com/tathougies/beam/tree/master/Doc/03-ProductsAndOrders.lhs">literate haskell</a> and because readers may want to refresh their memories a bit, I’ve duplicated all the schema work we’ve done up until this point below.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="ot">{-# LANGUAGE StandaloneDeriving, TypeSynonymInstances, FlexibleInstances, TypeFamilies, DeriveGeneric, OverloadedStrings, PartialTypeSignatures #-}</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">import</span> <span class="dt">Database.Beam</span></a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw">import</span> <span class="dt">Database.Beam.Backend.Sqlite3</span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="kw">import</span> <span class="dt">Control.Monad</span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="kw">import</span> <span class="dt">Data.Time</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="kw">import</span> <span class="dt">Data.Text</span> (<span class="dt">Text</span>)</a>
-<a class="sourceLine" id="cb1-11" data-line-number="11"><span class="kw">import</span> <span class="dt">Lens.Micro</span></a>
-<a class="sourceLine" id="cb1-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb1-13" data-line-number="13"><span class="kw">data</span> <span class="dt">UserT</span> f <span class="fu">=</span> <span class="dt">User</span></a>
-<a class="sourceLine" id="cb1-14" data-line-number="14">             {<span class="ot"> _userEmail     ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-15" data-line-number="15">             ,<span class="ot"> _userFirstName ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-16" data-line-number="16">             ,<span class="ot"> _userLastName  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-17" data-line-number="17">             ,<span class="ot"> _userPassword  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span> }</a>
-<a class="sourceLine" id="cb1-18" data-line-number="18">              <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb1-19" data-line-number="19"></a>
-<a class="sourceLine" id="cb1-20" data-line-number="20"><span class="kw">type</span> <span class="dt">User</span> <span class="fu">=</span> <span class="dt">UserT</span> <span class="dt">Identity</span></a>
-<a class="sourceLine" id="cb1-21" data-line-number="21"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">User</span></a>
-<a class="sourceLine" id="cb1-22" data-line-number="22"></a>
-<a class="sourceLine" id="cb1-23" data-line-number="23"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">UserT</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb1-24" data-line-number="24">    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> f <span class="fu">=</span> <span class="dt">UserId</span> (<span class="dt">Columnar</span> f <span class="dt">Text</span>) <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb1-25" data-line-number="25">    primaryKey <span class="fu">=</span> <span class="dt">UserId</span> <span class="fu">.</span> _userEmail</a>
-<a class="sourceLine" id="cb1-26" data-line-number="26"></a>
-<a class="sourceLine" id="cb1-27" data-line-number="27"><span class="kw">type</span> <span class="dt">UserId</span> <span class="fu">=</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> <span class="dt">Identity</span></a>
-<a class="sourceLine" id="cb1-28" data-line-number="28"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">UserId</span></a>
-<a class="sourceLine" id="cb1-29" data-line-number="29"></a>
-<a class="sourceLine" id="cb1-30" data-line-number="30"><span class="kw">data</span> <span class="dt">AddressT</span> f <span class="fu">=</span> <span class="dt">Address</span></a>
-<a class="sourceLine" id="cb1-31" data-line-number="31">                {<span class="ot"> _addressId    ::</span> <span class="dt">Columnar</span> f <span class="dt">AutoId</span></a>
-<a class="sourceLine" id="cb1-32" data-line-number="32">                ,<span class="ot"> _addressLine1 ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-33" data-line-number="33">                ,<span class="ot"> _addressLine2 ::</span> <span class="dt">Columnar</span> f (<span class="dt">Maybe</span> <span class="dt">Text</span>)</a>
-<a class="sourceLine" id="cb1-34" data-line-number="34">                ,<span class="ot"> _addressCity  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-35" data-line-number="35">                ,<span class="ot"> _addressState ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-36" data-line-number="36">                ,<span class="ot"> _addressZip   ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-37" data-line-number="37"></a>
-<a class="sourceLine" id="cb1-38" data-line-number="38">                ,<span class="ot"> _addressForUser ::</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> f }</a>
-<a class="sourceLine" id="cb1-39" data-line-number="39">                  <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb1-40" data-line-number="40"><span class="kw">type</span> <span class="dt">Address</span> <span class="fu">=</span> <span class="dt">AddressT</span> <span class="dt">Identity</span></a>
-<a class="sourceLine" id="cb1-41" data-line-number="41"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">Address</span></a>
-<a class="sourceLine" id="cb1-42" data-line-number="42"></a>
-<a class="sourceLine" id="cb1-43" data-line-number="43"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">AddressT</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb1-44" data-line-number="44">    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">AddressT</span> f <span class="fu">=</span> <span class="dt">AddressId</span> (<span class="dt">Columnar</span> f <span class="dt">AutoId</span>) <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb1-45" data-line-number="45">    primaryKey <span class="fu">=</span> <span class="dt">AddressId</span> <span class="fu">.</span> _addressId</a>
-<a class="sourceLine" id="cb1-46" data-line-number="46"></a>
-<a class="sourceLine" id="cb1-47" data-line-number="47">    tblFieldSettings <span class="fu">=</span> defTblFieldSettings</a>
-<a class="sourceLine" id="cb1-48" data-line-number="48">                       <span class="fu">&amp;</span> addressStateC <span class="fu">.</span> fieldSchema <span class="fu">.~</span> textSchema (<span class="dt">Char</span> (<span class="dt">Just</span> <span class="dv">2</span>))</a>
-<a class="sourceLine" id="cb1-49" data-line-number="49">                       <span class="fu">&amp;</span> addressZipC <span class="fu">.</span> fieldSchema <span class="fu">.~</span> textSchema (<span class="dt">Varchar</span> (<span class="dt">Just</span> <span class="dv">5</span>))</a>
-<a class="sourceLine" id="cb1-50" data-line-number="50"></a>
-<a class="sourceLine" id="cb1-51" data-line-number="51"><span class="dt">Address</span> (<span class="dt">LensFor</span> addressIdC)</a>
-<a class="sourceLine" id="cb1-52" data-line-number="52">        (<span class="dt">LensFor</span> addressLine1C)</a>
-<a class="sourceLine" id="cb1-53" data-line-number="53">        (<span class="dt">LensFor</span> addressLine2C)</a>
-<a class="sourceLine" id="cb1-54" data-line-number="54">        (<span class="dt">LensFor</span> addressCityC)</a>
-<a class="sourceLine" id="cb1-55" data-line-number="55">        (<span class="dt">LensFor</span> addressStateC)</a>
-<a class="sourceLine" id="cb1-56" data-line-number="56">        (<span class="dt">LensFor</span> addressZipC)</a>
-<a class="sourceLine" id="cb1-57" data-line-number="57">        (<span class="dt">UserId</span> (<span class="dt">LensFor</span> addressForUserIdC)) <span class="fu">=</span> tableConfigLenses</a></code></pre></div>
+<p>Because this file is <a href="https://github.com/tathougies/beam/tree/master/Doc/03-ProductsAndOrders.lhs">literate haskell</a> and because readers may want to refresh their memories a bit,
+I’ve duplicated all the schema work we’ve done up until this point below.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE StandaloneDeriving, TypeSynonymInstances, FlexibleInstances, TypeFamilies, DeriveGeneric, OverloadedStrings, PartialTypeSignatures #-}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Database.Beam</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Database.Beam.Backend.Sqlite3</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Time</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Text</span> (<span class="dt">Text</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Lens.Micro</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">UserT</span> f <span class="ot">=</span> <span class="dt">User</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>             {<span class="ot"> _userEmail     ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>             ,<span class="ot"> _userFirstName ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>             ,<span class="ot"> _userLastName  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>             ,<span class="ot"> _userPassword  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span> }</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>              <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">UserT</span> <span class="dt">Identity</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">User</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">UserT</span> <span class="kw">where</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> f <span class="ot">=</span> <span class="dt">UserId</span> (<span class="dt">Columnar</span> f <span class="dt">Text</span>) <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    primaryKey <span class="ot">=</span> <span class="dt">UserId</span> <span class="op">.</span> _userEmail</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">UserId</span> <span class="ot">=</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> <span class="dt">Identity</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">UserId</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">AddressT</span> f <span class="ot">=</span> <span class="dt">Address</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>                {<span class="ot"> _addressId    ::</span> <span class="dt">Columnar</span> f <span class="dt">AutoId</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _addressLine1 ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _addressLine2 ::</span> <span class="dt">Columnar</span> f (<span class="dt">Maybe</span> <span class="dt">Text</span>)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _addressCity  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _addressState ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _addressZip   ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _addressForUser ::</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> f }</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>                  <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Address</span> <span class="ot">=</span> <span class="dt">AddressT</span> <span class="dt">Identity</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">Address</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">AddressT</span> <span class="kw">where</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">AddressT</span> f <span class="ot">=</span> <span class="dt">AddressId</span> (<span class="dt">Columnar</span> f <span class="dt">AutoId</span>) <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    primaryKey <span class="ot">=</span> <span class="dt">AddressId</span> <span class="op">.</span> _addressId</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    tblFieldSettings <span class="ot">=</span> defTblFieldSettings</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>                       <span class="op">&amp;</span> addressStateC <span class="op">.</span> fieldSchema <span class="op">.~</span> textSchema (<span class="dt">Char</span> (<span class="dt">Just</span> <span class="dv">2</span>))</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>                       <span class="op">&amp;</span> addressZipC <span class="op">.</span> fieldSchema <span class="op">.~</span> textSchema (<span class="dt">Varchar</span> (<span class="dt">Just</span> <span class="dv">5</span>))</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="dt">Address</span> (<span class="dt">LensFor</span> addressIdC)</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">LensFor</span> addressLine1C)</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">LensFor</span> addressLine2C)</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">LensFor</span> addressCityC)</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">LensFor</span> addressStateC)</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">LensFor</span> addressZipC)</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>        (<span class="dt">UserId</span> (<span class="dt">LensFor</span> addressForUserIdC)) <span class="ot">=</span> tableConfigLenses</span></code></pre></div>
 <h2 id="creating-tables-is-easy-now">Creating tables is easy now</h2>
-<p>Let’s create our products table. By now, the pattern for adding a new table to the schema should be pretty familiar, so I’m going to skip the explanation.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">data</span> <span class="dt">ProductT</span> f <span class="fu">=</span> <span class="dt">Product</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">                {<span class="ot"> _productId          ::</span> <span class="dt">Columnar</span> f <span class="dt">AutoId</span></a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">                ,<span class="ot"> _productTitle       ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">                ,<span class="ot"> _productDescription ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb2-5" data-line-number="5">                ,<span class="ot"> _productPrice       ::</span> <span class="dt">Columnar</span> f <span class="dt">Int</span> <span class="co">{- Price in cents -}</span> }</a>
-<a class="sourceLine" id="cb2-6" data-line-number="6">                  <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb2-7" data-line-number="7"><span class="kw">type</span> <span class="dt">Product</span> <span class="fu">=</span> <span class="dt">ProductT</span> <span class="dt">Identity</span></a>
-<a class="sourceLine" id="cb2-8" data-line-number="8"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">Product</span></a>
-<a class="sourceLine" id="cb2-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb2-10" data-line-number="10"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">ProductT</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb2-11" data-line-number="11">  <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">ProductT</span> f <span class="fu">=</span> <span class="dt">ProductId</span> (<span class="dt">Columnar</span> f <span class="dt">AutoId</span>)</a>
-<a class="sourceLine" id="cb2-12" data-line-number="12">                               <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13">  primaryKey <span class="fu">=</span> <span class="dt">ProductId</span> <span class="fu">.</span> _productId</a></code></pre></div>
-<p>For orders, we want to store an id, date created, and the user who made the order. We’d also like to create an optional link to a shipping information table. When the shipping information is created, we’ll fill in the shipping information in the order. In order to create the optional reference, we’re going to use the <code>Nullable</code> tag modifier to modify the column tag. <code>Nullable</code> will turn all fields of type <code>x</code> into <code>Maybe x</code>. Note that we could also create this relation by installing a primary key on the shipping info table, and this is arguably the better option. However, we’ll go with a nullable foreign key here to show the full breadth of beam’s features, and because this sort of relation exists in many existing databases.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">data</span> <span class="dt">OrderT</span> f <span class="fu">=</span> <span class="dt">Order</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">              {<span class="ot"> _orderId      ::</span> <span class="dt">Columnar</span> f <span class="dt">AutoId</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">              ,<span class="ot"> _orderDate    ::</span> <span class="dt">Columnar</span> f <span class="dt">UTCTime</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">              ,<span class="ot"> _orderForUser ::</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> f</a>
-<a class="sourceLine" id="cb3-5" data-line-number="5">              ,<span class="ot"> _orderShipToAddress ::</span> <span class="dt">PrimaryKey</span> <span class="dt">AddressT</span> f</a>
-<a class="sourceLine" id="cb3-6" data-line-number="6">              ,<span class="ot"> _orderShippingInfo ::</span> <span class="dt">PrimaryKey</span> <span class="dt">ShippingInfoT</span> (<span class="dt">Nullable</span> f) }</a>
-<a class="sourceLine" id="cb3-7" data-line-number="7">                <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8"><span class="kw">type</span> <span class="dt">Order</span> <span class="fu">=</span> <span class="dt">OrderT</span> <span class="dt">Identity</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">Order</span></a>
-<a class="sourceLine" id="cb3-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb3-11" data-line-number="11"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">OrderT</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb3-12" data-line-number="12">    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">OrderT</span> f <span class="fu">=</span> <span class="dt">OrderId</span> (<span class="dt">Columnar</span> f <span class="dt">AutoId</span>)</a>
-<a class="sourceLine" id="cb3-13" data-line-number="13">                               <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb3-14" data-line-number="14">    primaryKey <span class="fu">=</span> <span class="dt">OrderId</span> <span class="fu">.</span> _orderId</a>
-<a class="sourceLine" id="cb3-15" data-line-number="15"></a>
-<a class="sourceLine" id="cb3-16" data-line-number="16"><span class="kw">data</span> <span class="dt">ShippingCarrier</span> <span class="fu">=</span> <span class="dt">USPS</span> <span class="fu">|</span> <span class="dt">FedEx</span> <span class="fu">|</span> <span class="dt">UPS</span> <span class="fu">|</span> <span class="dt">DHL</span></a>
-<a class="sourceLine" id="cb3-17" data-line-number="17">                       <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Enum</span>)</a>
-<a class="sourceLine" id="cb3-18" data-line-number="18"></a>
-<a class="sourceLine" id="cb3-19" data-line-number="19"><span class="kw">instance</span> <span class="dt">HasDefaultFieldSchema</span> <span class="dt">ShippingCarrier</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb3-20" data-line-number="20">    defFieldSchema <span class="fu">=</span> enumSchema</a>
-<a class="sourceLine" id="cb3-21" data-line-number="21"><span class="kw">instance</span> <span class="dt">FromSqlValues</span> <span class="dt">ShippingCarrier</span></a>
-<a class="sourceLine" id="cb3-22" data-line-number="22"></a>
-<a class="sourceLine" id="cb3-23" data-line-number="23"><span class="kw">data</span> <span class="dt">ShippingInfoT</span> f <span class="fu">=</span> <span class="dt">ShippingInfo</span></a>
-<a class="sourceLine" id="cb3-24" data-line-number="24">                     {<span class="ot"> _shippingInfoId             ::</span> <span class="dt">Columnar</span> f <span class="dt">AutoId</span></a>
-<a class="sourceLine" id="cb3-25" data-line-number="25">                     ,<span class="ot"> _shippingInfoCarrier        ::</span> <span class="dt">Columnar</span> f <span class="dt">ShippingCarrier</span></a>
-<a class="sourceLine" id="cb3-26" data-line-number="26">                     ,<span class="ot"> _shippingInfoTrackingNumber ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span> }</a>
-<a class="sourceLine" id="cb3-27" data-line-number="27">                       <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb3-28" data-line-number="28"><span class="kw">type</span> <span class="dt">ShippingInfo</span> <span class="fu">=</span> <span class="dt">ShippingInfoT</span> <span class="dt">Identity</span></a>
-<a class="sourceLine" id="cb3-29" data-line-number="29"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">ShippingInfo</span></a>
-<a class="sourceLine" id="cb3-30" data-line-number="30"></a>
-<a class="sourceLine" id="cb3-31" data-line-number="31"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">ShippingInfoT</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb3-32" data-line-number="32">    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">ShippingInfoT</span> f <span class="fu">=</span> <span class="dt">ShippingInfoId</span> (<span class="dt">Columnar</span> f <span class="dt">AutoId</span>)</a>
-<a class="sourceLine" id="cb3-33" data-line-number="33">                                      <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb3-34" data-line-number="34">    primaryKey <span class="fu">=</span> <span class="dt">ShippingInfoId</span> <span class="fu">.</span> _shippingInfoId</a></code></pre></div>
-<p>The above example also shows how to use a custom data type as a beam column. In this case, we wanted to use the <code>ShippingCarrier</code> enumerable type as a column type. To do this, we instantiated the <code>HasDefaultFieldSchema</code> class for the type. We set the default schema for the field to be <code>enumSchema</code> which can store types inhabiting the <code>Enum</code> type class as integers in the database. We also instantiate the <code>FromSqlValues</code> type class for <code>ShippingCarrier</code> with an empty implementation. For inhabitants of <code>HasDefaultFieldSchema</code>, <code>FromSqlValues</code> uses the default deserializer. This is almost always the best option.</p>
-<p>We would also like to be able to associate a list of products with each order as line items. To do this we will create a table with two foreign keys. This table will establish a many-to-many relationship between orders and products.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">data</span> <span class="dt">LineItemT</span> f <span class="fu">=</span> <span class="dt">LineItem</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2">                 {<span class="ot"> _lineItemInOrder    ::</span> <span class="dt">PrimaryKey</span> <span class="dt">OrderT</span> f</a>
-<a class="sourceLine" id="cb4-3" data-line-number="3">                 ,<span class="ot"> _lineItemForProduct ::</span> <span class="dt">PrimaryKey</span> <span class="dt">ProductT</span> f</a>
-<a class="sourceLine" id="cb4-4" data-line-number="4">                 ,<span class="ot"> _lineItemQuantity   ::</span> <span class="dt">Columnar</span> f <span class="dt">Int</span> }</a>
-<a class="sourceLine" id="cb4-5" data-line-number="5">                   <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb4-6" data-line-number="6"><span class="kw">type</span> <span class="dt">LineItem</span> <span class="fu">=</span> <span class="dt">LineItemT</span> <span class="dt">Identity</span></a>
-<a class="sourceLine" id="cb4-7" data-line-number="7"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">LineItem</span></a>
-<a class="sourceLine" id="cb4-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb4-9" data-line-number="9"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">LineItemT</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb4-10" data-line-number="10">    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">LineItemT</span> f <span class="fu">=</span> <span class="dt">LineItemId</span> (<span class="dt">PrimaryKey</span> <span class="dt">OrderT</span> f) (<span class="dt">PrimaryKey</span> <span class="dt">ProductT</span> f)</a>
-<a class="sourceLine" id="cb4-11" data-line-number="11">                                  <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb4-12" data-line-number="12">    primaryKey lineItem <span class="fu">=</span> <span class="dt">LineItemId</span> (_lineItemInOrder lineItem) (_lineItemForProduct lineItem)</a></code></pre></div>
+<p>Let’s create our products table. By now, the pattern for adding a new table to the schema should be
+pretty familiar, so I’m going to skip the explanation.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">ProductT</span> f <span class="ot">=</span> <span class="dt">Product</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                {<span class="ot"> _productId          ::</span> <span class="dt">Columnar</span> f <span class="dt">AutoId</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _productTitle       ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _productDescription ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                ,<span class="ot"> _productPrice       ::</span> <span class="dt">Columnar</span> f <span class="dt">Int</span> <span class="co">{- Price in cents -}</span> }</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                  <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Product</span> <span class="ot">=</span> <span class="dt">ProductT</span> <span class="dt">Identity</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">Product</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">ProductT</span> <span class="kw">where</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">ProductT</span> f <span class="ot">=</span> <span class="dt">ProductId</span> (<span class="dt">Columnar</span> f <span class="dt">AutoId</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                               <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  primaryKey <span class="ot">=</span> <span class="dt">ProductId</span> <span class="op">.</span> _productId</span></code></pre></div>
+<p>For orders, we want to store an id, date created, and the user who made the order. We’d also like to
+create an optional link to a shipping information table. When the shipping information is created,
+we’ll fill in the shipping information in the order. In order to create the optional reference,
+we’re going to use the <code>Nullable</code> tag modifier to modify the column tag. <code>Nullable</code> will turn all
+fields of type <code>x</code> into <code>Maybe x</code>. Note that we could also
+create this relation by installing a primary key on the shipping info table, and this is arguably
+the better option. However, we’ll go with a nullable foreign key here to show the full breadth of
+beam’s features, and because this sort of relation exists in many existing databases.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">OrderT</span> f <span class="ot">=</span> <span class="dt">Order</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>              {<span class="ot"> _orderId      ::</span> <span class="dt">Columnar</span> f <span class="dt">AutoId</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>              ,<span class="ot"> _orderDate    ::</span> <span class="dt">Columnar</span> f <span class="dt">UTCTime</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>              ,<span class="ot"> _orderForUser ::</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> f</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>              ,<span class="ot"> _orderShipToAddress ::</span> <span class="dt">PrimaryKey</span> <span class="dt">AddressT</span> f</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>              ,<span class="ot"> _orderShippingInfo ::</span> <span class="dt">PrimaryKey</span> <span class="dt">ShippingInfoT</span> (<span class="dt">Nullable</span> f) }</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Order</span> <span class="ot">=</span> <span class="dt">OrderT</span> <span class="dt">Identity</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">Order</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">OrderT</span> <span class="kw">where</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">OrderT</span> f <span class="ot">=</span> <span class="dt">OrderId</span> (<span class="dt">Columnar</span> f <span class="dt">AutoId</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                               <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    primaryKey <span class="ot">=</span> <span class="dt">OrderId</span> <span class="op">.</span> _orderId</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">ShippingCarrier</span> <span class="ot">=</span> <span class="dt">USPS</span> <span class="op">|</span> <span class="dt">FedEx</span> <span class="op">|</span> <span class="dt">UPS</span> <span class="op">|</span> <span class="dt">DHL</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                       <span class="kw">deriving</span> (<span class="dt">Show</span>, <span class="dt">Read</span>, <span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Enum</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">HasDefaultFieldSchema</span> <span class="dt">ShippingCarrier</span> <span class="kw">where</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    defFieldSchema <span class="ot">=</span> enumSchema</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">FromSqlValues</span> <span class="dt">ShippingCarrier</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">ShippingInfoT</span> f <span class="ot">=</span> <span class="dt">ShippingInfo</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                     {<span class="ot"> _shippingInfoId             ::</span> <span class="dt">Columnar</span> f <span class="dt">AutoId</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                     ,<span class="ot"> _shippingInfoCarrier        ::</span> <span class="dt">Columnar</span> f <span class="dt">ShippingCarrier</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>                     ,<span class="ot"> _shippingInfoTrackingNumber ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span> }</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>                       <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">ShippingInfo</span> <span class="ot">=</span> <span class="dt">ShippingInfoT</span> <span class="dt">Identity</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">ShippingInfo</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">ShippingInfoT</span> <span class="kw">where</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">ShippingInfoT</span> f <span class="ot">=</span> <span class="dt">ShippingInfoId</span> (<span class="dt">Columnar</span> f <span class="dt">AutoId</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>                                      <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    primaryKey <span class="ot">=</span> <span class="dt">ShippingInfoId</span> <span class="op">.</span> _shippingInfoId</span></code></pre></div>
+<p>The above example also shows how to use a custom data type as a beam column. In this case, we wanted
+to use the <code>ShippingCarrier</code> enumerable type as a column type. To do this, we instantiated the
+<code>HasDefaultFieldSchema</code> class for the type. We set the default schema for the field to be
+<code>enumSchema</code> which can store types inhabiting the <code>Enum</code> type class as integers in the database. We
+also instantiate the <code>FromSqlValues</code> type class for <code>ShippingCarrier</code> with an empty
+implementation. For inhabitants of <code>HasDefaultFieldSchema</code>, <code>FromSqlValues</code> uses the default
+deserializer. This is almost always the best option.</p>
+<p>We would also like to be able to associate a list of products with each order as line items. To do
+this we will create a table with two foreign keys. This table will establish a many-to-many
+relationship between orders and products.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">LineItemT</span> f <span class="ot">=</span> <span class="dt">LineItem</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                 {<span class="ot"> _lineItemInOrder    ::</span> <span class="dt">PrimaryKey</span> <span class="dt">OrderT</span> f</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                 ,<span class="ot"> _lineItemForProduct ::</span> <span class="dt">PrimaryKey</span> <span class="dt">ProductT</span> f</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                 ,<span class="ot"> _lineItemQuantity   ::</span> <span class="dt">Columnar</span> f <span class="dt">Int</span> }</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                   <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">LineItem</span> <span class="ot">=</span> <span class="dt">LineItemT</span> <span class="dt">Identity</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">LineItem</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">LineItemT</span> <span class="kw">where</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">LineItemT</span> f <span class="ot">=</span> <span class="dt">LineItemId</span> (<span class="dt">PrimaryKey</span> <span class="dt">OrderT</span> f) (<span class="dt">PrimaryKey</span> <span class="dt">ProductT</span> f)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                                  <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    primaryKey lineItem <span class="ot">=</span> <span class="dt">LineItemId</span> (_lineItemInOrder lineItem) (_lineItemForProduct lineItem)</span></code></pre></div>
 <p>Finally, we’ll need some more <code>Show</code> instances for GHC to be happy.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">PrimaryKey</span> <span class="dt">OrderT</span> <span class="dt">Identity</span>)</a>
-<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">PrimaryKey</span> <span class="dt">ProductT</span> <span class="dt">Identity</span>)</a>
-<a class="sourceLine" id="cb5-3" data-line-number="3"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">PrimaryKey</span> <span class="dt">AddressT</span> <span class="dt">Identity</span>)</a>
-<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">PrimaryKey</span> <span class="dt">ShippingInfoT</span> (<span class="dt">Nullable</span> <span class="dt">Identity</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">PrimaryKey</span> <span class="dt">OrderT</span> <span class="dt">Identity</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">PrimaryKey</span> <span class="dt">ProductT</span> <span class="dt">Identity</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">PrimaryKey</span> <span class="dt">AddressT</span> <span class="dt">Identity</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">PrimaryKey</span> <span class="dt">ShippingInfoT</span> (<span class="dt">Nullable</span> <span class="dt">Identity</span>))</span></code></pre></div>
 <p>Now we’ll add all these tables to our database.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">data</span> <span class="dt">ShoppingCartDb</span> f <span class="fu">=</span> <span class="dt">ShoppingCartDb</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2">                      {<span class="ot"> _shoppingCartUsers         ::</span> f <span class="dt">UserT</span></a>
-<a class="sourceLine" id="cb6-3" data-line-number="3">                      ,<span class="ot"> _shoppingCartUserAddresses ::</span> f <span class="dt">AddressT</span></a>
-<a class="sourceLine" id="cb6-4" data-line-number="4">                      ,<span class="ot"> _shoppingCartProducts      ::</span> f <span class="dt">ProductT</span></a>
-<a class="sourceLine" id="cb6-5" data-line-number="5">                      ,<span class="ot"> _shoppingCartOrders        ::</span> f <span class="dt">OrderT</span></a>
-<a class="sourceLine" id="cb6-6" data-line-number="6">                      ,<span class="ot"> _shoppingCartShippingInfos ::</span> f <span class="dt">ShippingInfoT</span></a>
-<a class="sourceLine" id="cb6-7" data-line-number="7">                      ,<span class="ot"> _shoppingCartLineItems     ::</span> f <span class="dt">LineItemT</span> }</a>
-<a class="sourceLine" id="cb6-8" data-line-number="8">                        <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb6-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="kw">instance</span> <span class="dt">Database</span> <span class="dt">ShoppingCartDb</span></a>
-<a class="sourceLine" id="cb6-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb6-12" data-line-number="12"><span class="ot">shoppingCartDb ::</span> <span class="dt">DatabaseSettings</span> <span class="dt">ShoppingCartDb</span></a>
-<a class="sourceLine" id="cb6-13" data-line-number="13">shoppingCartDb <span class="fu">=</span> autoDbSettings</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">ShoppingCartDb</span> f <span class="ot">=</span> <span class="dt">ShoppingCartDb</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                      {<span class="ot"> _shoppingCartUsers         ::</span> f <span class="dt">UserT</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                      ,<span class="ot"> _shoppingCartUserAddresses ::</span> f <span class="dt">AddressT</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                      ,<span class="ot"> _shoppingCartProducts      ::</span> f <span class="dt">ProductT</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                      ,<span class="ot"> _shoppingCartOrders        ::</span> f <span class="dt">OrderT</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                      ,<span class="ot"> _shoppingCartShippingInfos ::</span> f <span class="dt">ShippingInfoT</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                      ,<span class="ot"> _shoppingCartLineItems     ::</span> f <span class="dt">LineItemT</span> }</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                        <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Database</span> <span class="dt">ShoppingCartDb</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ot">shoppingCartDb ::</span> <span class="dt">DatabaseSettings</span> <span class="dt">ShoppingCartDb</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>shoppingCartDb <span class="ot">=</span> autoDbSettings</span></code></pre></div>
 <h2 id="fixtures">Fixtures</h2>
 <p>Let’s put some sample data into our database.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="ot">main ::</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">main <span class="fu">=</span> <span class="kw">do</span> beam <span class="ot">&lt;-</span> openDatabaseDebug shoppingCartDb <span class="dt">AutoMigrate</span> (<span class="dt">Sqlite3Settings</span> <span class="st">&quot;shoppingcart3.db&quot;</span>)</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">          dumpSchema shoppingCartDb</a>
-<a class="sourceLine" id="cb7-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb7-5" data-line-number="5">          <span class="kw">let</span> users <span class="fu">=</span> [ <span class="dt">User</span> <span class="st">&quot;james@example.com&quot;</span> <span class="st">&quot;James&quot;</span> <span class="st">&quot;Smith&quot;</span> <span class="st">&quot;b4cc344d25a2efe540adbf2678e2304c&quot;</span> <span class="co">{- james -}</span></a>
-<a class="sourceLine" id="cb7-6" data-line-number="6">                      , <span class="dt">User</span> <span class="st">&quot;betty@example.com&quot;</span> <span class="st">&quot;Betty&quot;</span> <span class="st">&quot;Jones&quot;</span> <span class="st">&quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;</span> <span class="co">{- betty -}</span></a>
-<a class="sourceLine" id="cb7-7" data-line-number="7">                      , <span class="dt">User</span> <span class="st">&quot;sam@example.com&quot;</span> <span class="st">&quot;Sam&quot;</span> <span class="st">&quot;Taylor&quot;</span> <span class="st">&quot;332532dcfaa1cbf61e2a266bd723612c&quot;</span> <span class="co">{- sam -}</span> ]</a>
-<a class="sourceLine" id="cb7-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb7-9" data-line-number="9">          <span class="dt">Success</span> [james, betty, sam] <span class="ot">&lt;-</span> beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb7-10" data-line-number="10">                                         mapM (insertInto (_shoppingCartUsers db)) users</a>
-<a class="sourceLine" id="cb7-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb7-12" data-line-number="12">          <span class="kw">let</span> addresses <span class="fu">=</span> [ <span class="dt">Address</span> <span class="dt">UnassignedId</span> <span class="st">&quot;123 Little Street&quot;</span> <span class="dt">Nothing</span> <span class="st">&quot;Boston&quot;</span> <span class="st">&quot;MA&quot;</span> <span class="st">&quot;12345&quot;</span> (pk james)</a>
-<a class="sourceLine" id="cb7-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb7-14" data-line-number="14">                          , <span class="dt">Address</span> <span class="dt">UnassignedId</span> <span class="st">&quot;222 Main Street&quot;</span> (<span class="dt">Just</span> <span class="st">&quot;Ste 1&quot;</span>) <span class="st">&quot;Houston&quot;</span> <span class="st">&quot;TX&quot;</span> <span class="st">&quot;8888&quot;</span> (pk betty)</a>
-<a class="sourceLine" id="cb7-15" data-line-number="15">                          , <span class="dt">Address</span> <span class="dt">UnassignedId</span> <span class="st">&quot;9999 Residence Ave&quot;</span> <span class="dt">Nothing</span> <span class="st">&quot;Sugarland&quot;</span> <span class="st">&quot;TX&quot;</span> <span class="st">&quot;8989&quot;</span> (pk betty) ]</a>
-<a class="sourceLine" id="cb7-16" data-line-number="16"></a>
-<a class="sourceLine" id="cb7-17" data-line-number="17">              products <span class="fu">=</span> [ <span class="dt">Product</span> <span class="dt">UnassignedId</span> <span class="st">&quot;Red Ball&quot;</span> <span class="st">&quot;A bright red, very spherical ball&quot;</span> <span class="dv">1000</span></a>
-<a class="sourceLine" id="cb7-18" data-line-number="18">                         , <span class="dt">Product</span> <span class="dt">UnassignedId</span> <span class="st">&quot;Math Textbook&quot;</span> <span class="st">&quot;Contains a lot of important math theorems and formulae&quot;</span> <span class="dv">2500</span></a>
-<a class="sourceLine" id="cb7-19" data-line-number="19">                         , <span class="dt">Product</span> <span class="dt">UnassignedId</span> <span class="st">&quot;Intro to Haskell&quot;</span> <span class="st">&quot;Learn the best programming language in the world&quot;</span> <span class="dv">3000</span></a>
-<a class="sourceLine" id="cb7-20" data-line-number="20">                         , <span class="dt">Product</span> <span class="dt">UnassignedId</span> <span class="st">&quot;Suitcase&quot;</span> <span class="st">&quot;A hard durable suitcase&quot;</span> <span class="dv">15000</span> ]</a>
-<a class="sourceLine" id="cb7-21" data-line-number="21"></a>
-<a class="sourceLine" id="cb7-22" data-line-number="22">          <span class="dt">Success</span> [jamesAddress1, bettyAddress1, bettyAddress2] <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb7-23" data-line-number="23">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb7-24" data-line-number="24">              mapM (insertInto (_shoppingCartUserAddresses db)) addresses</a>
-<a class="sourceLine" id="cb7-25" data-line-number="25">          <span class="dt">Success</span> [redBall, mathTextbook, introToHaskell, suitcase] <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb7-26" data-line-number="26">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb7-27" data-line-number="27">              mapM (insertInto (_shoppingCartProducts db)) products</a>
-<a class="sourceLine" id="cb7-28" data-line-number="28"></a>
-<a class="sourceLine" id="cb7-29" data-line-number="29">          <span class="dt">Success</span> bettysShippingInfo <span class="ot">&lt;-</span> beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb7-30" data-line-number="30">                                        insertInto (_shoppingCartShippingInfos db)</a>
-<a class="sourceLine" id="cb7-31" data-line-number="31">                                                   (<span class="dt">ShippingInfo</span> <span class="dt">UnassignedId</span> <span class="dt">USPS</span> <span class="st">&quot;123456790ABCDEFGHI&quot;</span>)</a>
-<a class="sourceLine" id="cb7-32" data-line-number="32"></a>
-<a class="sourceLine" id="cb7-33" data-line-number="33">          now <span class="ot">&lt;-</span> getCurrentTime</a>
-<a class="sourceLine" id="cb7-34" data-line-number="34">          <span class="kw">let</span> orders <span class="fu">=</span> [ <span class="dt">Order</span> <span class="dt">UnassignedId</span> now (pk james) (pk jamesAddress1) nothing_</a>
-<a class="sourceLine" id="cb7-35" data-line-number="35">                       , <span class="dt">Order</span> <span class="dt">UnassignedId</span> now (pk betty) (pk bettyAddress1) (just_ (pk bettysShippingInfo))</a>
-<a class="sourceLine" id="cb7-36" data-line-number="36">                       , <span class="dt">Order</span> <span class="dt">UnassignedId</span> now (pk james) (pk jamesAddress1) nothing_ ]</a>
-<a class="sourceLine" id="cb7-37" data-line-number="37">          <span class="dt">Success</span> [jamesOrder1, bettysOrder, jamesOrder2] <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb7-38" data-line-number="38">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb7-39" data-line-number="39">                  mapM (insertInto (_shoppingCartOrders db)) orders</a>
-<a class="sourceLine" id="cb7-40" data-line-number="40"></a>
-<a class="sourceLine" id="cb7-41" data-line-number="41"></a>
-<a class="sourceLine" id="cb7-42" data-line-number="42">          <span class="kw">let</span> lineItems <span class="fu">=</span> [ <span class="dt">LineItem</span> (pk jamesOrder1) (pk redBall) <span class="dv">10</span></a>
-<a class="sourceLine" id="cb7-43" data-line-number="43">                          , <span class="dt">LineItem</span> (pk jamesOrder1) (pk mathTextbook) <span class="dv">1</span></a>
-<a class="sourceLine" id="cb7-44" data-line-number="44">                          , <span class="dt">LineItem</span> (pk jamesOrder1) (pk introToHaskell) <span class="dv">4</span></a>
-<a class="sourceLine" id="cb7-45" data-line-number="45"></a>
-<a class="sourceLine" id="cb7-46" data-line-number="46">                          , <span class="dt">LineItem</span> (pk bettysOrder) (pk mathTextbook) <span class="dv">3</span></a>
-<a class="sourceLine" id="cb7-47" data-line-number="47">                          , <span class="dt">LineItem</span> (pk bettysOrder) (pk introToHaskell) <span class="dv">3</span></a>
-<a class="sourceLine" id="cb7-48" data-line-number="48"></a>
-<a class="sourceLine" id="cb7-49" data-line-number="49">                          , <span class="dt">LineItem</span> (pk jamesOrder2) (pk mathTextbook) <span class="dv">1</span> ]</a>
-<a class="sourceLine" id="cb7-50" data-line-number="50"></a>
-<a class="sourceLine" id="cb7-51" data-line-number="51">          beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb7-52" data-line-number="52">              mapM_ (insertInto (_shoppingCartLineItems db)) lineItems</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span> beam <span class="ot">&lt;-</span> openDatabaseDebug shoppingCartDb <span class="dt">AutoMigrate</span> (<span class="dt">Sqlite3Settings</span> <span class="st">&quot;shoppingcart3.db&quot;</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>          dumpSchema shoppingCartDb</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>          <span class="kw">let</span> users <span class="ot">=</span> [ <span class="dt">User</span> <span class="st">&quot;james@example.com&quot;</span> <span class="st">&quot;James&quot;</span> <span class="st">&quot;Smith&quot;</span> <span class="st">&quot;b4cc344d25a2efe540adbf2678e2304c&quot;</span> <span class="co">{- james -}</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                      , <span class="dt">User</span> <span class="st">&quot;betty@example.com&quot;</span> <span class="st">&quot;Betty&quot;</span> <span class="st">&quot;Jones&quot;</span> <span class="st">&quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;</span> <span class="co">{- betty -}</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                      , <span class="dt">User</span> <span class="st">&quot;sam@example.com&quot;</span> <span class="st">&quot;Sam&quot;</span> <span class="st">&quot;Taylor&quot;</span> <span class="st">&quot;332532dcfaa1cbf61e2a266bd723612c&quot;</span> <span class="co">{- sam -}</span> ]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> [james, betty, sam] <span class="ot">&lt;-</span> beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                                         <span class="fu">mapM</span> (insertInto (_shoppingCartUsers db)) users</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>          <span class="kw">let</span> addresses <span class="ot">=</span> [ <span class="dt">Address</span> <span class="dt">UnassignedId</span> <span class="st">&quot;123 Little Street&quot;</span> <span class="dt">Nothing</span> <span class="st">&quot;Boston&quot;</span> <span class="st">&quot;MA&quot;</span> <span class="st">&quot;12345&quot;</span> (pk james)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                          , <span class="dt">Address</span> <span class="dt">UnassignedId</span> <span class="st">&quot;222 Main Street&quot;</span> (<span class="dt">Just</span> <span class="st">&quot;Ste 1&quot;</span>) <span class="st">&quot;Houston&quot;</span> <span class="st">&quot;TX&quot;</span> <span class="st">&quot;8888&quot;</span> (pk betty)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                          , <span class="dt">Address</span> <span class="dt">UnassignedId</span> <span class="st">&quot;9999 Residence Ave&quot;</span> <span class="dt">Nothing</span> <span class="st">&quot;Sugarland&quot;</span> <span class="st">&quot;TX&quot;</span> <span class="st">&quot;8989&quot;</span> (pk betty) ]</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>              products <span class="ot">=</span> [ <span class="dt">Product</span> <span class="dt">UnassignedId</span> <span class="st">&quot;Red Ball&quot;</span> <span class="st">&quot;A bright red, very spherical ball&quot;</span> <span class="dv">1000</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>                         , <span class="dt">Product</span> <span class="dt">UnassignedId</span> <span class="st">&quot;Math Textbook&quot;</span> <span class="st">&quot;Contains a lot of important math theorems and formulae&quot;</span> <span class="dv">2500</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>                         , <span class="dt">Product</span> <span class="dt">UnassignedId</span> <span class="st">&quot;Intro to Haskell&quot;</span> <span class="st">&quot;Learn the best programming language in the world&quot;</span> <span class="dv">3000</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>                         , <span class="dt">Product</span> <span class="dt">UnassignedId</span> <span class="st">&quot;Suitcase&quot;</span> <span class="st">&quot;A hard durable suitcase&quot;</span> <span class="dv">15000</span> ]</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> [jamesAddress1, bettyAddress1, bettyAddress2] <span class="ot">&lt;-</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>              <span class="fu">mapM</span> (insertInto (_shoppingCartUserAddresses db)) addresses</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> [redBall, mathTextbook, introToHaskell, suitcase] <span class="ot">&lt;-</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>              <span class="fu">mapM</span> (insertInto (_shoppingCartProducts db)) products</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> bettysShippingInfo <span class="ot">&lt;-</span> beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>                                        insertInto (_shoppingCartShippingInfos db)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>                                                   (<span class="dt">ShippingInfo</span> <span class="dt">UnassignedId</span> <span class="dt">USPS</span> <span class="st">&quot;123456790ABCDEFGHI&quot;</span>)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>          now <span class="ot">&lt;-</span> getCurrentTime</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>          <span class="kw">let</span> orders <span class="ot">=</span> [ <span class="dt">Order</span> <span class="dt">UnassignedId</span> now (pk james) (pk jamesAddress1) nothing_</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>                       , <span class="dt">Order</span> <span class="dt">UnassignedId</span> now (pk betty) (pk bettyAddress1) (just_ (pk bettysShippingInfo))</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>                       , <span class="dt">Order</span> <span class="dt">UnassignedId</span> now (pk james) (pk jamesAddress1) nothing_ ]</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> [jamesOrder1, bettysOrder, jamesOrder2] <span class="ot">&lt;-</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">mapM</span> (insertInto (_shoppingCartOrders db)) orders</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>          <span class="kw">let</span> lineItems <span class="ot">=</span> [ <span class="dt">LineItem</span> (pk jamesOrder1) (pk redBall) <span class="dv">10</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>                          , <span class="dt">LineItem</span> (pk jamesOrder1) (pk mathTextbook) <span class="dv">1</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>                          , <span class="dt">LineItem</span> (pk jamesOrder1) (pk introToHaskell) <span class="dv">4</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>                          , <span class="dt">LineItem</span> (pk bettysOrder) (pk mathTextbook) <span class="dv">3</span></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>                          , <span class="dt">LineItem</span> (pk bettysOrder) (pk introToHaskell) <span class="dv">3</span></span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>                          , <span class="dt">LineItem</span> (pk jamesOrder2) (pk mathTextbook) <span class="dv">1</span> ]</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>          beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>              <span class="fu">mapM_</span> (insertInto (_shoppingCartLineItems db)) lineItems</span></code></pre></div>
 <p>Phew! Let’s write some queries on this data!</p>
 <h2 id="would-you-like-some-left-joins-with-that">Would you like some left joins with that?</h2>
-<p>Suppose we want to do some analytics on our users, and so we want to know how many orders each user has made in our system. We can write a query to list every user along with the orders they’ve made. We can use <code>perhapsAll_</code> to include all users in our result set, even those who have no orders.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb8-1" data-line-number="1">          putStrLn <span class="st">&quot;All pairs of users and orders, but listing all users&quot;</span></a>
-<a class="sourceLine" id="cb8-2" data-line-number="2">          <span class="dt">Success</span> allPairs <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb8-4" data-line-number="4">                queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb8-5" data-line-number="5">                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</a>
-<a class="sourceLine" id="cb8-6" data-line-number="6">                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="fu">==.</span> just_ (pk user))</a>
-<a class="sourceLine" id="cb8-7" data-line-number="7">                   return (user, order)</a>
-<a class="sourceLine" id="cb8-8" data-line-number="8">          mapM_ (putStrLn <span class="fu">.</span> show) allPairs</a>
-<a class="sourceLine" id="cb8-9" data-line-number="9">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
-<p>Notice that sam is included in the result set, even though he doesn’t have any associated orders. Instead of a <code>Just (Order ..)</code>, <code>Nothing</code> is returned instead.</p>
+<p>Suppose we want to do some analytics on our users, and so we want to know how many orders each user
+has made in our system. We can write a query to list every user along with the orders they’ve
+made. We can use <code>perhapsAll_</code> to include all users in our result set, even those who have no
+orders.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;All pairs of users and orders, but listing all users&quot;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> allPairs <span class="ot">&lt;-</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                queryList <span class="op">$</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="op">==.</span> just_ (pk user))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">return</span> (user, order)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) allPairs</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
+<p>Notice that sam is included in the result set, even though he doesn’t have any associated
+orders. Instead of a <code>Just (Order ..)</code>, <code>Nothing</code> is returned instead.</p>
 <pre><code>Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password`, `t1`.`id`, `t1`.`date`, `t1`.`for_user__email`, `t1`.`ship_to_address__id`, `t1`.`shipping_info__info_id` FROM  cart_users AS t0 LEFT JOIN cart_orders AS t1 ON (`t1`.`for_user__email` == `t0`.`email`) with []
 (User {_userEmail = &quot;james@example.com&quot;, _userFirstName = &quot;James&quot;, _userLastName = &quot;Smith&quot;, _userPassword = &quot;b4cc344d25a2efe540adbf2678e2304c&quot;},Just (Order {_orderId = AssignedId 1, _orderDate = 2016-01-25 20:02:14.007038 UTC, _orderForUser = UserId &quot;james@example.com&quot;, _orderShipToAddress = AddressId (AssignedId 1), _orderShippingInfo = ShippingInfoId Nothing}))
 (User {_userEmail = &quot;james@example.com&quot;, _userFirstName = &quot;James&quot;, _userLastName = &quot;Smith&quot;, _userPassword = &quot;b4cc344d25a2efe540adbf2678e2304c&quot;},Just (Order {_orderId = AssignedId 3, _orderDate = 2016-01-25 20:02:14.007038 UTC, _orderForUser = UserId &quot;james@example.com&quot;, _orderShipToAddress = AddressId (AssignedId 1), _orderShippingInfo = ShippingInfoId Nothing}))
 (User {_userEmail = &quot;betty@example.com&quot;, _userFirstName = &quot;Betty&quot;, _userLastName = &quot;Jones&quot;, _userPassword = &quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;},Just (Order {_orderId = AssignedId 2, _orderDate = 2016-01-25 20:02:14.007038 UTC, _orderForUser = UserId &quot;betty@example.com&quot;, _orderShipToAddress = AddressId (AssignedId 2), _orderShippingInfo = ShippingInfoId (Just (AssignedId 1))}))
 (User {_userEmail = &quot;sam@example.com&quot;, _userFirstName = &quot;Sam&quot;, _userLastName = &quot;Taylor&quot;, _userPassword = &quot;332532dcfaa1cbf61e2a266bd723612c&quot;},Nothing)</code></pre>
-<p>Next, perhaps our marketing team wanted to send e-mails out to all users with no orders. We can use <code>isNothing_</code> or <code>isJust_</code> to determine the status if a nullable table or <code>QExpr s (Maybe x)</code>. The following query uses <code>isNothing_</code> to find users who have no associated orders.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" data-line-number="1">          putStrLn <span class="st">&quot;All users without any orders, using WHERE&quot;</span></a>
-<a class="sourceLine" id="cb10-2" data-line-number="2">          <span class="dt">Success</span> allPairsWithoutOrdersUsingWhere <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb10-3" data-line-number="3">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb10-4" data-line-number="4">                queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb10-5" data-line-number="5">                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</a>
-<a class="sourceLine" id="cb10-6" data-line-number="6">                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="fu">==.</span> just_ (pk user))</a>
-<a class="sourceLine" id="cb10-7" data-line-number="7">                   guard_ (isNothing_ order)</a>
-<a class="sourceLine" id="cb10-8" data-line-number="8">                   return user</a>
-<a class="sourceLine" id="cb10-9" data-line-number="9">          mapM_ (putStrLn <span class="fu">.</span> show) allPairsWithoutOrdersUsingWhere</a>
-<a class="sourceLine" id="cb10-10" data-line-number="10">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<p>Next, perhaps our marketing team wanted to send e-mails out to all users with no orders. We can use
+<code>isNothing_</code> or <code>isJust_</code> to determine the status if a nullable table or <code>QExpr s (Maybe x)</code>. The
+following query uses <code>isNothing_</code> to find users who have no associated orders.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;All users without any orders, using WHERE&quot;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> allPairsWithoutOrdersUsingWhere <span class="ot">&lt;-</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                queryList <span class="op">$</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="op">==.</span> just_ (pk user))</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                   guard_ (isNothing_ order)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">return</span> user</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) allPairsWithoutOrdersUsingWhere</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>We see that beam generates a sensible SQL SELECT using the WHERE clause.</p>
 <pre><code>All users without any orders, using WHERE
 Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password` FROM  cart_users AS t0 LEFT JOIN cart_orders AS t1 ON (`t1`.`for_user__email` == `t0`.`email`) WHERE (`t1`.`id` IS NULL AND (`t1`.`date` IS NULL AND (`t1`.`for_user__email` IS NULL AND (`t1`.`ship_to_address__id` IS NULL AND `t1`.`shipping_info__info_id` IS NULL)))) with []
 User {_userEmail = &quot;sam@example.com&quot;, _userFirstName = &quot;Sam&quot;, _userLastName = &quot;Taylor&quot;, _userPassword = &quot;332532dcfaa1cbf61e2a266bd723612c&quot;}
 ----</code></pre>
 <p>We can also use the <code>exists_</code> combinator to utilize the SQL <code>EXISTS</code> clause.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb12-1" data-line-number="1">          putStrLn <span class="st">&quot;All users without any orders, using EXISTS&quot;</span></a>
-<a class="sourceLine" id="cb12-2" data-line-number="2">          <span class="dt">Success</span> allPairsWithoutOrdersUsingExists <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb12-3" data-line-number="3">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb12-4" data-line-number="4">                queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb12-5" data-line-number="5">                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</a>
-<a class="sourceLine" id="cb12-6" data-line-number="6">                   guard_ (not_ (exists_ (<span class="kw">do</span> order <span class="ot">&lt;-</span> all_ (_shoppingCartOrders db)</a>
-<a class="sourceLine" id="cb12-7" data-line-number="7">                                             guard_ (_orderForUser order <span class="fu">==.</span> pk user))))</a>
-<a class="sourceLine" id="cb12-8" data-line-number="8">                   return user</a>
-<a class="sourceLine" id="cb12-9" data-line-number="9">          mapM_ (putStrLn <span class="fu">.</span> show) allPairsWithoutOrdersUsingExists</a>
-<a class="sourceLine" id="cb12-10" data-line-number="10">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
-<p>Now suppose we wanted to do some analysis on the orders themselves. To start, we want to get the orders sorted by their portion of revenue. We can use <code>aggregate</code> to list every order and the total amount of all products in that order.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb13-1" data-line-number="1">          putStrLn <span class="st">&quot;All orders with the total cost of all products in that order, ordered by total cost descending&quot;</span></a>
-<a class="sourceLine" id="cb13-2" data-line-number="2">          <span class="dt">Success</span> allOrdersAndTotals <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb13-3" data-line-number="3">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb13-4" data-line-number="4">                queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb13-5" data-line-number="5">                orderBy (\(order, total) <span class="ot">-&gt;</span> desc_ total) <span class="fu">$</span></a>
-<a class="sourceLine" id="cb13-6" data-line-number="6">                aggregate (\(order, lineItem, product) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb13-7" data-line-number="7">                               (group_ order, sum_ (_lineItemQuantity lineItem <span class="fu">*</span> _productPrice product))) <span class="fu">$</span></a>
-<a class="sourceLine" id="cb13-8" data-line-number="8">                <span class="kw">do</span> lineItem <span class="ot">&lt;-</span> all_ (_shoppingCartLineItems db)</a>
-<a class="sourceLine" id="cb13-9" data-line-number="9">                   order <span class="ot">&lt;-</span> related_ (_shoppingCartOrders db) (_lineItemInOrder lineItem)</a>
-<a class="sourceLine" id="cb13-10" data-line-number="10">                   product <span class="ot">&lt;-</span> related_ (_shoppingCartProducts db) (_lineItemForProduct lineItem)</a>
-<a class="sourceLine" id="cb13-11" data-line-number="11">                   pure (order, lineItem, product)</a>
-<a class="sourceLine" id="cb13-12" data-line-number="12">          mapM_ (putStrLn <span class="fu">.</span> show) allOrdersAndTotals</a>
-<a class="sourceLine" id="cb13-13" data-line-number="13">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;All users without any orders, using EXISTS&quot;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> allPairsWithoutOrdersUsingExists <span class="ot">&lt;-</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                queryList <span class="op">$</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                   guard_ (not_ (exists_ (<span class="kw">do</span> order <span class="ot">&lt;-</span> all_ (_shoppingCartOrders db)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                                             guard_ (_orderForUser order <span class="op">==.</span> pk user))))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">return</span> user</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) allPairsWithoutOrdersUsingExists</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
+<p>Now suppose we wanted to do some analysis on the orders themselves. To start, we want to get the
+orders sorted by their portion of revenue. We can use <code>aggregate</code> to list every order and the total
+amount of all products in that order.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;All orders with the total cost of all products in that order, ordered by total cost descending&quot;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> allOrdersAndTotals <span class="ot">&lt;-</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                queryList <span class="op">$</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>                orderBy (\(order, total) <span class="ot">-&gt;</span> desc_ total) <span class="op">$</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                aggregate (\(order, lineItem, <span class="fu">product</span>) <span class="ot">-&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                               (group_ order, sum_ (_lineItemQuantity lineItem <span class="op">*</span> _productPrice <span class="fu">product</span>))) <span class="op">$</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>                <span class="kw">do</span> lineItem <span class="ot">&lt;-</span> all_ (_shoppingCartLineItems db)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>                   order <span class="ot">&lt;-</span> related_ (_shoppingCartOrders db) (_lineItemInOrder lineItem)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">product</span> <span class="ot">&lt;-</span> related_ (_shoppingCartProducts db) (_lineItemForProduct lineItem)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">pure</span> (order, lineItem, <span class="fu">product</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) allOrdersAndTotals</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>The output is just as we’d expect, with the correct <code>GROUP BY</code> and <code>ORDER BY</code> clauses.</p>
 <pre><code>All orders with the total cost of all products in that order, ordered by total cost descending
 Will execute SELECT `t1`.`id`, `t1`.`date`, `t1`.`for_user__email`, `t1`.`ship_to_address__id`, `t1`.`shipping_info__info_id`, SUM((`t0`.`item_quantity` * `t2`.`price`)) FROM  cart_line_items AS t0 INNER JOIN cart_orders AS t1 ON (`t0`.`item_in_order__id` == `t1`.`id`) INNER JOIN cart_products AS t2 ON (`t0`.`item_for_product__id` == `t2`.`id`) GROUP BY `t1`.`id`, `t1`.`date`, `t1`.`for_user__email`, `t1`.`ship_to_address__id`, `t1`.`shipping_info__info_id` ORDER BY SUM((`t0`.`item_quantity` * `t2`.`price`)) DESC with []
@@ -376,25 +411,29 @@ Will execute SELECT `t1`.`id`, `t1`.`date`, `t1`.`for_user__email`, `t1`.`ship_t
 (Order {_orderId = AssignedId 2, _orderDate = 2016-01-25 21:50:03.704396 UTC, _orderForUser = UserId &quot;betty@example.com&quot;, _orderShipToAddress = AddressId (AssignedId 2), _orderShippingInfo = ShippingInfoId (Just (AssignedId 1))},16500)
 (Order {_orderId = AssignedId 3, _orderDate = 2016-01-25 21:50:03.704396 UTC, _orderForUser = UserId &quot;james@example.com&quot;, _orderShipToAddress = AddressId (AssignedId 1), _orderShippingInfo = ShippingInfoId Nothing},2500)
 ----</code></pre>
-<p>We can also get the total amount spent by each user, even including users with no orders. Notice that we have to use <code>maybe_</code> below in order to handle the fact that some tables have been introduced into our query with a left join. <code>maybe_</code> is to <code>QExpr</code> what <code>maybe</code> is to normal Haskell values. <code>maybe_</code> is polymorphic to either <code>QExpr</code>s or full on tables of <code>QExpr</code>s. For our purposes, the type of <code>maybe_</code> is</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="ot">maybe_ ::</span> <span class="dt">QExpr</span> s a <span class="ot">-&gt;</span> (<span class="dt">QExpr</span> s b <span class="ot">-&gt;</span> <span class="dt">QExpr</span> s a) <span class="ot">-&gt;</span> <span class="dt">QExpr</span> s (<span class="dt">Maybe</span> b) <span class="ot">-&gt;</span> <span class="dt">QExpr</span> s a</a></code></pre></div>
+<p>We can also get the total amount spent by each user, even including users with no orders. Notice
+that we have to use <code>maybe_</code> below in order to handle the fact that some tables have been introduced
+into our query with a left join. <code>maybe_</code> is to <code>QExpr</code> what <code>maybe</code> is to normal Haskell
+values. <code>maybe_</code> is polymorphic to either <code>QExpr</code>s or full on tables of <code>QExpr</code>s. For our purposes,
+the type of <code>maybe_</code> is</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ot">maybe_ ::</span> <span class="dt">QExpr</span> s a <span class="ot">-&gt;</span> (<span class="dt">QExpr</span> s b <span class="ot">-&gt;</span> <span class="dt">QExpr</span> s a) <span class="ot">-&gt;</span> <span class="dt">QExpr</span> s (<span class="dt">Maybe</span> b) <span class="ot">-&gt;</span> <span class="dt">QExpr</span> s a</span></code></pre></div>
 <p>With that in mind, we can write the query to get the total spent by user</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb16-1" data-line-number="1">          putStrLn <span class="st">&quot;All users with total spent, including users who have spent nothing&quot;</span></a>
-<a class="sourceLine" id="cb16-2" data-line-number="2">          <span class="dt">Success</span> allUsersAndTotals <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb16-3" data-line-number="3">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb16-4" data-line-number="4">                queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb16-5" data-line-number="5">                orderBy (\(user, total) <span class="ot">-&gt;</span> desc_ total) <span class="fu">$</span></a>
-<a class="sourceLine" id="cb16-6" data-line-number="6">                aggregate (\(user, order, lineItem, product) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb16-7" data-line-number="7">                               (group_ user, sum_ (maybe_ <span class="dv">0</span> id (_lineItemQuantity lineItem) <span class="fu">*</span> maybe_ <span class="dv">0</span> id (_productPrice product)))) <span class="fu">$</span></a>
-<a class="sourceLine" id="cb16-8" data-line-number="8">                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</a>
-<a class="sourceLine" id="cb16-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb16-10" data-line-number="10">                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="ot">`references_`</span> just_ user)</a>
-<a class="sourceLine" id="cb16-11" data-line-number="11">                   lineItem <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartLineItems db) (\lineItem <span class="ot">-&gt;</span> _lineItemInOrder lineItem <span class="ot">`references_`</span> order)</a>
-<a class="sourceLine" id="cb16-12" data-line-number="12">                   product <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartProducts db) (\product <span class="fu">-</span> <span class="fu">&gt;</span> _lineItemForProduct lineItem <span class="ot">`references_`</span> product)</a>
-<a class="sourceLine" id="cb16-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb16-14" data-line-number="14">                   pure (user, order, lineItem, product)</a>
-<a class="sourceLine" id="cb16-15" data-line-number="15">          mapM_ (putStrLn <span class="fu">.</span> show) allUsersAndTotals</a>
-<a class="sourceLine" id="cb16-16" data-line-number="16">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;All users with total spent, including users who have spent nothing&quot;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> allUsersAndTotals <span class="ot">&lt;-</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                queryList <span class="op">$</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                orderBy (\(user, total) <span class="ot">-&gt;</span> desc_ total) <span class="op">$</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                aggregate (\(user, order, lineItem, <span class="fu">product</span>) <span class="ot">-&gt;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                               (group_ user, sum_ (maybe_ <span class="dv">0</span> <span class="fu">id</span> (_lineItemQuantity lineItem) <span class="op">*</span> maybe_ <span class="dv">0</span> <span class="fu">id</span> (_productPrice <span class="fu">product</span>)))) <span class="op">$</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="ot">`references_`</span> just_ user)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>                   lineItem <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartLineItems db) (\lineItem <span class="ot">-&gt;</span> _lineItemInOrder lineItem <span class="ot">`references_`</span> order)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">product</span> <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartProducts db) (\<span class="fu">product</span> <span class="op">-</span> <span class="op">&gt;</span> _lineItemForProduct lineItem <span class="ot">`references_`</span> <span class="fu">product</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">pure</span> (user, order, lineItem, <span class="fu">product</span>)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) allUsersAndTotals</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>Again beam produces the correct SQL and results.</p>
 <pre><code>All users with total spent, including users who have spent nothing
 Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password`, SUM(((CASE WHEN (`t2`.`item_quantity` IS NOT NULL) THEN `t2`.`item_quantity` ELSE ? END) * (CASE WHEN (`t3`.`price` IS NOT NULL) THEN `t3`.`price` ELSE ? END))) FROM  cart_users AS t0 LEFT JOIN cart_orders AS t1 ON (`t1`.`for_user__email` == `t0`.`email`) LEFT JOIN cart_line_items AS t2 ON (`t2`.`item_in_order__id` == `t1`.`id`) LEFT JOIN cart_products AS t3 ON (`t2`.`item_for_product__id` == `t3`.`id`) GROUP BY `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password` ORDER BY SUM(((CASE WHEN (`t2`.`item_quantity` IS NOT NULL) THEN `t2`.`item_quantity` ELSE ? END) * (CASE WHEN (`t3`.`price` IS NOT NULL) THEN `t3`.`price` ELSE ? END))) DESC with [SqlInt64 0,SqlInt64 0,SqlInt64 0,SqlInt64 0]
@@ -405,31 +444,31 @@ Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`pas
 <h2 id="queries-with-nullable-foreign-keys">Queries with nullable foreign keys</h2>
 <p>Recall that our schema contains a nullable foreign key from <code>OrderT</code> to <code>ShippingInfoT</code>. Above, we’ve seen how <code>leftJoin_</code> introduces nullable tables into our queries. Below, we’ll see how to use nullable primary keys to optionally include information.</p>
 <p>Suppose we want to find all orders who have not been shipped. We can do this by simply writing a query over the orders.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb18-1" data-line-number="1">          putStrLn <span class="st">&quot;All orders with no shipping information&quot;</span></a>
-<a class="sourceLine" id="cb18-2" data-line-number="2">          <span class="dt">Success</span> allUnshippedOrders <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb18-3" data-line-number="3">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb18-4" data-line-number="4">                queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb18-5" data-line-number="5">                <span class="kw">do</span> order <span class="ot">&lt;-</span> all_ (_shoppingCartOrders db)</a>
-<a class="sourceLine" id="cb18-6" data-line-number="6">                   guard_ (isNothing_ (_orderShippingInfo order))</a>
-<a class="sourceLine" id="cb18-7" data-line-number="7">                   pure order</a>
-<a class="sourceLine" id="cb18-8" data-line-number="8">          mapM_ (putStrLn <span class="fu">.</span> show) allUnshippedOrders</a>
-<a class="sourceLine" id="cb18-9" data-line-number="9">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;All orders with no shipping information&quot;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> allUnshippedOrders <span class="ot">&lt;-</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                queryList <span class="op">$</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                <span class="kw">do</span> order <span class="ot">&lt;-</span> all_ (_shoppingCartOrders db)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                   guard_ (isNothing_ (_orderShippingInfo order))</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">pure</span> order</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) allUnshippedOrders</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>Let’s count up all shipped and unshipped orders by user, including users who have no orders.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb19-1" data-line-number="1">          putStrLn <span class="st">&quot;Shipped and unshipped orders by user. Tuples returned like (user, unshipped, shipped)&quot;</span></a>
-<a class="sourceLine" id="cb19-2" data-line-number="2">          <span class="dt">Success</span> shippingInformationByUser <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb19-3" data-line-number="3">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb19-4" data-line-number="4">                queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb19-5" data-line-number="5">                aggregate (\(user, order) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb19-6" data-line-number="6">                               <span class="kw">let</span> <span class="dt">ShippingInfoId</span> shippingInfoId <span class="fu">=</span> _orderShippingInfo order</a>
-<a class="sourceLine" id="cb19-7" data-line-number="7">                               <span class="kw">in</span> ( group_ user</a>
-<a class="sourceLine" id="cb19-8" data-line-number="8">                                  , count_ (maybe_ (just_ <span class="dv">1</span>) (\_ <span class="ot">-&gt;</span> nothing_)<span class="ot"> shippingInfoId ::</span> <span class="dt">QExpr</span> _ (<span class="dt">Maybe</span> <span class="dt">Int</span>))</a>
-<a class="sourceLine" id="cb19-9" data-line-number="9">                                  , count_ shippingInfoId )) <span class="fu">$</span></a>
-<a class="sourceLine" id="cb19-10" data-line-number="10">                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</a>
-<a class="sourceLine" id="cb19-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb19-12" data-line-number="12">                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="ot">`references_`</span> just_ user)</a>
-<a class="sourceLine" id="cb19-13" data-line-number="13">                   pure (user, order)</a>
-<a class="sourceLine" id="cb19-14" data-line-number="14">          mapM_ (putStrLn <span class="fu">.</span> show) shippingInformationByUser</a>
-<a class="sourceLine" id="cb19-15" data-line-number="15">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;Shipped and unshipped orders by user. Tuples returned like (user, unshipped, shipped)&quot;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> shippingInformationByUser <span class="ot">&lt;-</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                queryList <span class="op">$</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                aggregate (\(user, order) <span class="ot">-&gt;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                               <span class="kw">let</span> <span class="dt">ShippingInfoId</span> shippingInfoId <span class="ot">=</span> _orderShippingInfo order</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                               <span class="kw">in</span> ( group_ user</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                                  , count_ (maybe_ (just_ <span class="dv">1</span>) (\_ <span class="ot">-&gt;</span> nothing_)<span class="ot"> shippingInfoId ::</span> <span class="dt">QExpr</span> _ (<span class="dt">Maybe</span> <span class="dt">Int</span>))</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>                                  , count_ shippingInfoId )) <span class="op">$</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="ot">`references_`</span> just_ user)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">pure</span> (user, order)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) shippingInformationByUser</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>Uh-oh! There’s an error in the result set!</p>
 <pre><code>Shipped and unshipped orders by user. Tuples returned like (user, unshipped, shipped)
 Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password`, COUNT((CASE WHEN (`t1`.`shipping_info__info_id` IS NOT NULL) THEN ? ELSE ? END)), COUNT(`t1`.`shipping_info__info_id`) FROM  cart_users AS t0 LEFT JOIN cart_orders AS t1 ON (`t1`.`for_user__email` == `t0`.`email`) GROUP BY `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password` with [SqlNull,SqlInt64 1]
@@ -437,33 +476,40 @@ Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`pas
 (User {_userEmail = &quot;james@example.com&quot;, _userFirstName = &quot;James&quot;, _userLastName = &quot;Smith&quot;, _userPassword = &quot;b4cc344d25a2efe540adbf2678e2304c&quot;},2,0)
 (User {_userEmail = &quot;sam@example.com&quot;, _userFirstName = &quot;Sam&quot;, _userLastName = &quot;Taylor&quot;, _userPassword = &quot;332532dcfaa1cbf61e2a266bd723612c&quot;},1,0)
 ----</code></pre>
-<p>Here we hit one of the limitations of beam’s mapping to SQL, and really one of the limitations of SQL itself. Notice that the type of <code>shippingInfoId</code> in the aggregate expression is <code>QExpr s (Maybe (Maybe Int))</code> because based on the Haskell query we constructed, <code>shippingInfoId</code> could be nullable at two levels: either it’s null in the order, or it’s null because the entire order is nothing. SQL makes no distinction between these two values, since they’re both returned as <code>NULL</code>. When beam deserializes a <code>NULL</code> in a <code>Maybe</code> field, the outermost <code>Maybe</code> is the one populated with <code>Nothing</code>. Thus it is impossible to retrieve a value like <code>Just Nothing</code> from the database using the default serializers and deserializers. In general, it’s best to avoid highly nested <code>Maybe</code>s in your queries because it makes them more difficult to understand.</p>
+<p>Here we hit one of the limitations of beam’s mapping to SQL, and really one of the limitations of
+SQL itself. Notice that the type of <code>shippingInfoId</code> in the aggregate expression is <code>QExpr s (Maybe (Maybe Int))</code> because based on the Haskell query we constructed, <code>shippingInfoId</code> could be nullable
+at two levels: either it’s null in the order, or it’s null because the entire order is nothing. SQL
+makes no distinction between these two values, since they’re both returned as <code>NULL</code>. When beam
+deserializes a <code>NULL</code> in a <code>Maybe</code> field, the outermost <code>Maybe</code> is the one populated with
+<code>Nothing</code>. Thus it is impossible to retrieve a value like <code>Just Nothing</code> from the database using the
+default serializers and deserializers. In general, it’s best to avoid highly nested <code>Maybe</code>s in
+your queries because it makes them more difficult to understand.</p>
 <p>One way to work around this issue in the above query is to use subqueries.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb21-1" data-line-number="1">          putStrLn <span class="st">&quot;Shipped and unshipped orders by user, with correct double maybe handling. Tuples returned like (user, unshipped, shipped).&quot;</span></a>
-<a class="sourceLine" id="cb21-2" data-line-number="2">          <span class="dt">Success</span> shippingInformationByUserCorrect <span class="ot">&lt;-</span></a>
-<a class="sourceLine" id="cb21-3" data-line-number="3">              beamTxn beam <span class="fu">$</span> \db <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb21-4" data-line-number="4">                queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb21-5" data-line-number="5">                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</a>
-<a class="sourceLine" id="cb21-6" data-line-number="6">                   (userEmail, unshippedCount) <span class="ot">&lt;-</span> subquery_ <span class="fu">$</span></a>
-<a class="sourceLine" id="cb21-7" data-line-number="7">                                                  aggregate (\(userEmail, order) <span class="ot">-&gt;</span> (group_ userEmail, count_ (_orderId order))) <span class="fu">$</span></a>
-<a class="sourceLine" id="cb21-8" data-line-number="8">                                                  <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</a>
-<a class="sourceLine" id="cb21-9" data-line-number="9">                                                     order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="ot">`references_`</span> just_ user <span class="fu">&amp;&amp;.</span></a>
-<a class="sourceLine" id="cb21-10" data-line-number="10">                                                                                                               isNothing_ (_orderShippingInfo order))</a>
-<a class="sourceLine" id="cb21-11" data-line-number="11">                                                     pure (_userEmail user, order)</a>
-<a class="sourceLine" id="cb21-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb21-13" data-line-number="13">                   guard_ (_userEmail user <span class="fu">==.</span> userEmail)</a>
-<a class="sourceLine" id="cb21-14" data-line-number="14"></a>
-<a class="sourceLine" id="cb21-15" data-line-number="15">                   (userEmail, shippedCount) <span class="ot">&lt;-</span> subquery_ <span class="fu">$</span></a>
-<a class="sourceLine" id="cb21-16" data-line-number="16">                                                aggregate (\(userEmail, order) <span class="ot">-&gt;</span> (group_ userEmail, count_ (_orderId order))) <span class="fu">$</span></a>
-<a class="sourceLine" id="cb21-17" data-line-number="17">                                                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</a>
-<a class="sourceLine" id="cb21-18" data-line-number="18">                                                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="ot">`references_`</span> just_ user <span class="fu">&amp;&amp;.</span></a>
-<a class="sourceLine" id="cb21-19" data-line-number="19">                                                                                                            isJust_ (_orderShippingInfo order))</a>
-<a class="sourceLine" id="cb21-20" data-line-number="20">                                                   pure (_userEmail user, order)</a>
-<a class="sourceLine" id="cb21-21" data-line-number="21">                   guard_ (_userEmail user <span class="fu">==.</span> userEmail)</a>
-<a class="sourceLine" id="cb21-22" data-line-number="22"></a>
-<a class="sourceLine" id="cb21-23" data-line-number="23">                   pure (user, unshippedCount, shippedCount)</a>
-<a class="sourceLine" id="cb21-24" data-line-number="24">          mapM_ (putStrLn <span class="fu">.</span> show) shippingInformationByUserCorrect</a>
-<a class="sourceLine" id="cb21-25" data-line-number="25">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;Shipped and unshipped orders by user, with correct double maybe handling. Tuples returned like (user, unshipped, shipped).&quot;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> shippingInformationByUserCorrect <span class="ot">&lt;-</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>              beamTxn beam <span class="op">$</span> \db <span class="ot">-&gt;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                queryList <span class="op">$</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>                   (userEmail, unshippedCount) <span class="ot">&lt;-</span> subquery_ <span class="op">$</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                                                  aggregate (\(userEmail, order) <span class="ot">-&gt;</span> (group_ userEmail, count_ (_orderId order))) <span class="op">$</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>                                                  <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>                                                     order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="ot">`references_`</span> just_ user <span class="op">&amp;&amp;.</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>                                                                                                               isNothing_ (_orderShippingInfo order))</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>                                                     <span class="fu">pure</span> (_userEmail user, order)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>                   guard_ (_userEmail user <span class="op">==.</span> userEmail)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>                   (userEmail, shippedCount) <span class="ot">&lt;-</span> subquery_ <span class="op">$</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>                                                aggregate (\(userEmail, order) <span class="ot">-&gt;</span> (group_ userEmail, count_ (_orderId order))) <span class="op">$</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>                                                <span class="kw">do</span> user <span class="ot">&lt;-</span> all_ (_shoppingCartUsers db)</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>                                                   order <span class="ot">&lt;-</span> perhapsAll_ (_shoppingCartOrders db) (\order <span class="ot">-&gt;</span> _orderForUser order <span class="ot">`references_`</span> just_ user <span class="op">&amp;&amp;.</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>                                                                                                            isJust_ (_orderShippingInfo order))</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>                                                   <span class="fu">pure</span> (_userEmail user, order)</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>                   guard_ (_userEmail user <span class="op">==.</span> userEmail)</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">pure</span> (user, unshippedCount, shippedCount)</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) shippingInformationByUserCorrect</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>And now we get the expected result</p>
 <pre><code>Shipped and unshipped orders by user, with correct double maybe handling. Tuples returned like (user, unshipped, shipped).
 Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password`, `t3`.`e1`, `t6`.`e1` FROM  cart_users AS t0 INNER JOIN (SELECT `t1`.`email` AS e0, COUNT(`t2`.`id`) AS e1 FROM  cart_users AS t1 LEFT JOIN cart_orders AS t2 ON ((`t2`.`for_user__email` == `t1`.`email`) AND (`t2`.`shipping_info__info_id` IS NULL)) GROUP BY `t1`.`email`) AS t3 INNER JOIN (SELECT `t4`.`email` AS e0, COUNT(`t5`.`id`) AS e1 FROM  cart_users AS t4 LEFT JOIN cart_orders AS t5 ON ((`t5`.`for_user__email` == `t4`.`email`) AND (`t5`.`shipping_info__info_id` IS NOT NULL)) GROUP BY `t4`.`email`) AS t6 WHERE ((`t0`.`email` == `t3`.`e0`) AND (`t0`.`email` == `t6`.`e0`)) with []
@@ -472,7 +518,11 @@ Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`pas
 (User {_userEmail = &quot;sam@example.com&quot;, _userFirstName = &quot;Sam&quot;, _userLastName = &quot;Taylor&quot;, _userPassword = &quot;332532dcfaa1cbf61e2a266bd723612c&quot;},0,0)
 ----</code></pre>
 <h2 id="conclusion">Conclusion</h2>
-<p>This tutorial completes our sequence on creating a shopping cart. Throughout the tutorials, we saw how to create tables using regular Haskell data types, how to link those tables up using relations, how to query tables using both the monadic interface and the list-like functions on queries. We saw ha few examples of using beam to generate advanced queries. More information on the Beam API is havailable on <a href="http://hackage.haskell.org/package/beam">hackage</a>. Happy beaming!</p>
+<p>This tutorial completes our sequence on creating a shopping cart. Throughout the tutorials, we saw
+how to create tables using regular Haskell data types, how to link those tables up using relations,
+how to query tables using both the monadic interface and the list-like functions on queries. We saw
+ha few examples of using beam to generate advanced queries. More information on the Beam API is
+havailable on <a href="http://hackage.haskell.org/package/beam">hackage</a>. Happy beaming!</p>
 <p>Beam is a work in progress. Please submit bugs and patches on <a href="https://github.com/tathougies/beam">GitHub</a>.</p>
 </div>
 

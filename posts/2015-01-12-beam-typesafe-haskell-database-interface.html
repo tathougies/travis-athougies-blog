@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -112,107 +118,183 @@
 
 
 <div id="post">
-<p>I just uploaded a new package to github. It’s called <em>Beam</em> and it’s a type-safe database interface for Haskell.</p>
-<p>Type safety and expressive power are two of the main selling points of Haskell. However, current Haskell database interface libraries (like Persistent and HaskellDB) are anything but. For instance, both make extended use of Template Haskell. Although a useful language feature, Template Haskell suffers from several disadvantages, namely its complexity and lack of type safety. Additionally, both fail to cover several common SQL use cases. For example, Persistent doesn’t even support foreign keys and joins.</p>
-<p>It doesn’t have to be this way. Haskell is increasingly being used on the web, and in order to be a serious web language, Haskell needs a good database backend. Several new GHC extensions, such as Generics, Closed Type Families, and Default Signatures allow us to elegantly and succinctly express everything that Yesod and HaskellDB used Template Haskell for. In terms of power, nothing stops these libraries from fully realizing the power of SQL, but it does help to start from clean and simple abstractions.</p>
+<p>I just uploaded a new package to github. It’s called <em>Beam</em> and it’s a type-safe database interface
+for Haskell.</p>
+<p>Type safety and expressive power are two of the main selling points of Haskell. However, current
+Haskell database interface libraries (like Persistent and HaskellDB) are anything but. For instance,
+both make extended use of Template Haskell. Although a useful language feature, Template Haskell
+suffers from several disadvantages, namely its complexity and lack of type safety. Additionally,
+both fail to cover several common SQL use cases. For example, Persistent doesn’t even support
+foreign keys and joins.</p>
+<p>It doesn’t have to be this way. Haskell is increasingly being used on the web, and in order to be a
+serious web language, Haskell needs a good database backend. Several new GHC extensions, such as
+Generics, Closed Type Families, and Default Signatures allow us to elegantly and succinctly express
+everything that Yesod and HaskellDB used Template Haskell for. In terms of power, nothing stops
+these libraries from fully realizing the power of SQL, but it does help to start from clean and
+simple abstractions.</p>
 <p>To summarize, Beam’s primary features and differentiators are:</p>
 <ul>
-<li><strong>Declarative syntax</strong> - Beam schemas are defined declaratively at the type-level as POHT (plain old Haskell types). Type-level programming and generic deriving is used to automatically derive instances and provide proper type-checking.</li>
-<li><strong>Comprehensive</strong> - Beam aims to be a comprehensive library. This means that it will at least support all standard SQL features, including all types of joins and nested queries. This is incomplete as of now.</li>
-<li><strong>Leaky</strong> - Beam does not attempt to shield the user from the idiosyncracies of the underlying RDBMS. Users should use the RDBMS that they are most familiar with and that best meets the performance and feature requirements of the application. This leakiness also means that Beam can expose backed-specific functions to user queries. For example, PostgreSQL backend could easily provide PostgreSQL-specific functions to work with arrays, JSON, and GIS data. Because of Haskell, these functions could be type-checked statically at compile time.</li>
-<li><strong>Backend-agnostic</strong> - Although Beam does not try to standardize RDBMS behavior, the core does aim to be agnostic of the underlying backend. If you use only standard Beam features in your queries and standard data types in your schemas, then you should be able to swap the backend out anytime (including at run time) and have the same SQL generated (notice I said the <em>same SQL</em> – this does not mean that the results will be the same).</li>
-<li><strong>No Template Haskell</strong> - Beam does not make use of Template Haskell. Rather, it uses several advanced extensions, such as <code>DeriveGeneric</code>, <code>DeriveDataTypeable</code>, <code>TypeFamilies</code>, <code>MultiParamTypeClasses</code>, etc. Although this means that Beam is not 100% Haskell 2010, these syntax extensions embody the “spirit of Haskell” much better than Template Haskell. Additionally, unlike Template Haskell, these extensions are not so much tied to the structure of GHC.</li>
+<li><strong>Declarative syntax</strong> - Beam schemas are defined declaratively at the type-level as POHT (plain
+old Haskell types). Type-level programming and generic deriving is used to automatically derive
+instances and provide proper type-checking.</li>
+<li><strong>Comprehensive</strong> - Beam aims to be a comprehensive library. This means that it will at least
+support all standard SQL features, including all types of joins and nested queries. This is
+incomplete as of now.</li>
+<li><strong>Leaky</strong> - Beam does not attempt to shield the user from the idiosyncracies of the underlying
+RDBMS. Users should use the RDBMS that they are most familiar with and that best meets the
+performance and feature requirements of the application. This leakiness also means that Beam can
+expose backed-specific functions to user queries. For example, PostgreSQL backend could easily
+provide PostgreSQL-specific functions to work with arrays, JSON, and GIS data. Because of
+Haskell, these functions could be type-checked statically at compile time.</li>
+<li><strong>Backend-agnostic</strong> - Although Beam does not try to standardize RDBMS behavior, the core does aim
+to be agnostic of the underlying backend. If you use only standard Beam features in your queries
+and standard data types in your schemas, then you should be able to swap the backend out anytime
+(including at run time) and have the same SQL generated (notice I said the <em>same SQL</em> – this
+does not mean that the results will be the same).</li>
+<li><strong>No Template Haskell</strong> - Beam does not make use of Template Haskell. Rather, it uses several
+advanced extensions, such as <code>DeriveGeneric</code>, <code>DeriveDataTypeable</code>, <code>TypeFamilies</code>,
+<code>MultiParamTypeClasses</code>, etc. Although this means that Beam is not 100% Haskell 2010, these
+syntax extensions embody the “spirit of Haskell” much better than Template
+Haskell. Additionally, unlike Template Haskell, these extensions are not so much tied to the
+structure of GHC.</li>
 </ul>
 <h2 id="defining-our-first-beam-database-schema">Defining our first Beam database schema</h2>
-<p>In Beam, everything is done via plain old Haskell data types. Let’s define a simple todo list database in Beam, and then use this schema to make queries on a SQLite3 database. We begin by defining type-level names for our columns. We will have two tables in our schema: one for todo lists and one for todo items. A todo list will have two columns: a name and a description. A todo item will have three: a name, a description, and a foreign key to the list it belongs to. We will need to use the <code>DeriveGeneric</code> and <code>DeriveDataTypeable</code> extensions in order to allow our data types to play nicely with Beam.</p>
+<p>In Beam, everything is done via plain old Haskell data types. Let’s define a simple todo list
+database in Beam, and then use this schema to make queries on a SQLite3 database. We begin by
+defining type-level names for our columns. We will have two tables in our schema: one for todo lists
+and one for todo items. A todo list will have two columns: a name and a description. A todo item
+will have three: a name, a description, and a foreign key to the list it belongs to. We will need to
+use the <code>DeriveGeneric</code> and <code>DeriveDataTypeable</code> extensions in order to allow our data types to play
+nicely with Beam.</p>
 <p>Notice that these definition are given in plain old Haskell. No crufty Template Haskell DSLs here!</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="ot">{-# LANGUAGE DeriveGeneric, DeriveDataTypeable, StandaloneDeriving, OverloadedStrings, FlexibleInstances #-}</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">module</span> <span class="dt">BeamExample</span> <span class="kw">where</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">import</span> <span class="dt">Database.Beam</span></a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw">import</span> <span class="dt">Data.Text</span> (<span class="dt">Text</span>)</a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">data</span> <span class="dt">TodoList</span> column <span class="fu">=</span> <span class="dt">TodoList</span></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7">                    {<span class="ot"> todoListName        ::</span> column <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8">                    ,<span class="ot"> todoListDescription ::</span> column <span class="dt">Text</span> }</a>
-<a class="sourceLine" id="cb1-9" data-line-number="9">                <span class="kw">deriving</span> (<span class="dt">Generic</span>, <span class="dt">Typeable</span>)</a>
-<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="kw">data</span> <span class="dt">TodoItem</span> column <span class="fu">=</span> <span class="dt">TodoItem</span></a>
-<a class="sourceLine" id="cb1-11" data-line-number="11">                     {<span class="ot"> todoItemList        ::</span> <span class="dt">ForeignKey</span> <span class="dt">TodoList</span> column</a>
-<a class="sourceLine" id="cb1-12" data-line-number="12">                     ,<span class="ot"> todoItemName        ::</span> column <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb1-13" data-line-number="13">                     ,<span class="ot"> todoItemDescription ::</span> column <span class="dt">Text</span> }</a>
-<a class="sourceLine" id="cb1-14" data-line-number="14">                       <span class="kw">deriving</span> (<span class="dt">Generic</span>, <span class="dt">Typeable</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE DeriveGeneric, DeriveDataTypeable, StandaloneDeriving, OverloadedStrings, FlexibleInstances #-}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">BeamExample</span> <span class="kw">where</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Database.Beam</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Text</span> (<span class="dt">Text</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">TodoList</span> column <span class="ot">=</span> <span class="dt">TodoList</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                    {<span class="ot"> todoListName        ::</span> column <span class="dt">Text</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                    ,<span class="ot"> todoListDescription ::</span> column <span class="dt">Text</span> }</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                <span class="kw">deriving</span> (<span class="dt">Generic</span>, <span class="dt">Typeable</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">TodoItem</span> column <span class="ot">=</span> <span class="dt">TodoItem</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                     {<span class="ot"> todoItemList        ::</span> <span class="dt">ForeignKey</span> <span class="dt">TodoList</span> column</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                     ,<span class="ot"> todoItemName        ::</span> column <span class="dt">Text</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                     ,<span class="ot"> todoItemDescription ::</span> column <span class="dt">Text</span> }</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                       <span class="kw">deriving</span> (<span class="dt">Generic</span>, <span class="dt">Typeable</span>)</span></code></pre></div>
 <h3 id="column-constructors">Column constructors</h3>
-<p>Notice that each of our types takes in a special <code>column</code> type argument. This is called a <em>column constructor</em> and is used by beam to co-opt our data type to play several different roles. Beam will use these data types in several different contexts, such as to set column options, to construct query clauses, and to store data.</p>
-<p>Most of the time, we’ll be using the <code>Column</code> column constructor, which is defined as a simple newtype.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">newtype</span> <span class="dt">Column</span> <span class="fu">=</span> <span class="dt">Column</span> a</a></code></pre></div>
-<p>Because it’s a newtype, using <code>Column</code> has no runtime overhead, but it does mean that we will need to explicitly wrap and unwrap <code>Column</code> values. This can be done with the <code>column</code> and <code>columnValue</code> functions, which have the types.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="ot">column ::</span> a <span class="ot">-&gt;</span> <span class="dt">Column</span> a</a>
-<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="ot">columnValue ::</span> <span class="dt">Column</span> a <span class="ot">-&gt;</span> a</a></code></pre></div>
-<p>The other common column constructor is <code>Nullable Column</code>. This wraps the stored value with <code>Maybe</code> and lets you make nullable foreign keys. The <code>column</code> and <code>columnValue</code> functions are overloaded to work on this type as well.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="ot">column ::</span> <span class="dt">Maybe</span> a <span class="ot">-&gt;</span> <span class="dt">Nullable</span> <span class="dt">Column</span> a</a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="ot">columnValue ::</span> <span class="dt">Nullable</span> <span class="dt">Column</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</a></code></pre></div>
+<p>Notice that each of our types takes in a special <code>column</code> type argument. This is called a <em>column
+constructor</em> and is used by beam to co-opt our data type to play several different roles. Beam will
+use these data types in several different contexts, such as to set column options, to construct
+query clauses, and to store data.</p>
+<p>Most of the time, we’ll be using the <code>Column</code> column constructor, which is defined as a simple
+newtype.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">newtype</span> <span class="dt">Column</span> <span class="ot">=</span> <span class="dt">Column</span> a</span></code></pre></div>
+<p>Because it’s a newtype, using <code>Column</code> has no runtime overhead, but it does mean that we will need
+to explicitly wrap and unwrap <code>Column</code> values. This can be done with the <code>column</code> and <code>columnValue</code>
+functions, which have the types.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ot">column ::</span> a <span class="ot">-&gt;</span> <span class="dt">Column</span> a</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ot">columnValue ::</span> <span class="dt">Column</span> a <span class="ot">-&gt;</span> a</span></code></pre></div>
+<p>The other common column constructor is <code>Nullable Column</code>. This wraps the stored value with <code>Maybe</code>
+and lets you make nullable foreign keys. The <code>column</code> and <code>columnValue</code> functions are overloaded to
+work on this type as well.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ot">column ::</span> <span class="dt">Maybe</span> a <span class="ot">-&gt;</span> <span class="dt">Nullable</span> <span class="dt">Column</span> a</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ot">columnValue ::</span> <span class="dt">Nullable</span> <span class="dt">Column</span> a <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</span></code></pre></div>
 <h3 id="a-note-on-deriving">A note on deriving</h3>
-<p>Because of the complicated nature of our types, GHC won’t be able to derive <code>Show</code> instances using the regular <code>deriving</code> mechanism, but this is easily fixed with <code>StandaloneDeriving.</code> We only need to define instances of <code>Show</code> for our types parameterized with the special <code>Column</code> constructor.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">TodoList</span> <span class="dt">Column</span>)</a>
-<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">TodoItem</span> <span class="dt">Column</span>)</a></code></pre></div>
+<p>Because of the complicated nature of our types, GHC won’t be able to derive <code>Show</code> instances using
+the regular <code>deriving</code> mechanism, but this is easily fixed with <code>StandaloneDeriving.</code> We only need
+to define instances of <code>Show</code> for our types parameterized with the special <code>Column</code>
+constructor.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">TodoList</span> <span class="dt">Column</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">TodoItem</span> <span class="dt">Column</span>)</span></code></pre></div>
 <h2 id="interfacing-with-beam">Interfacing with Beam</h2>
-<p>Now that we’ve defined our table data types, we need to define a few instances so that Beam can work its magic. For each of our table types, we’ll need to instantiate the <code>Table</code> type class.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">TodoItem</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">TodoList</span></a></code></pre></div>
-<p>When GHC 7.10 comes out, we will be able to specify these <code>Table</code> instances as part of the <code>deriving</code> declaration with the <code>DeriveAnyClass</code> extension, but for now they have to be separate.</p>
-<p>Because of the <code>Generic</code> instances, Beam can fully derive this class for us. The <code>Table</code> instance for a type controls how it’s mapped to SQL. Among other things, it determines its table name, the column names, and the column types and constraints. The default instance names the table after the Haskell type, and names the columns after the selector names. It also chooses an appropriate SQL type to hold the Haskell datatype. Finally, it adds a primary key column named “id.” You can override these instances if you’d like to rename a column, rename the table, or set the SQL type of a column, but most of the time, the default one is fine.</p>
+<p>Now that we’ve defined our table data types, we need to define a few instances so that Beam can work
+its magic. For each of our table types, we’ll need to instantiate the <code>Table</code> type class.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">TodoItem</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">TodoList</span></span></code></pre></div>
+<p>When GHC 7.10 comes out, we will be able to specify these <code>Table</code> instances as part of the
+<code>deriving</code> declaration with the <code>DeriveAnyClass</code> extension, but for now they have to be separate.</p>
+<p>Because of the <code>Generic</code> instances, Beam can fully derive this class for us. The <code>Table</code> instance
+for a type controls how it’s mapped to SQL. Among other things, it determines its table name, the
+column names, and the column types and constraints. The default instance names the table after the
+Haskell type, and names the columns after the selector names. It also chooses an appropriate SQL
+type to hold the Haskell datatype. Finally, it adds a primary key column named “id.” You can override
+these instances if you’d like to rename a column, rename the table, or set the SQL type of a column,
+but most of the time, the default one is fine.</p>
 <p>Voilà! That’s it! These type are ready to be used in Beam.</p>
 <h2 id="querying-the-database">Querying the database</h2>
-<p>We’re almost ready to use these types in a real database. First though, we need to create a <code>Database</code> object with the right tables.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="ot">todoListDb ::</span> <span class="dt">Database</span></a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">todoListDb <span class="fu">=</span> database_</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">           [ table_ (<span class="ot">schema_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>)</a>
-<a class="sourceLine" id="cb7-4" data-line-number="4">           , table_ (<span class="ot">schema_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoItem</span>) ]</a></code></pre></div>
-<p><code>Simple table</code> is a type synonym for <code>table Column,</code> so <code>Simple TodoList</code> is simply our <code>TodoList</code> datatype with the standard <code>Column</code> constructor.</p>
-<p>Now, we can use this object to allow Beam to automatically migrate a database to match this database schema. Save all your work in a Haskell file, fire up GHCi, and let’s begin.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="fu">&gt;</span> <span class="fu">:</span>load <span class="fu">&lt;</span>name<span class="fu">-</span><span class="kw">of</span><span class="fu">-</span>file<span class="fu">&gt;</span></a>
-<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="fu">&gt;</span> <span class="kw">import</span> <span class="dt">Database.Beam.Backend.Sqlite3</span></a>
-<a class="sourceLine" id="cb8-3" data-line-number="3"><span class="fu">&gt;</span> beam <span class="ot">&lt;-</span> openDatabase todoListDb (<span class="dt">Sqlite3Settings</span> <span class="st">&quot;beam.db&quot;</span>)</a></code></pre></div>
+<p>We’re almost ready to use these types in a real database. First though, we need to create a
+<code>Database</code> object with the right tables.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">todoListDb ::</span> <span class="dt">Database</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>todoListDb <span class="ot">=</span> database_</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>           [ table_ (<span class="ot">schema_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>           , table_ (<span class="ot">schema_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoItem</span>) ]</span></code></pre></div>
+<p><code>Simple table</code> is a type synonym for <code>table Column,</code> so <code>Simple TodoList</code> is simply our <code>TodoList</code>
+datatype with the standard <code>Column</code> constructor.</p>
+<p>Now, we can use this object to allow Beam to automatically migrate a database to match this database
+schema. Save all your work in a Haskell file, fire up GHCi, and let’s begin.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="op">:</span>load <span class="op">&lt;</span>name<span class="op">-</span><span class="kw">of</span><span class="op">-</span>file<span class="op">&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="kw">import</span> <span class="dt">Database.Beam.Backend.Sqlite3</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> beam <span class="ot">&lt;-</span> openDatabase todoListDb (<span class="dt">Sqlite3Settings</span> <span class="st">&quot;beam.db&quot;</span>)</span></code></pre></div>
 <h3 id="creating-some-test-data">Creating some test data</h3>
-<p>Before we can query this, let’s add in some test data. We’ll add in two lists with two items each, and one empty todo list.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="fu">&gt;</span> <span class="fu">:</span>set <span class="fu">-</span><span class="dt">XOverloadedStrings</span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="fu">&gt;</span> <span class="fu">:</span>{</a>
-<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="fu">|</span> <span class="kw">let</span> todoLists <span class="fu">=</span> [ <span class="dt">TodoList</span> (column <span class="st">&quot;List 1&quot;</span>) (column <span class="st">&quot;Description for list 1&quot;</span>)</a>
-<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="fu">|</span>                 , <span class="dt">TodoList</span> (column <span class="st">&quot;List 2&quot;</span>) (column <span class="st">&quot;Description for list 2&quot;</span>)</a>
-<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="fu">|</span>                 , <span class="dt">TodoList</span> (column <span class="st">&quot;List 3&quot;</span>) (column <span class="st">&quot;Description for list 3&quot;</span>) ]</a>
-<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="fu">|</span> <span class="fu">:</span>}</a>
-<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="fu">&gt;</span> <span class="dt">Success</span> [list1, list2, list3] <span class="ot">&lt;-</span> inBeamTxn beam <span class="fu">$</span> mapM insert todoLists</a>
-<a class="sourceLine" id="cb9-8" data-line-number="8"><span class="fu">...</span></a>
-<a class="sourceLine" id="cb9-9" data-line-number="9"><span class="fu">&gt;</span> <span class="fu">:</span>{</a>
-<a class="sourceLine" id="cb9-10" data-line-number="10"><span class="fu">|</span> <span class="kw">let</span> todoItems <span class="fu">=</span> [ <span class="dt">TodoItem</span> (ref list1) (column <span class="st">&quot;Item 1&quot;</span>) (column <span class="st">&quot;This is item 1 in list 1&quot;</span>)</a>
-<a class="sourceLine" id="cb9-11" data-line-number="11"><span class="fu">|</span>                 , <span class="dt">TodoItem</span> (ref list1) (column <span class="st">&quot;Item 2&quot;</span>) (column <span class="st">&quot;This is item 2 in list 1&quot;</span>)</a>
-<a class="sourceLine" id="cb9-12" data-line-number="12"><span class="fu">|</span>                 , <span class="dt">TodoItem</span> (ref list2) (column <span class="st">&quot;Item 1&quot;</span>) (column <span class="st">&quot;This is item 1 in list 2&quot;</span>)</a>
-<a class="sourceLine" id="cb9-13" data-line-number="13"><span class="fu">|</span>                 , <span class="dt">TodoItem</span> (ref list2) (column <span class="st">&quot;Item 2&quot;</span>) (column <span class="st">&quot;This is item 2 in list 2&quot;</span>) ]</a>
-<a class="sourceLine" id="cb9-14" data-line-number="14"><span class="fu">|</span> <span class="fu">:</span>}</a>
-<a class="sourceLine" id="cb9-15" data-line-number="15"><span class="fu">&gt;</span> inBeamTxn beam <span class="fu">$</span> mapM insert todoItems</a>
-<a class="sourceLine" id="cb9-16" data-line-number="16"><span class="fu">...</span></a></code></pre></div>
+<p>Before we can query this, let’s add in some test data. We’ll add in two lists with two items each,
+and one empty todo list.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="op">:</span>set <span class="op">-</span><span class="dt">XOverloadedStrings</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="op">:</span>{</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">|</span> <span class="kw">let</span> todoLists <span class="ot">=</span> [ <span class="dt">TodoList</span> (column <span class="st">&quot;List 1&quot;</span>) (column <span class="st">&quot;Description for list 1&quot;</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>                 , <span class="dt">TodoList</span> (column <span class="st">&quot;List 2&quot;</span>) (column <span class="st">&quot;Description for list 2&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>                 , <span class="dt">TodoList</span> (column <span class="st">&quot;List 3&quot;</span>) (column <span class="st">&quot;Description for list 3&quot;</span>) ]</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">|</span> <span class="op">:</span>}</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="dt">Success</span> [list1, list2, list3] <span class="ot">&lt;-</span> inBeamTxn beam <span class="op">$</span> <span class="fu">mapM</span> insert todoLists</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="op">:</span>{</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="op">|</span> <span class="kw">let</span> todoItems <span class="ot">=</span> [ <span class="dt">TodoItem</span> (ref list1) (column <span class="st">&quot;Item 1&quot;</span>) (column <span class="st">&quot;This is item 1 in list 1&quot;</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>                 , <span class="dt">TodoItem</span> (ref list1) (column <span class="st">&quot;Item 2&quot;</span>) (column <span class="st">&quot;This is item 2 in list 1&quot;</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>                 , <span class="dt">TodoItem</span> (ref list2) (column <span class="st">&quot;Item 1&quot;</span>) (column <span class="st">&quot;This is item 1 in list 2&quot;</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="op">|</span>                 , <span class="dt">TodoItem</span> (ref list2) (column <span class="st">&quot;Item 2&quot;</span>) (column <span class="st">&quot;This is item 2 in list 2&quot;</span>) ]</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="op">|</span> <span class="op">:</span>}</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> inBeamTxn beam <span class="op">$</span> <span class="fu">mapM</span> insert todoItems</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span></code></pre></div>
 <h2 id="our-first-query">Our first query</h2>
 <p>First, let’s try to get all the todo lists.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="fu">&gt;</span> inBeamTxn beam <span class="fu">$</span> queryList (all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>))</a>
-<a class="sourceLine" id="cb10-2" data-line-number="2">[<span class="dt">Entity</span> (<span class="dt">PK</span> (<span class="dt">Column</span> <span class="dv">1</span>) (<span class="dt">TodoList</span> (<span class="dt">Column</span> <span class="st">&quot;List 1&quot;</span>) (<span class="dt">Column</span> <span class="st">&quot;Description for list 1&quot;</span>)), <span class="fu">...</span>]</a></code></pre></div>
-<p>We’re using the <code>queryList</code> function to get our results as a list. The normal <code>query</code> function returns a <code>Source</code> from the <code>conduit</code> package, which is usually easier and safer to work with when writing an application, but is not as intuitive when working on the command line.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> inBeamTxn beam <span class="op">$</span> queryList (all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>[<span class="dt">Entity</span> (<span class="dt">PK</span> (<span class="dt">Column</span> <span class="dv">1</span>) (<span class="dt">TodoList</span> (<span class="dt">Column</span> <span class="st">&quot;List 1&quot;</span>) (<span class="dt">Column</span> <span class="st">&quot;Description for list 1&quot;</span>)), <span class="op">...</span>]</span></code></pre></div>
+<p>We’re using the <code>queryList</code> function to get our results as a list. The normal <code>query</code> function
+returns a <code>Source</code> from the <code>conduit</code> package, which is usually easier and safer to work with when
+writing an application, but is not as intuitive when working on the command line.</p>
 <p>To understand queries, let’s take a look at the types.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="fu">&gt;</span> <span class="fu">:</span><span class="kw">type</span> (all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>))</a>
-<a class="sourceLine" id="cb11-2" data-line-number="2">all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>)<span class="ot"> ::</span> <span class="dt">Query</span> (<span class="dt">Entity</span> <span class="dt">TodoList</span> <span class="dt">Column</span>)</a></code></pre></div>
-<p>All queries have types <code>Query a</code>. When run, queries of type <code>Query a</code> return rows of type <code>a</code>. The <code>all_</code> query returns a <code>Query</code> that returns rows from a given table. The <code>Entity</code> type packages a table (the data types we defined) along with its <em>phantom fields</em> (defined in the type class). <em>Phantom fields</em> are fields that exist in the database but are not mapped to our data type. By default, we use the phantom fields to store the table’s primary key. Therefore, an <code>Entity a Column</code>, by default, stores the table <code>a</code> and its primary key.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="op">:</span><span class="kw">type</span> (all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>)<span class="ot"> ::</span> <span class="dt">Query</span> (<span class="dt">Entity</span> <span class="dt">TodoList</span> <span class="dt">Column</span>)</span></code></pre></div>
+<p>All queries have types <code>Query a</code>. When run, queries of type <code>Query a</code> return rows of type <code>a</code>. The
+<code>all_</code> query returns a <code>Query</code> that returns rows from a given table. The <code>Entity</code> type packages a
+table (the data types we defined) along with its <em>phantom fields</em> (defined in the type
+class). <em>Phantom fields</em> are fields that exist in the database but are not mapped to our data
+type. By default, we use the phantom fields to store the table’s primary key. Therefore, an
+<code>Entity a Column</code>, by default, stores the table <code>a</code> and its primary key.</p>
 <h3 id="relationships">Relationships</h3>
 <p>Now, let’s try to get all the <code>TodoItem</code>s associated with <code>list1</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="fu">&gt;</span> inBeamTxn beam <span class="fu">$</span> queryList (todoItemList <span class="ot">&lt;-</span><span class="fu">@</span> list1)</a></code></pre></div>
-<p>The <code>f &lt;-@ query</code> combinator takes in an entity(<code>query</code>) and a selector(<code>f</code>) from another table that is a <code>ForeignKey</code> to that entity, and returns all elements of table where the <code>ForeignKey</code> points to the entity.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> inBeamTxn beam <span class="op">$</span> queryList (todoItemList <span class="op">&lt;-@</span> list1)</span></code></pre></div>
+<p>The <code>f &lt;-@ query</code> combinator takes in an entity(<code>query</code>) and a selector(<code>f</code>) from another table that
+is a <code>ForeignKey</code> to that entity, and returns all elements of table where the <code>ForeignKey</code> points to
+the entity.</p>
 <p>Next, let’s write a query to get the <code>TodoItem</code>s along with their <code>TodoList</code>s.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="fu">&gt;</span> inBeamTxn beam <span class="fu">$</span> queryList (all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoItem</span>) <span class="fu">==&gt;</span> todoItemList)</a></code></pre></div>
-<p>The <code>q ==&gt; f</code> combinator takes a query (<code>q</code>) and a selector for the table that references a <code>ForeignKey</code>. It returns a query that performs an inner join.</p>
-<p>Suppose you wanted all <code>TodoList</code>s regardless of whether they had an associated <code>TodoItem</code>. In this case, we can simply use the right join selection</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="fu">&gt;</span> inBeamTxn beam <span class="fu">$</span> queryList (all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>) <span class="fu">&lt;=?</span> todoItemList)</a></code></pre></div>
-<p>For more complicated queries, see the <a href="https://github.com/tathougies/beam/blob/master/example/TodoList.hs">example on github</a>.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> inBeamTxn beam <span class="op">$</span> queryList (all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoItem</span>) <span class="op">==&gt;</span> todoItemList)</span></code></pre></div>
+<p>The <code>q ==&gt; f</code> combinator takes a query (<code>q</code>) and a selector for the table that references a
+<code>ForeignKey</code>. It returns a query that performs an inner join.</p>
+<p>Suppose you wanted all <code>TodoList</code>s regardless of whether they had an associated <code>TodoItem</code>. In this
+case, we can simply use the right join selection</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> inBeamTxn beam <span class="op">$</span> queryList (all_ (<span class="ot">of_ ::</span> <span class="dt">Simple</span> <span class="dt">TodoList</span>) <span class="op">&lt;=?</span> todoItemList)</span></code></pre></div>
+<p>For more complicated queries, see the
+<a href="https://github.com/tathougies/beam/blob/master/example/TodoList.hs">example on github</a>.</p>
 <h2 id="known-limitations">Known limitations</h2>
-<p>Beam is still in a very experimentl stage. You should not use Beam for production systems yet. While most SQL works correctly when dealing with tables, there are still known problems in dealing with projections involving standalone expressions. These will be fixed in time.</p>
-<p>Additionally, the Beam API is still in a constant state of flux. In some ways, it’s a bit obtuse, since I basically designed it to match the way I think. However, this is probably unintuitive for many people. As more people use the library and more feedback is generated, the API will be adapted to make it more intuitive and understandable.</p>
-<p>Lastly, Beam currently outputs all the SQL that it runs onto stdout, which is not very elegant, but helps me with debugging!</p>
+<p>Beam is still in a very experimentl stage. You should not use Beam for production systems yet. While
+most SQL works correctly when dealing with tables, there are still known problems in dealing with
+projections involving standalone expressions. These will be fixed in time.</p>
+<p>Additionally, the Beam API is still in a constant state of flux. In some ways, it’s a bit obtuse,
+since I basically designed it to match the way I think. However, this is probably unintuitive for
+many people. As more people use the library and more feedback is generated, the API will be adapted
+to make it more intuitive and understandable.</p>
+<p>Lastly, Beam currently outputs all the SQL that it runs onto stdout, which is not very elegant, but
+helps me with debugging!</p>
 <p>That being said, please leave your comments! I’m always looking for feedback.</p>
 </div>
 

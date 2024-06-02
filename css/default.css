@@ -58,14 +58,14 @@ div#content
 
 div#content p
 {
-  line-height : 1.69999em;
+  line-height : 1.7em;
   text-align  : justify;
 }
 
 div#content div.header-image
 {
   padding    : 15px 15px 15px 15px;
-  border     : solid 1px #888888;
+  border     : 1px solid #888888;
   float      : right;
   margin     : 10px 10px 10px 10px;
   width      : 400px;
@@ -83,7 +83,7 @@ div#content div.large-quote
 {
   margin             : 1em 1em 1em 1em;
   padding            : 1em 1em 1em 1em;
-  border             : solid 1px #888888;
+  border             : 1px solid #888888;
   -webkit-box-shadow : inset 0px 0px 15px rgba(128,128,128,128.0);
   -moz-box-shadow    : inset 0px 0px 15px rgba(128,128,128,128.0);
   -ms-box-shadow     : inset 0px 0px 15px rgba(128,128,128,128.0);
@@ -116,7 +116,7 @@ div#content div.gallery > div.figure
 div#content div.figure
 {
   padding    : 10px 10px 10px 10px;
-  border     : solid 1px #888888;
+  border     : 1px solid #888888;
   margin     : 5px 5px 5px 5px;
   width      : 200px;
   text-align : center;
@@ -124,7 +124,7 @@ div#content div.figure
 
 div#content div.figure.figure-centered
 {
-  border       : solid 0px rgba(0,0,0,0.0);
+  border       : 0px solid rgba(0,0,0,0.0);
   margin-left  : auto;
   margin-right : auto;
   width        : auto;
@@ -186,7 +186,7 @@ div#content div.figure p.caption
 
 div#content ul li
 {
-  line-height   : 1.39999em;
+  line-height   : 1.4em;
   margin-bottom : 1em;
   text-align    : justify;
 }
@@ -199,7 +199,7 @@ div#content ul li[last-child]
 
 div#content ol li
 {
-  line-height   : 1.39999em;
+  line-height   : 1.4em;
   margin-bottom : 1em;
   text-align    : justify;
 }
@@ -262,7 +262,7 @@ div#content h2
   font-weight    : bold;
   text-transform : uppercase;
   font-size      : 15pt;
-  border-bottom  : dotted 1px #dddddd;
+  border-bottom  : 1px dotted #dddddd;
   overflow       : auto;
 }
 
@@ -333,7 +333,7 @@ div#content pre
   overflow-x       : auto;
   margin-left      : 20px;
   padding          : 1em 1em 1em 1em;
-  line-height      : 1.19999em;
+  line-height      : 1.2em;
   background-color : #eeeeee;
   font-size        : 10pt;
 }

@@ -54,7 +54,7 @@
               <li><h2>Tags</h2>
                 <ul>
                 
-                  <li><a href="../tags/haskell.html">haskell (14)</a></li>
+                  <li><a href="../tags/haskell.html">haskell (16)</a></li>
                 
                   <li><a href="../tags/hydroponics.html">hydroponics (9)</a></li>
                 
@@ -62,11 +62,15 @@
                 
                   <li><a href="../tags/gardening.html">gardening (4)</a></li>
                 
+                  <li><a href="../tags/math.html">math (3)</a></li>
+                
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
-                  <li><a href="../tags/math.html">math (2)</a></li>
+                  <li><a href="../tags/type theory.html">type theory (1)</a></li>
+                
+                  <li><a href="../tags/physics.html">physics (1)</a></li>
                 
                   <li><a href="../tags/hakyll.html">hakyll (1)</a></li>
                 
@@ -79,6 +83,8 @@
                   <li><a href="../tags/business.html">business (1)</a></li>
                 
                   <li><a href="../tags/agriculture.html">agriculture (1)</a></li>
+                
+                  <li><a href="../tags/HoTT.html">HoTT (1)</a></li>
                 </ul></li>
             </ul>
           <div id="shamelessplug">
@@ -112,32 +118,54 @@
 
 
 <div id="post">
-<p>Beam is a type-safe Haskell database interface that does not use Template Haskell. It aims to have an intuitive interface and produce human readable SQL. I described an early version of beam in a <a href="../posts/2015-01-12-beam-typesafe-haskell-database-interface.html">previous post</a>. Over the past few months, I’ve greatly simplified the interface and the internal code. This is the first installment in a series of tutorials I hope will make it easy to use Beam.</p>
+<p>Beam is a type-safe Haskell database interface that does not use Template
+Haskell. It aims to have an intuitive interface and produce human readable
+SQL. I described an early version of beam in a <a href="../posts/2015-01-12-beam-typesafe-haskell-database-interface.html">previous
+post</a>. Over the past
+few months, I’ve greatly simplified the interface and the internal code. This is
+the first installment in a series of tutorials I hope will make it easy to use
+Beam.</p>
 <p>Author’s note: This has been superseded by the <a href="https://tathougies.github.io/beam">Beam manual</a>.</p>
 <h2 id="introduction">Introduction</h2>
 <p>In this tutorial sequence, I’ll walk through creating a schema for a simple shopping cart database.</p>
-<p>In this installment, we’ll start by defining a user table. Then, I’ll show how beam makes it easy to manipulate data in our database. Finally, I’ll demonstrate how beam lets us declare type-safe and composable queries.</p>
-<p>One bit of administrivia: Although this file is literate Haskell and can be compiled directly by GHC, I’ll sometimes include output from a GHCi session with the appropriate declarations. If you’d like, feel free to follow along in GHCi.</p>
+<p>In this installment, we’ll start by defining a user table. Then, I’ll show how beam makes it easy to
+manipulate data in our database. Finally, I’ll demonstrate how beam lets us declare type-safe and
+composable queries.</p>
+<p>One bit of administrivia: Although this file is literate Haskell and can be compiled directly by
+GHC, I’ll sometimes include output from a GHCi session with the appropriate declarations. If you’d
+like, feel free to follow along in GHCi.</p>
 <h2 id="beam-module-structure">Beam Module Structure</h2>
-<p>Beam makes extensive use of GHC’s Generics mechanism. This extension means beam does not need to rely on template haskell.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="ot">{-# LANGUAGE StandaloneDeriving, TypeSynonymInstances, FlexibleInstances, TypeFamilies, DeriveGeneric, OverloadedStrings #-}</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span></a></code></pre></div>
-<p>To start defining beam schemas and queries, you only need to import the <code>Database.Beam</code> module. To interface with an actual database, you’ll need to import one of the database backends. Beam ships with a default sqlite3 backend in the standard package.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">import</span> <span class="dt">Database.Beam</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="kw">import</span> <span class="dt">Database.Beam.Backend.Sqlite3</span></a>
-<a class="sourceLine" id="cb2-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="kw">import</span> <span class="dt">Data.Text</span> (<span class="dt">Text</span>)</a></code></pre></div>
+<p>Beam makes extensive use of GHC’s Generics mechanism. This extension means beam does not need to
+rely on template haskell.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE StandaloneDeriving, TypeSynonymInstances, FlexibleInstances, TypeFamilies, DeriveGeneric, OverloadedStrings #-}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span></span></code></pre></div>
+<p>To start defining beam schemas and queries, you only need to import the <code>Database.Beam</code> module.
+To interface with an actual database, you’ll need to import one of the database backends.
+Beam ships with a default sqlite3 backend in the standard package.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Database.Beam</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Database.Beam.Backend.Sqlite3</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Text</span> (<span class="dt">Text</span>)</span></code></pre></div>
 <h2 id="defining-our-first-table">Defining our first table</h2>
-<p>Beam tables are regular Haskell data types with a bit of scaffolding. Thankfully, the magic of the modern Haskell type system allows us to remove the overhead and the syntactic fuzz of the scaffolding in most situations.</p>
-<p>We start by declaring a data structure named <code>UserT</code>. As a matter of convention, Beam table types are suffixed with ‘T’. Table types have only one constructor. Again, as a matter of convention, the constructor has the same name as the table, but without the ‘T’ suffix. We’ll soon see the reason for this convention.</p>
-<p>In this tutorial, I’ll prefix all record selectors with an underscore. This is a matter of personal preference. One reason for the prefix is that it plays nicely with the <code>lens</code> library. Beam does not necessitate the use of <code>lens</code> (in fact Beam includes its own mechanism to generically derive van Laarhoven lenses), but I recognize that some programmers use <code>lens</code> quite a lot.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">data</span> <span class="dt">UserT</span> f <span class="fu">=</span> <span class="dt">User</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">             {<span class="ot"> _userEmail     ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">             ,<span class="ot"> _userFirstName ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">             ,<span class="ot"> _userLastName  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb3-5" data-line-number="5">             ,<span class="ot"> _userPassword  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span> }</a>
-<a class="sourceLine" id="cb3-6" data-line-number="6">              <span class="kw">deriving</span> <span class="dt">Generic</span></a></code></pre></div>
-<p>This data type might look very complicated, so I’d like to show you that it’s not that scary. Let’s see if we can use GHCi to help us.</p>
+<p>Beam tables are regular Haskell data types with a bit of scaffolding. Thankfully, the magic of the
+modern Haskell type system allows us to remove the overhead and the syntactic fuzz of the
+scaffolding in most situations.</p>
+<p>We start by declaring a data structure named <code>UserT</code>. As a matter of convention, Beam table types
+are suffixed with ‘T’. Table types have only one constructor. Again, as a matter of convention, the
+constructor has the same name as the table, but without the ‘T’ suffix. We’ll soon see the reason
+for this convention.</p>
+<p>In this tutorial, I’ll prefix all record selectors with an underscore. This is a matter of personal
+preference. One reason for the prefix is that it plays nicely with the <code>lens</code> library. Beam does not
+necessitate the use of <code>lens</code> (in fact Beam includes its own mechanism to generically derive van
+Laarhoven lenses), but I recognize that some programmers use <code>lens</code> quite a lot.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">UserT</span> f <span class="ot">=</span> <span class="dt">User</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>             {<span class="ot"> _userEmail     ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>             ,<span class="ot"> _userFirstName ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>             ,<span class="ot"> _userLastName  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>             ,<span class="ot"> _userPassword  ::</span> <span class="dt">Columnar</span> f <span class="dt">Text</span> }</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>              <span class="kw">deriving</span> <span class="dt">Generic</span></span></code></pre></div>
+<p>This data type might look very complicated, so I’d like to show you that it’s not that scary. Let’s
+see if we can use GHCi to help us.</p>
 <pre><code>*BasicTutorial&gt; :t User
 User
  :: Columnar f Text
@@ -147,122 +175,152 @@ User
  (\email firstName lastName password -&gt; User email firstName lastName password :: UserT Identity)
  :: Text -&gt; Text -&gt; Text -&gt; Text -&gt; UserT Identity</code></pre>
 <p>Woah! That looks a lot like what we’d expect if we had declared the type in the “regular” Haskell way:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">data</span> <span class="dt">User</span> <span class="fu">=</span> <span class="dt">User</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2">          {<span class="ot"> _userEmail     ::</span> <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb6-3" data-line-number="3">          ,<span class="ot"> _userFirstName ::</span> <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb6-4" data-line-number="4">          ,<span class="ot"> _userLastName  ::</span> <span class="dt">Text</span></a>
-<a class="sourceLine" id="cb6-5" data-line-number="5">          ,<span class="ot"> _userPassword  ::</span> <span class="dt">Text</span> }</a></code></pre></div>
-<p>This functionality is due to the fact that <code>Columnar</code> is a type family defined such that for any <code>x</code>, <code>Columnar Identity x = x</code>. Knowing this, let’s define a type synonym to make our life easier.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">type</span> <span class="dt">User</span> <span class="fu">=</span> <span class="dt">UserT</span> <span class="dt">Identity</span></a></code></pre></div>
-<p>Now you can see why we named the type of the table <code>UserT</code> and its constructor <code>User</code>. This allows us to use the “regular” <code>User</code> constructor to construct values of type <code>User</code>. We can use the <code>StandaloneDeriving</code> extension to derive an instance of <code>Show</code> for the ‘regular’ datatype.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">User</span></a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">User</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>          {<span class="ot"> _userEmail     ::</span> <span class="dt">Text</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>          ,<span class="ot"> _userFirstName ::</span> <span class="dt">Text</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>          ,<span class="ot"> _userLastName  ::</span> <span class="dt">Text</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>          ,<span class="ot"> _userPassword  ::</span> <span class="dt">Text</span> }</span></code></pre></div>
+<p>This functionality is due to the fact that <code>Columnar</code> is a type family defined such that for any
+<code>x</code>, <code>Columnar Identity x = x</code>. Knowing this, let’s define a type synonym to make our life easier.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">User</span> <span class="ot">=</span> <span class="dt">UserT</span> <span class="dt">Identity</span></span></code></pre></div>
+<p>Now you can see why we named the type of the table <code>UserT</code> and its constructor <code>User</code>. This allows
+us to use the “regular” <code>User</code> constructor to construct values of type <code>User</code>. We can use the
+<code>StandaloneDeriving</code> extension to derive an instance of <code>Show</code> for the ‘regular’ datatype.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">User</span></span></code></pre></div>
 <h2 id="teaching-beam-about-our-table">Teaching Beam about our table</h2>
-<p>We’ve defined a type that can represent our the data in our table. Now, let’s inform beam that we’d like to use `UserT’ as a table.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">UserT</span> <span class="kw">where</span></a></code></pre></div>
-<p>All beam tables need to implement the <code>Table</code> type class. The <code>Table</code> type class contains functions for marshalling values between SQL and Haskell and for allowing the table to be queried. Due to GHC’s DeriveGeneric and DefaultSignatures extensions, all these methods can be written for us by the compiler at compile-time!</p>
-<p>The only thing we need to provide is the type of the primary keys for users, and a function that can extract the primary key from any <code>UserT f</code> object. To do this, we just add the following lines to the instance declaration.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" data-line-number="1">    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> f <span class="fu">=</span> <span class="dt">UserId</span> (<span class="dt">Columnar</span> f <span class="dt">Text</span>) <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb10-2" data-line-number="2">    primaryKey <span class="fu">=</span> <span class="dt">UserId</span> <span class="fu">.</span> _userEmail</a></code></pre></div>
-<p>It would be nice to have a type synonym for <code>PrimaryKey UserT f</code>, so we make one now. We can also derive an instance of <code>Show</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="kw">type</span> <span class="dt">UserId</span> <span class="fu">=</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> <span class="dt">Identity</span></a>
-<a class="sourceLine" id="cb11-2" data-line-number="2"><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">UserId</span></a></code></pre></div>
+<p>We’ve defined a type that can represent our the data in our table. Now, let’s inform beam that we’d like to
+use `UserT’ as a table.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Table</span> <span class="dt">UserT</span> <span class="kw">where</span></span></code></pre></div>
+<p>All beam tables need to implement the <code>Table</code> type class. The <code>Table</code> type class contains functions
+for marshalling values between SQL and Haskell and for allowing the table to be queried. Due to
+GHC’s DeriveGeneric and DefaultSignatures extensions, all these methods can be written for us by the
+compiler at compile-time!</p>
+<p>The only thing we need to provide is the type of the primary keys for users, and a function that can
+extract the primary key from any <code>UserT f</code> object. To do this, we just add the following lines to
+the instance declaration.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">data</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> f <span class="ot">=</span> <span class="dt">UserId</span> (<span class="dt">Columnar</span> f <span class="dt">Text</span>) <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    primaryKey <span class="ot">=</span> <span class="dt">UserId</span> <span class="op">.</span> _userEmail</span></code></pre></div>
+<p>It would be nice to have a type synonym for <code>PrimaryKey UserT f</code>, so we make one now. We can also
+derive an instance of <code>Show</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">UserId</span> <span class="ot">=</span> <span class="dt">PrimaryKey</span> <span class="dt">UserT</span> <span class="dt">Identity</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Show</span> <span class="dt">UserId</span></span></code></pre></div>
 <h2 id="defining-our-database">Defining our database</h2>
-<p>Now that we have our table, we’re going to define a type to hold information about our database. Defining our database is going to follow the same pattern as defining a table. We’ll define a higher-kinded datatype and then declare an instance of <code>Database</code>, and let the compiler figure most of it out.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="kw">data</span> <span class="dt">ShoppingCartDb</span> f <span class="fu">=</span> <span class="dt">ShoppingCartDb</span></a>
-<a class="sourceLine" id="cb12-2" data-line-number="2">                      {<span class="ot"> _shoppingCartUsers ::</span> f <span class="dt">UserT</span> }</a>
-<a class="sourceLine" id="cb12-3" data-line-number="3">                        <span class="kw">deriving</span> <span class="dt">Generic</span></a>
-<a class="sourceLine" id="cb12-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb12-5" data-line-number="5"><span class="kw">instance</span> <span class="dt">Database</span> <span class="dt">ShoppingCartDb</span></a></code></pre></div>
-<p>The next step is to create a description of the particular database we’d like to create. This involves giving each of the tables in our database a name. If you’ve named all your database selectors using camel case, beam can automatically figure out what all the table names should be. If you haven’t, or you have multiple tables holding the same type in your database, you might have to manually name your tables. For now, we’ll let beam do the hard work.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="ot">shoppingCartDb ::</span> <span class="dt">DatabaseSettings</span> <span class="dt">ShoppingCartDb</span></a>
-<a class="sourceLine" id="cb13-2" data-line-number="2">shoppingCartDb <span class="fu">=</span> autoDbSettings</a></code></pre></div>
+<p>Now that we have our table, we’re going to define a type to hold information about our
+database. Defining our database is going to follow the same pattern as defining a table. We’ll
+define a higher-kinded datatype and then declare an instance of <code>Database</code>, and let the compiler
+figure most of it out.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">ShoppingCartDb</span> f <span class="ot">=</span> <span class="dt">ShoppingCartDb</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                      {<span class="ot"> _shoppingCartUsers ::</span> f <span class="dt">UserT</span> }</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                        <span class="kw">deriving</span> <span class="dt">Generic</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Database</span> <span class="dt">ShoppingCartDb</span></span></code></pre></div>
+<p>The next step is to create a description of the particular database we’d like to create. This
+involves giving each of the tables in our database a name. If you’ve named all your database
+selectors using camel case, beam can automatically figure out what all the table names should be. If
+you haven’t, or you have multiple tables holding the same type in your database, you might have to
+manually name your tables. For now, we’ll let beam do the hard work.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ot">shoppingCartDb ::</span> <span class="dt">DatabaseSettings</span> <span class="dt">ShoppingCartDb</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>shoppingCartDb <span class="ot">=</span> autoDbSettings</span></code></pre></div>
 <h2 id="adding-users-to-our-database">Adding users to our database</h2>
-<p>Let’s add some users to our database. First, we’ll open a connection to a SQLite3 database using beam. The <code>openDatabase</code> function will open the database and optionally attempt to make the schema of the opened database match the schema implied by the data types. Below we use the <code>openDatabaseDebug</code> function to put beam into debug mode. This will cause beam to log every sql statement executed. <code>openDatabaseDebug</code> and <code>openDatabase</code> have the same type signature, so they can be used interchangeably. In the call below, we pass in <code>AutoMigrate</code> to have beam automatically attempt to match up the real database schema with what it would expect based on the Haskell types.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="ot">main ::</span> <span class="dt">IO</span> ()</a>
-<a class="sourceLine" id="cb14-2" data-line-number="2">main <span class="fu">=</span> <span class="kw">do</span> beam <span class="ot">&lt;-</span> openDatabaseDebug shoppingCartDb <span class="dt">AutoMigrate</span> (<span class="dt">Sqlite3Settings</span> <span class="st">&quot;shoppingcart1.db&quot;</span>)</a></code></pre></div>
+<p>Let’s add some users to our database. First, we’ll open a connection to a SQLite3 database using
+beam. The <code>openDatabase</code> function will open the database and optionally attempt to make the
+schema of the opened database match the schema implied by the data types. Below we use the
+<code>openDatabaseDebug</code> function to put beam into debug mode. This will cause beam to log every sql
+statement executed. <code>openDatabaseDebug</code> and <code>openDatabase</code> have the same type signature, so they can
+be used interchangeably. In the call below, we pass in <code>AutoMigrate</code> to have beam automatically
+attempt to match up the real database schema with what it would expect based on the Haskell types.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span> beam <span class="ot">&lt;-</span> openDatabaseDebug shoppingCartDb <span class="dt">AutoMigrate</span> (<span class="dt">Sqlite3Settings</span> <span class="st">&quot;shoppingcart1.db&quot;</span>)</span></code></pre></div>
 <p>To make sure that beam correctly inferred the database schema, let’s dump it.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb15-1" data-line-number="1">          dumpSchema shoppingCartDb</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>          dumpSchema shoppingCartDb</span></code></pre></div>
 <p>This will dump the SQL CREATE TABLE statements to the console.</p>
 <pre><code>Dumping database schema ...
 CREATE TABLE cart_users (email VARCHAR NOT NULL, first_name VARCHAR NOT NULL, last_name VARCHAR NOT NULL, password VARCHAR NOT NULL, PRIMARY KEY( email ))</code></pre>
-<p>Beam automatically converted our <code>UserT</code> table in the <code>_shoppingCartUsers</code> selector to a table named <code>cart_users</code>. As we stated above, this comes from un-CamelCase-ing the selector name and dropping the first component. Beam followed the same rule to derive the column names.</p>
+<p>Beam automatically converted our <code>UserT</code> table in the <code>_shoppingCartUsers</code> selector to a table named
+<code>cart_users</code>. As we stated above, this comes from un-CamelCase-ing the selector name and dropping
+the first component. Beam followed the same rule to derive the column names.</p>
 <p>Now let’s add a few users. We’ll give each user an MD5 encoded password too.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb17-1" data-line-number="1">          beamTxn beam <span class="fu">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb17-2" data-line-number="2">           <span class="kw">do</span> insertInto usersT (<span class="dt">User</span> <span class="st">&quot;james@example.com&quot;</span> <span class="st">&quot;James&quot;</span> <span class="st">&quot;Smith&quot;</span> <span class="st">&quot;b4cc344d25a2efe540adbf2678e2304c&quot;</span> <span class="co">{- james -}</span>)</a>
-<a class="sourceLine" id="cb17-3" data-line-number="3">              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;betty@example.com&quot;</span> <span class="st">&quot;Betty&quot;</span> <span class="st">&quot;Jones&quot;</span> <span class="st">&quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;</span> <span class="co">{- betty -}</span>)</a>
-<a class="sourceLine" id="cb17-4" data-line-number="4">              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;sam@example.com&quot;</span> <span class="st">&quot;Sam&quot;</span> <span class="st">&quot;Taylor&quot;</span> <span class="st">&quot;332532dcfaa1cbf61e2a266bd723612c&quot;</span> <span class="co">{- sam -}</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>          beamTxn beam <span class="op">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>           <span class="kw">do</span> insertInto usersT (<span class="dt">User</span> <span class="st">&quot;james@example.com&quot;</span> <span class="st">&quot;James&quot;</span> <span class="st">&quot;Smith&quot;</span> <span class="st">&quot;b4cc344d25a2efe540adbf2678e2304c&quot;</span> <span class="co">{- james -}</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;betty@example.com&quot;</span> <span class="st">&quot;Betty&quot;</span> <span class="st">&quot;Jones&quot;</span> <span class="st">&quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;</span> <span class="co">{- betty -}</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;sam@example.com&quot;</span> <span class="st">&quot;Sam&quot;</span> <span class="st">&quot;Taylor&quot;</span> <span class="st">&quot;332532dcfaa1cbf61e2a266bd723612c&quot;</span> <span class="co">{- sam -}</span>)</span></code></pre></div>
 <p>The <code>insertInto</code> function inserts a value into a table that can hold that type.</p>
 <p>Because we’re in debug mode, we’ll see the SQL that beam is running:</p>
 <pre><code>Will execute INSERT INTO cart_users VALUES (?, ?, ?, ?) with [SqlString &quot;james@example.com&quot;,SqlString &quot;James&quot;,SqlString &quot;Smith&quot;,SqlString &quot;b4cc344d25a2efe540adbf2678e2304c&quot;]
 Will execute INSERT INTO cart_users VALUES (?, ?, ?, ?) with [SqlString &quot;betty@example.com&quot;,SqlString &quot;Betty&quot;,SqlString &quot;Jones&quot;,SqlString &quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;]
 Will execute INSERT INTO cart_users VALUES (?, ?, ?, ?) with [SqlString &quot;sam@example.com&quot;,SqlString &quot;Sam&quot;,SqlString &quot;Taylor&quot;,SqlString &quot;332532dcfaa1cbf61e2a266bd723612c&quot;]</code></pre>
 <h2 id="querying-the-database">Querying the database</h2>
-<p>Now let’s write some queries for the database. You can think of queries in Beam as similar to lists. Like lists you can filter them (SQL WHERE clauses), take only a certain number of items from them (SQL LIMIT clauses), and drop a certain number of items from them (SQL OFFSET clauses).</p>
+<p>Now let’s write some queries for the database. You can think of queries in Beam as similar to lists.
+Like lists you can filter them (SQL WHERE clauses), take only a certain number of items from them
+(SQL LIMIT clauses), and drop a certain number of items from them (SQL OFFSET clauses).</p>
 <p>Let’s look at a simple example. Let’s get all users.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb19-1" data-line-number="1">          putStrLn <span class="st">&quot;all users: &quot;</span></a>
-<a class="sourceLine" id="cb19-2" data-line-number="2">          <span class="dt">Success</span> allUsers <span class="ot">&lt;-</span> beamTxn beam <span class="fu">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb19-3" data-line-number="3">                              queryList (all_ usersT)</a>
-<a class="sourceLine" id="cb19-4" data-line-number="4">          mapM_ (putStrLn <span class="fu">.</span> show) allUsers</a>
-<a class="sourceLine" id="cb19-5" data-line-number="5">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;all users: &quot;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> allUsers <span class="ot">&lt;-</span> beamTxn beam <span class="op">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                              queryList (all_ usersT)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) allUsers</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>When run, you should get output like the following:</p>
 <pre><code>Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password` FROM  cart_users AS t0 with []
 User {_userEmail = &quot;james@example.com&quot;, _userFirstName = &quot;James&quot;, _userLastName = &quot;Smith&quot;, _userPassword = &quot;b4cc344d25a2efe540adbf2678e2304c&quot;}
 User {_userEmail = &quot;betty@example.com&quot;, _userFirstName = &quot;Betty&quot;, _userLastName = &quot;Jones&quot;, _userPassword = &quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;}
 User {_userEmail = &quot;sam@example.com&quot;, _userFirstName = &quot;Sam&quot;, _userLastName = &quot;Taylor&quot;, _userPassword = &quot;332532dcfaa1cbf61e2a266bd723612c&quot;}</code></pre>
-<p>Next let’s suppose you wanted to sort the users into order by their first name. We can use the <code>orderBy</code> function to order the query results. This is similar to the <code>sortBy</code> function for lists.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb21-1" data-line-number="1">          putStrLn <span class="st">&quot;users sorted by first name:&quot;</span></a>
-<a class="sourceLine" id="cb21-2" data-line-number="2">          <span class="dt">Success</span> sortedUsersByFirstName <span class="ot">&lt;-</span> beamTxn beam <span class="fu">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb21-3" data-line-number="3">                                            queryList <span class="fu">$</span> orderBy (asc_ <span class="fu">.</span> _userFirstName) (all_ usersT)</a>
-<a class="sourceLine" id="cb21-4" data-line-number="4">          mapM_ (putStrLn <span class="fu">.</span> show) sortedUsersByFirstName</a>
-<a class="sourceLine" id="cb21-5" data-line-number="5">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<p>Next let’s suppose you wanted to sort the users into order by their first name. We can use the
+<code>orderBy</code> function to order the query results. This is similar to the <code>sortBy</code> function for lists.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;users sorted by first name:&quot;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> sortedUsersByFirstName <span class="ot">&lt;-</span> beamTxn beam <span class="op">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                                            queryList <span class="op">$</span> orderBy (asc_ <span class="op">.</span> _userFirstName) (all_ usersT)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) sortedUsersByFirstName</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>The corresponding output:</p>
 <pre><code>Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password` FROM  cart_users AS t0 ORDER BY `t0`.`first_name` ASC with []
 User {_userEmail = &quot;betty@example.com&quot;, _userFirstName = &quot;Betty&quot;, _userLastName = &quot;Jones&quot;, _userPassword = &quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;}
 User {_userEmail = &quot;james@example.com&quot;, _userFirstName = &quot;James&quot;, _userLastName = &quot;Smith&quot;, _userPassword = &quot;b4cc344d25a2efe540adbf2678e2304c&quot;}
 User {_userEmail = &quot;sam@example.com&quot;, _userFirstName = &quot;Sam&quot;, _userLastName = &quot;Taylor&quot;, _userPassword = &quot;332532dcfaa1cbf61e2a266bd723612c&quot;}</code></pre>
 <p>We can also sort by more than one column.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb23-1" data-line-number="1">          putStrLn <span class="st">&quot;users sorted by first and last name:&quot;</span></a>
-<a class="sourceLine" id="cb23-2" data-line-number="2">          <span class="dt">Success</span> sortedUsersByFirstAndLastName <span class="ot">&lt;-</span> beamTxn beam <span class="fu">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb23-3" data-line-number="3">                                                   queryList <span class="fu">$</span> orderBy (\user <span class="ot">-&gt;</span> (asc_ (_userFirstName user), asc_ (_userLastName user))) (all_ usersT)</a>
-<a class="sourceLine" id="cb23-4" data-line-number="4">          mapM_ (putStrLn <span class="fu">.</span> show) sortedUsersByFirstAndLastName</a>
-<a class="sourceLine" id="cb23-5" data-line-number="5">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;users sorted by first and last name:&quot;</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> sortedUsersByFirstAndLastName <span class="ot">&lt;-</span> beamTxn beam <span class="op">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                                                   queryList <span class="op">$</span> orderBy (\user <span class="ot">-&gt;</span> (asc_ (_userFirstName user), asc_ (_userLastName user))) (all_ usersT)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM_</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) sortedUsersByFirstAndLastName</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>Again, the output for convenience:</p>
 <pre><code>Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password` FROM  cart_users AS t0 ORDER BY `t0`.`first_name` ASC, `t0`.`last_name` ASC with []
 User {_userEmail = &quot;betty@example.com&quot;, _userFirstName = &quot;Betty&quot;, _userLastName = &quot;Jones&quot;, _userPassword = &quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;}
 User {_userEmail = &quot;james@example.com&quot;, _userFirstName = &quot;James&quot;, _userLastName = &quot;Smith&quot;, _userPassword = &quot;b4cc344d25a2efe540adbf2678e2304c&quot;}
 User {_userEmail = &quot;sam@example.com&quot;, _userFirstName = &quot;Sam&quot;, _userLastName = &quot;Taylor&quot;, _userPassword = &quot;332532dcfaa1cbf61e2a266bd723612c&quot;}</code></pre>
 <p>We can use <code>limit_</code> and <code>offset_</code> in a similar manner to <code>take</code> and <code>drop</code> respectively.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb25-1" data-line-number="1">          putStrLn <span class="st">&quot;the second user based on their first names&quot;</span></a>
-<a class="sourceLine" id="cb25-2" data-line-number="2">          <span class="dt">Success</span> [secondUser] <span class="ot">&lt;-</span> beamTxn beam <span class="fu">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb25-3" data-line-number="3">                                  queryList <span class="fu">$</span> limit_ <span class="dv">1</span> (offset_ <span class="dv">1</span> (orderBy (asc_ <span class="fu">.</span> _userFirstName) (all_ usersT)))</a>
-<a class="sourceLine" id="cb25-4" data-line-number="4">          putStrLn (show secondUser)</a>
-<a class="sourceLine" id="cb25-5" data-line-number="5">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;the second user based on their first names&quot;</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> [secondUser] <span class="ot">&lt;-</span> beamTxn beam <span class="op">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                                  queryList <span class="op">$</span> limit_ <span class="dv">1</span> (offset_ <span class="dv">1</span> (orderBy (asc_ <span class="op">.</span> _userFirstName) (all_ usersT)))</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> (<span class="fu">show</span> secondUser)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>And the output:</p>
 <pre><code>Will execute SELECT `t0`.`email`, `t0`.`first_name`, `t0`.`last_name`, `t0`.`password` FROM  cart_users AS t0 ORDER BY `t0`.`first_name` ASC LIMIT 1 OFFSET 1 with []
 User {_userEmail = &quot;james@example.com&quot;, _userFirstName = &quot;James&quot;, _userLastName = &quot;Smith&quot;, _userPassword = &quot;b4cc344d25a2efe540adbf2678e2304c&quot;}</code></pre>
 <h2 id="aggregations">Aggregations</h2>
 <p>Sometimes we also want to group our data together and perform calculations over the groups of data. SQL calls these aggregations.</p>
 <p>The simplest aggregation is counting. We use the <code>aggregate</code> function to create aggregations.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb27-1" data-line-number="1">          putStrLn <span class="st">&quot;The total number of users&quot;</span></a>
-<a class="sourceLine" id="cb27-2" data-line-number="2">          <span class="dt">Success</span> [userCount] <span class="ot">&lt;-</span> beamTxn beam <span class="fu">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb27-3" data-line-number="3">                                 queryList <span class="fu">$</span> aggregate (\user <span class="ot">-&gt;</span> count_ (_userEmail user)) (all_ usersT)</a>
-<a class="sourceLine" id="cb27-4" data-line-number="4">          putStrLn (show userCount)</a>
-<a class="sourceLine" id="cb27-5" data-line-number="5">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
-<p>Maybe we’d like something a little more interesting, such as the number of users for each unique first name. We can also express these aggregations using the <code>aggregate</code> function. In order to get interesting results, we’ll need to add more users to our database.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb28-1" data-line-number="1">          beamTxn beam <span class="fu">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb28-2" data-line-number="2">           <span class="kw">do</span> insertInto usersT (<span class="dt">User</span> <span class="st">&quot;james@pallo.com&quot;</span> <span class="st">&quot;James&quot;</span> <span class="st">&quot;Pallo&quot;</span> <span class="st">&quot;b4cc344d25a2efe540adbf2678e2304c&quot;</span> <span class="co">{- james -}</span>)</a>
-<a class="sourceLine" id="cb28-3" data-line-number="3">              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;betty@sims.com&quot;</span> <span class="st">&quot;Betty&quot;</span> <span class="st">&quot;Sims&quot;</span> <span class="st">&quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;</span> <span class="co">{- betty -}</span>)</a>
-<a class="sourceLine" id="cb28-4" data-line-number="4">              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;james@oreily.com&quot;</span> <span class="st">&quot;James&quot;</span> <span class="st">&quot;O'Reily&quot;</span> <span class="st">&quot;b4cc344d25a2efe540adbf2678e2304c&quot;</span> <span class="co">{- james -}</span>)</a>
-<a class="sourceLine" id="cb28-5" data-line-number="5">              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;sam@sophitz.com&quot;</span> <span class="st">&quot;Sam&quot;</span> <span class="st">&quot;Sophitz&quot;</span> <span class="st">&quot;332532dcfaa1cbf61e2a266bd723612c&quot;</span> <span class="co">{- sam -}</span>)</a>
-<a class="sourceLine" id="cb28-6" data-line-number="6">              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;sam@jely.com&quot;</span> <span class="st">&quot;Sam&quot;</span> <span class="st">&quot;Jely&quot;</span> <span class="st">&quot;332532dcfaa1cbf61e2a266bd723612c&quot;</span> <span class="co">{- sam -}</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;The total number of users&quot;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> [userCount] <span class="ot">&lt;-</span> beamTxn beam <span class="op">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                                 queryList <span class="op">$</span> aggregate (\user <span class="ot">-&gt;</span> count_ (_userEmail user)) (all_ usersT)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> (<span class="fu">show</span> userCount)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
+<p>Maybe we’d like something a little more interesting, such as the number of users for each unique
+first name. We can also express these aggregations using the <code>aggregate</code> function. In order to get
+interesting results, we’ll need to add more users to our database.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>          beamTxn beam <span class="op">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>           <span class="kw">do</span> insertInto usersT (<span class="dt">User</span> <span class="st">&quot;james@pallo.com&quot;</span> <span class="st">&quot;James&quot;</span> <span class="st">&quot;Pallo&quot;</span> <span class="st">&quot;b4cc344d25a2efe540adbf2678e2304c&quot;</span> <span class="co">{- james -}</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;betty@sims.com&quot;</span> <span class="st">&quot;Betty&quot;</span> <span class="st">&quot;Sims&quot;</span> <span class="st">&quot;82b054bd83ffad9b6cf8bdb98ce3cc2f&quot;</span> <span class="co">{- betty -}</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;james@oreily.com&quot;</span> <span class="st">&quot;James&quot;</span> <span class="st">&quot;O'Reily&quot;</span> <span class="st">&quot;b4cc344d25a2efe540adbf2678e2304c&quot;</span> <span class="co">{- james -}</span>)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;sam@sophitz.com&quot;</span> <span class="st">&quot;Sam&quot;</span> <span class="st">&quot;Sophitz&quot;</span> <span class="st">&quot;332532dcfaa1cbf61e2a266bd723612c&quot;</span> <span class="co">{- sam -}</span>)</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>              insertInto usersT (<span class="dt">User</span> <span class="st">&quot;sam@jely.com&quot;</span> <span class="st">&quot;Sam&quot;</span> <span class="st">&quot;Jely&quot;</span> <span class="st">&quot;332532dcfaa1cbf61e2a266bd723612c&quot;</span> <span class="co">{- sam -}</span>)</span></code></pre></div>
 <p>Now we can use <code>aggregate</code> to both group by a user’s first name, and then count the number of users.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb29-1" data-line-number="1">          putStrLn <span class="st">&quot;The number of users for each name&quot;</span></a>
-<a class="sourceLine" id="cb29-2" data-line-number="2">          <span class="dt">Success</span> countsByFirstName <span class="ot">&lt;-</span> beamTxn beam <span class="fu">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></a>
-<a class="sourceLine" id="cb29-3" data-line-number="3">                                       queryList <span class="fu">$</span></a>
-<a class="sourceLine" id="cb29-4" data-line-number="4">                                       aggregate (\user <span class="ot">-&gt;</span> (group_ (_userFirstName user), count_ (_userEmail user))) <span class="fu">$</span></a>
-<a class="sourceLine" id="cb29-5" data-line-number="5">                                       all_ usersT</a>
-<a class="sourceLine" id="cb29-6" data-line-number="6">          mapM (putStrLn <span class="fu">.</span> show) countsByFirstName</a>
-<a class="sourceLine" id="cb29-7" data-line-number="7">          putStrLn <span class="st">&quot;----\n\n&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;The number of users for each name&quot;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>          <span class="dt">Success</span> countsByFirstName <span class="ot">&lt;-</span> beamTxn beam <span class="op">$</span> \(<span class="dt">ShoppingCartDb</span> usersT) <span class="ot">-&gt;</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                                       queryList <span class="op">$</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                                       aggregate (\user <span class="ot">-&gt;</span> (group_ (_userFirstName user), count_ (_userEmail user))) <span class="op">$</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                                       all_ usersT</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mapM</span> (<span class="fu">putStrLn</span> <span class="op">.</span> <span class="fu">show</span>) countsByFirstName</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>          <span class="fu">putStrLn</span> <span class="st">&quot;----\n\n&quot;</span></span></code></pre></div>
 <p>Beam produces a very reasonable looking SQL statement, and returns the correct results.</p>
 <pre><code>The number of users for each name
 Will execute SELECT `t0`.`first_name`, COUNT(`t0`.`email`) FROM  cart_users AS t0 GROUP BY `t0`.`first_name` with []
@@ -271,7 +329,11 @@ Will execute SELECT `t0`.`first_name`, COUNT(`t0`.`email`) FROM  cart_users AS t
 (&quot;Sam&quot;,3)
 ----</code></pre>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this tutorial, we’ve covered creating a database schema, opening up a beam database, inserting values into the database, and querying values from them. We used the knowledge we learned to create a partial shopping cart database that contains information about users. In the next tutorial, we’ll delve deeper into the some of the query types and show how we can create relations between tables. We’ll also use the monadic query interface to create SQL joins.</p>
+<p>In this tutorial, we’ve covered creating a database schema, opening up a beam database, inserting
+values into the database, and querying values from them. We used the knowledge we learned to create
+a partial shopping cart database that contains information about users. In the next tutorial, we’ll
+delve deeper into the some of the query types and show how we can create relations between
+tables. We’ll also use the monadic query interface to create SQL joins.</p>
 <p>Until next time!</p>
 <p>If you have any questions about beam, feel free to send them to travis@athougies.net . Pull requests and bug reports are welcome on <a href="https://github.com/tathougies/beam">GitHub</a>.</p>
 </div>
