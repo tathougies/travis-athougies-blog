@@ -154,11 +154,12 @@ no widespread consensus <a href="#fn3" class="footnote-ref" id="fnref3" role="do
 relies on the distributed property of multiplication and the definition of place value. Every step is justifiable as to why it results in the correct answer. We’ve developed very good mechanisms
 <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> to mechanically to <em>prove</em> that following these steps will lead to the correct answer. Nothing similar exists for neural network models.</p>
 <h2 id="sir-this-is-a-wendys">Sir, this is a Wendy’s</h2>
-<p>So if neural networks are not <em>algorithms</em> what are they? Well, again, I think we have to be careful with terms. Neural networks (or really, transformers, in the case of GPT) are algorithms. That means they are a sequence of well-defined steps to follow. However, the models that they run (meaning the weights learned during the learning process, combined with the algorithm to execute them) are not.</p>
-<p>This may seem like a trivial distinction but it’s really not. In fact, it really matters. One of the biggest discoveries in mathematics and computer science is the sheer complexity that arises from
-seemingly simple algorithms. One common thing I’ve witnessed in the current debates on AI is that many computer scientists are more willing to entertain the idea that consciousness and other seemingly
-intractable problems are simply emergenty phenomenon, while others dismiss them outright as pure fantasy.</p>
-<p>Personally, I believe that AI machines cannot have the same kind of agency as humans (I’ll get to this later), but I do think I fall into the camp of computer scientists who are absolutely willing to
+<p>So if neural networks are not <em>algorithms</em> what are they? Well, again, I think we have to be careful with terms. Neural networks (or really, transformers, in the case of GPT) <em>are</em> algorithms. That
+means they are a sequence of well-defined steps to follow. However, the models that they run (meaning the weights learned during the learning process, combined with the algorithm to execute them) are
+not.</p>
+<p>This may seem like a useless distinction but it’s really not. One common thing I’ve witnessed in the current debates on AI is that many computer scientists are more willing to entertain the idea that
+consciousness and other seemingly intractable problems are simply emergenty phenomenon, while others dismiss them outright as pure fantasy.</p>
+<p>Personally, I believe that AI machines cannot have the same kind of agency as humans (I’ll get to this in a later post), but I do think I fall into the camp of computer scientists who are absolutely willing to
 entertain the notion that they might. The main source of this different approach I think comes down to one of the most shocking discoveries in computer science that any programmer or AI researcher
 would be familiar with.</p>
 <p>Okay, I’m going to go back into deep computer science here, so everyone hold on tight.</p>
@@ -170,19 +171,25 @@ would be familiar with.</p>
 </ol>
 <p>Easy right? We can understand this completely. If I give you a piece of graph paper with some cells filled in to signal they’re alive and some blank to show they’re dead, you can apply these rules for
 as long as I ask, and give me the result. In fact, we can program computers to do this <a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.</p>
-<p>Okay so the truly great thing about these three rules, is that they fully encapsulate every possible computation that mankind can do. You can arrange alive or dead cells to do almost anything like
-calculate pi <a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, make a computer <a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>, or even simulate itself <a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>. <em>Every single program</em> can be encoded into a pattern of live and dead cells.</p>
+<p>The truly awesome thing about these three rules, is that they fully encapsulate every possible computation that humankind can do. You can arrange alive or dead cells to calculate pi <a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, make a
+computer <a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>, or even simulate itself <a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>. <em>Every single program</em> can be encoded into a pattern of live and dead cells.</p>
 <p>This system is called Conway’s Game of Life. And here’s the thing, while we fully understand how to run Conway’s Game of Life (just follow the rules above), we actually can’t say a whole lot about
 it. There are useful patterns, like the ones above, and then there are some which we really can’t say anything about. They may do something, they may not. It’s not only unknown what they do, it’s
 <em>unknowable</em> and maybe even <em>indescribable</em> <a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a>.</p>
 <p>We understand the <em>meta-algorithm</em> completely, but we cannot understand the behavior with just any input.</p>
 <p>Okay, computer science over.</p>
 <p>This is really similar to AI. We understand the rules of the network (the <em>algorithm</em>) completely. For GPT, it’s a deep transformer decoder-only model with multi-headed softmax-attention, an embedding
-step and a linear projection into the final domain (phew!). Given a description like this, I can easily write a program that does the computation step. However, this is not ChatGPT. ChatGPT is this
+step and a linear projection into the final domain (phew!). Given a description like this, one can easily write a program that does the computation step. However, this is not ChatGPT. ChatGPT is this
 <em>plus</em> the weights trained by OpenAI. And, when you do the computation (the algorithm) with the weights, you get something that seems much more advanced than a long sequence of additions,
 multiplications, exponentiations, and divisions. Like… a lot more advanced.</p>
+<p>For reasons I won’t go into here, even saying things like GPT is a sequence of additions, multiplications, etc should not cause us to think the algorithm is simple. From mathematics, representation
+theory teaches us that vectors and matrices can represent arbitrary groups and group operators. In other words, AI models could be representing a system of rules much more complex than the 3-rule
+system of Conway’s Game of Life. They’re mechanistically capable of deing that.</p>
 <p>Given what we know about the Game of Life, that this process <em>could</em> result in something more is not one I could dismiss outright. Simply understanding the steps does not necessarily give us any
-insight into the overall large problem.</p>
+insight into the overall large problem. And I think this is why many computer scientists are fully bought into the idea of emergent complexity while others think it crazy. It’s simply something we
+contend with on a regular basis [^why].</p>
+<p>[^why] In general, the halting problem not only tells us we can’t understand whether a particular program will end or not but also tells us that most useful properties about programs are not
+determinable.</p>
 <h2 id="a-bunch-of-rocks-xkcd">A bunch of rocks <a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a></h2>
 <p>Ultimately, there is an insiduous category mistake in simply discussing AI in terms of algorithms. There are algorithms underpinning AI (the model structure), but this algorithm is not what people talk
 about when they say AI. When someone talks about a computer do they mean the physical box or the physical box plus the software that runs it? It’s the same with AI. AI is the model plus the
