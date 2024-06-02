@@ -182,8 +182,9 @@ as long as I ask, and give me the result. In fact, we can program computers to d
 <p>The truly awesome thing about these three rules, is that they fully encapsulate every possible computation that humankind can do. You can arrange alive or dead cells to calculate pi <a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, make a
 computer <a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>, or even simulate itself <a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>. <em>Every single program</em> can be encoded into a pattern of live and dead cells.</p>
 <p>This system is called Conway’s Game of Life. And here’s the thing, while we fully understand how to run Conway’s Game of Life (just follow the rules above), we actually can’t say a whole lot about
-it. There are useful patterns, like the ones above, and then there are some which we really can’t say anything about. They may do something, they may not. It’s not only unknown what they do, it’s
-<em>unknowable</em> and maybe even <em>indescribable</em> <a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a>.</p>
+it. There are useful patterns, like the ones above, and then there are some which we really can’t say anything about. They may do something, they may not. In particular, given a starting state, it’s
+impossible to tell in general whether or not the system will reach another state at some point in the future. It’s not only unknown whether they do, it’s <em>unknowable</em> and maybe even
+<em>indescribable</em>. This is called the <a href="https://en.wikipedia.org/wiki/Halting_Problem">halting problem.</a>.</p>
 <p>We understand the <em>meta-algorithm</em> completely, but we cannot understand the behavior with just any input.</p>
 <p>Okay, computer science over.</p>
 <p>This is really similar to AI. We understand the rules of the network (the <em>algorithm</em>) completely. For GPT, it’s a deep transformer decoder-only model with multi-headed softmax-attention, an embedding
@@ -195,8 +196,8 @@ theory teaches us that vectors and matrices can represent arbitrary groups and g
 system of Conway’s Game of Life. They’re mechanistically capable of doing that.</p>
 <p>Given what we know about the Game of Life, that this process <em>could</em> result in something more is not one I could dismiss outright. Simply understanding the steps does not necessarily give us any
 insight into the overall large problem. And I think this is why many computer scientists are fully bought into the idea of emergent complexity while others think it crazy. It’s simply something
-computer scientists contend with on a regular basis <a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a>.</p>
-<h2 id="a-bunch-of-rocks-xkcd">A bunch of rocks <a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a></h2>
+computer scientists contend with on a regular basis <a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a>.</p>
+<h2 id="a-bunch-of-rocks-xkcd">A bunch of rocks <a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a></h2>
 <p>Ultimately, there is an insiduous category mistake in simply discussing AI in terms of algorithms. There are algorithms underpinning AI (the model structure), but this algorithm is not what people talk
 about when they say AI. When someone talks about a computer do they mean the physical box or the physical box plus the software that runs it? It’s the same with AI. AI is the model plus the
 weights. The model is an algorithm. The model and weights are capable of doing something else, but it’s not clear what the weights used for GPT et al are doing.</p>
@@ -215,7 +216,7 @@ symbolically represented information; and second, intelligence becomes efficacio
 <p>Given the path laid out above, it’s apparent that there is nothing reductive about symbolic manipulation. As we’ve seen, manipulation of symbols, while simple, provably can lead to things which
 transcend human understanding. It’s truly the purview of God Himself.</p>
 <p>Now this may all sound theoretical to you, but I assure you it’s not. In 2015, the halting problem’s intractability was used to show that the spectral gap problem (the problem of determining the
-energy difference between an atom’s ground state and its first excited state) was unsolvable in more than two dimensions. And yet, our three dimensional (maybe more?) universe chugs on as always in a
+energy difference between an atom’s ground state and its first excited state) was unsolvable in more than two dimensions <a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>. And yet, our three dimensional (maybe more?) universe chugs on as always in a
 seemingly very deterministic fashion.</p>
 <p>Given all that, it’s not at all obvious why it would at all be bad if intelligence were to be ‘merely’ efficacious problem-solving through the manipulation of symbols. It’s enough to create infinite
 complexity. Is it really a stretch to imagine that – somewhere in all of that – we get something else?</p>
@@ -230,11 +231,10 @@ complexity. Is it really a stretch to imagine that – somewhere in all of that 
 <li id="fn6"><p><a href="https://www.youtube.com/watch?v=CeWMScRP_9s">Calculate Pi using Game of Life</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p><a href="https://www.youtube.com/watch?v=8unMqSp0bFY">Programmable computer in Game of Life</a><a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn8"><p><a href="https://oimo.io/works/life/">… it goes on forever …</a><a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>I cannot stress how truly unknowable this is. It is not simply difficult, or time-consuming, there are statements about various configurations that we <em>can never</em> know for
-certain. This is the <a href="https://en.wikipedia.org/wiki/Halting_Problem">halting problem.</a>.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>In general, the halting problem not only tells us we can’t understand whether a particular program will end or not but also tells us that most useful properties about programs are not
-determinable.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p><a href="https://xkcd.com/505/">A bunch of rocks</a><a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>In general, the halting problem not only tells us we can’t understand whether a particular program will end or not but also tells us that most useful properties about programs are not
+determinable.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p><a href="https://xkcd.com/505/">A bunch of rocks</a><a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p><a href="https://doi.org/10.1038/nature16059">Cubitt, T., Perez-Garcia, D. &amp; Wolf, M. Undecidability of the spectral gap. Nature 528, 207–211 (2015).</a><a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </div>
