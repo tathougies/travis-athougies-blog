@@ -66,6 +66,8 @@
                 
                   <li><a href="../tags/beam.html">beam (3)</a></li>
                 
+                  <li><a href="../tags/ai.html">ai (3)</a></li>
+                
                   <li><a href="../tags/web.html">web (2)</a></li>
                 
                   <li><a href="../tags/type theory.html">type theory (1)</a></li>
@@ -77,6 +79,8 @@
                   <li><a href="../tags/food.html">food (1)</a></li>
                 
                   <li><a href="../tags/finance.html">finance (1)</a></li>
+                
+                  <li><a href="../tags/ethics.html">ethics (1)</a></li>
                 
                   <li><a href="../tags/databases.html">databases (1)</a></li>
                 
@@ -235,7 +239,7 @@ pointed to by <code>x</code> simply use the cached value. This is demonstrated i
 the figure below.</p>
 <figure>
 <div class="figure figure-centered"><a href="../images/mmm/heaplayoutf.png"><img src="../images/mmm/heaplayoutf.png" alt=" The heap layout of the expression &lt;code&gt;let x = f a b c in g  x x x&lt;/code&gt;. Notice how each occurrence of &lt;code&gt;x&lt;/code&gt; in the invocation of &lt;code&gt;g&lt;/code&gt;
-points to the same thunk for &lt;code&gt;f&lt;/code&gt;." width="auto"></a><p class="caption"> The heap layout of the expression <code>let x = f a b c in g  x x x</code>. Notice how each occurrence of <code>x</code> in the invocation of <code>g</code>
+points to the same thunk for &lt;code&gt;f&lt;/code&gt;." style="max-width: auto"></a><p class="caption"> The heap layout of the expression <code>let x = f a b c in g  x x x</code>. Notice how each occurrence of <code>x</code> in the invocation of <code>g</code>
 points to the same thunk for <code>f</code>.</p></div>
 <figcaption><del>CENTERED</del> The heap layout of the expression <code>let x = f a b c in g  x x x</code>. Notice how each occurrence of <code>x</code> in the invocation of <code>g</code>
 points to the same thunk for <code>f</code>.</figcaption>
@@ -267,7 +271,7 @@ values of the entry <em>computed within the list</em>, as illustrated below.</p>
 <div class="figure figure-centered"><a href="../images/mmm/fibdeps.png"><img src="../images/mmm/fibdeps.png" alt=" Dependencies for the fibonnaci ‘one-liner’. When we
 evaluate &lt;code&gt;fibs !! 4&lt;/code&gt;, we get a reference to a thunk that depends on
 other thunks in the &lt;code&gt;fibs&lt;/code&gt; list. This causes each thunk to only be
-computed once." width="auto"></a><p class="caption"> Dependencies for the fibonnaci ‘one-liner’. When we
+computed once." style="max-width: auto"></a><p class="caption"> Dependencies for the fibonnaci ‘one-liner’. When we
 evaluate <code>fibs !! 4</code>, we get a reference to a thunk that depends on
 other thunks in the <code>fibs</code> list. This causes each thunk to only be
 computed once.</p></div>
@@ -305,7 +309,7 @@ algorithm for the inputs “nematode knowledge” and “empty bottle”. The
 arrows point to cells that were necessary to compute the cell they
 originate from. Dark arrows represent dependencies actually used to
 compute this cell. Red boxes are cells where we added one because the
-corresponding characters matched." width="400px"></a><p class="caption">  The table built up by the imperative
+corresponding characters matched." style="max-width: 400pxpx"></a><p class="caption">  The table built up by the imperative
 algorithm for the inputs “nematode knowledge” and “empty bottle”. The
 arrows point to cells that were necessary to compute the cell they
 originate from. Dark arrows represent dependencies actually used to

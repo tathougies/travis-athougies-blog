@@ -113,6 +113,28 @@ div#content div.gallery > div.figure
   margin-bottom : 10px;
 }
 
+
+div#content figure.full div.figure
+{
+  border    : 0px solid #888888;
+  width     : auto;
+  max-width : 500px;
+}
+
+div#content div.figure-centered ~ figcaption
+{
+  margin      : 3px 3px 3px 3px;
+  padding     : 3px 3px 3px 3px;
+  font-family : "Open Sans","Nexa Light", sans-serif;
+}
+
+div#content div.figure-centered ~ figcaption::before
+{
+  counter-increment : figure;
+  content           : "Figure ";
+  font-weight       : 800;
+}
+
 div#content div.figure
 {
   padding    : 10px 10px 10px 10px;
