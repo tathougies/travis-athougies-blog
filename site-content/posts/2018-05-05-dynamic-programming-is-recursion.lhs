@@ -179,7 +179,7 @@ $\phi$ is the golden ratio.
 > naiveFib :: Int -> Int
 > naiveFib 0 = 0
 > naiveFib 1 = 1
-> naiveFib n = naiveFib (n - 1) * naiveFib (n - 2)
+> naiveFib n = naiveFib (n - 1) + naiveFib (n - 2)
 
 The one-line solution uses a lazy list to represent all Fibonacci
 numbers, and then list lookups to compute the $n^{\text{th}}$
