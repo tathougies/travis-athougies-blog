@@ -10,8 +10,9 @@ travisBlue      = rgb 0 0x99 0xFF
 codeBackground  = grayish 0xEE
 headerRuleColor = grayish 0xDD
 
+titleFace = fontFamily ["Open Sans", "Nexa Light"] [sansSerif]
 titleFamily = do
-  fontFamily ["Open Sans", "Nexa Light"] [sansSerif]
+  titleFace
   fontWeight (weight 300)
 bodyFamily  = fontFamily ["Palatino Linotype", "Palatino", "Baskerville", "Book Antiqua", "URW Palladio L"] [serif]
 
@@ -153,7 +154,7 @@ main = putCss $ do
       -- Can't have overflow: hidden because it makes image wrapping funny
     div # ".header-image" ? do
       sym padding       (px 15)
-      border            solid (px 1) travisLightGray
+      border            (px 1) solid travisLightGray
       float             floatRight
       sym margin        (px 10)
       width             (px 400)
@@ -166,7 +167,7 @@ main = putCss $ do
     div # ".large-quote" ? do
       sym margin        (em 1)
       sym padding       (em 1)
-      border            solid (px 1) travisLightGray
+      border            (px 1) solid travisLightGray
       insetBoxShadow    inset 0 0 (px 15) (setA 128 gray)
       ".quote-content" ? do
         titleFamily
@@ -180,15 +181,28 @@ main = putCss $ do
     div # ".gallery" |> div # ".figure" ? do
       sym margin (px 0)
       marginBottom (px 10)
+    figure # ".full" ? do
+      div # ".figure" ? do
+        border (px 0) solid travisLightGray
+        width auto
+        maxWidth (px 500)
+    (div # ".figure-centered") |~ figcaption ? do
+      sym margin (px 3)
+      sym padding (px 3)
+      titleFace
+      before & do
+        "counter-increment" -: "figure"
+        contents [ stringContent "Figure "]
+        fontWeight (weight 800)
     div # ".figure" ? do
 --      figureShadow
       sym padding       (px 10)
-      border            solid (px 1) travisLightGray
+      border            (px 1) solid travisLightGray
       sym margin        (px 5)
       width             (px 200)
       textAlign         (alignSide sideCenter)
       ".figure-centered" & do
-        border          solid (px 0) transparent
+        border          (px 0) solid transparent
         marginLeft      auto
         marginRight     auto
         width           auto
@@ -240,7 +254,7 @@ main = putCss $ do
       fontWeight     bold
       textTransform   uppercase
       fontSize (pt 15)
-      borderBottom    dotted (px 1) headerRuleColor
+      borderBottom    (px 1) dotted headerRuleColor
       overflow auto
     div # byClass "info" ? do
       paddingLeft     (em 2)
