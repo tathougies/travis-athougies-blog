@@ -4,7 +4,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-        <title>Travis Athougies - Posts tagged math</title>
+        <title>Travis Athougies - Discovering temporal dependencies in loopy programs</title>
         <link rel="stylesheet" type="text/css" href="../css/default.css" />
         <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
         <link rel="stylesheet" type="text/css" href="../css/jquery.modal.css" />
@@ -112,27 +112,103 @@
         </div>
 
         <div id="content">
-            <h1>Posts tagged math</h1>
+            <h1>Discovering temporal dependencies in loopy programs</h1>
 
-            <ul class="blogroll">
+            <div class="info">
+    Posted on <span class="date">November 22, 2024</span>
     
-        <li>
-            <a href="../posts/2024-08-31-a-different-take-on-infinity.html">A Different Take on Infinity</a> - August 31, 2024
-        </li>
+        by <span class="author">Travis Athougies</span>
     
-        <li>
-            <a href="../posts/2024-06-12-to-infinity-and-beyond.html">To Infinity and Beyond!</a> - June 12, 2024
-        </li>
+</div>
+<div class="tags">
+  in
+  <ul>
     
-        <li>
-            <a href="../posts/2018-04-23-combinatorial-optimization.html">The monadic structure of combinatorial optimization</a> - April 23, 2018
-        </li>
+    <li><a href="../tags/math.html">math</a></li>
     
-        <li>
-            <a href="../posts/2015-01-16-zippers-derivatives-oh-what-fun.html">Zippers, Derivatives -- Oh what fun!</a> - January 16, 2015
-        </li>
+    <li><a href="../tags/ai.html">ai</a></li>
     
-</ul>
+    <li><a href="../tags/programming.html">programming</a></li>
+    
+  </ul>
+</div>
+
+
+
+<div id="post">
+<p>Mathematicians write tensor operations as if they’re a trivial deal,
+but in reality, even a simple tensor addition requires many
+sub-operations. These are usually implemented via <code>for</code>loops.</p>
+<p>Consider the following example of a simple reduction operation over a
+2-dimensional tensor <span class="math inline">\(M[i,j]\)</span> where we are taking the maximum across
+the second dimension <span class="math inline">\(j\)</span>.</p>
+<pre><code># M[i, j] is an m x n tensor
+# R[i] is the result tensor of size m
+for i = 0 to m:
+  R[i] = M[i, 0]
+  for j = 1 to n:
+    R[i] = max(M[i, j], R[i])</code></pre>
+<p>Here, <code>R[i]</code> values change across each loop. In general, mutability is
+difficult for compilers and traditional scalar compilers use what’s
+known as single-static-assignment form to avoid dealing with mutability.</p>
+<p>This post details a similar form for tensor programs. The goal of our
+pass is to turn the above for loop into:</p>
+<pre><code># M[i, j] is an m x n tensor
+# R[i, t] is the result tensor of size mxn
+for i = 0 to m:
+  R[i, 0] = M[i, 0]
+  for j = 1 to n:
+    R[i, j] = max(M[i, j], R[i, j - 1])</code></pre>
+<p>In this new loop, each <span class="math inline">\(R[i, j]\)</span> is written to only once.</p>
+<h1 id="detecting-mutability">Detecting mutability</h1>
+<p>The first thing we need to do is to detect multiple assignments.</p>
+<p>This is hard to do in general, but if we limit ourselves to cases
+where the index expressions involve only affine expressions over the
+scalar loop indices, it becomes much more solvable.</p>
+<p>For our pass, we will limit ourselves only to these. Tensors used in
+non-affine writes will be marked as <em>mutable</em> and special handling
+will be used to compile them later on (i.e., true mutability).</p>
+<p>In the affine case, let’s consider the two assignments to <code>R[i]</code>. We
+have <code>R[i] = M[i, 0]</code> and we have <code>R[i] = max(M[i, j], R[i])</code>.</p>
+<p>For the sake of clarity let <code>i1</code> be the index written to by the first
+statement and <code>i2</code> the one written by the second.</p>
+<p>Then, we have that the writes overlap if <code>i1 = i2</code> for some assignment
+of <code>i1</code> and <code>i2</code>. Because <code>i1</code> and <code>i2</code> are any value within <span class="math inline">\([0, m]\)</span>,
+they overlap (i.e., the equation is solvable).</p>
+<p>As another example,</p>
+<p>In
+general, mutability is difficult for compilers, and many compilation
+passes benefit from assuming that each variable is only assigned
+once. In a traditional compiler, this is known as the <em>SSA</em>
+form. However, when it comes to tensors, many compilers rely on
+implicit mutability, as we see here with <span class="math inline">\(R[i]\)</span>.</p>
+<p>It’s reasonable to ask ourselves if we can transform the code above in
+a similar manner as an SSA transform. In particular, we would like to
+introduce a new dimension <span class="math inline">\(t\)</span> such that all intermediate values of
+<span class="math inline">\(R[i]\)</span> are available in the new dimension <span class="math inline">\(t\)</span>.</p>
+<p>If we look at the code above, we notice that there are <span class="math inline">\(n\)</span>
+intermediate values of <span class="math inline">\(R[i]\)</span> so <span class="math inline">\(t\)</span> will have size <span class="math inline">\(n\)</span>. Additionally,
+any future read references to <span class="math inline">\(R[i]\)</span> will now need to index a <span class="math inline">\(t\)</span>
+dimension as well.</p>
+<p>In the case above, the final <span class="math inline">\(t\)</span> dimension for all <span class="math inline">\(i\)</span> is simply <span class="math inline">\(n -
+1\)</span> (if we follow a zero-based indexing approach). However, this is not
+always the case as some loop structures might result in <span class="math inline">\(t &lt; n\)</span> being
+the final value. We won’t get to that here.</p>
+</div>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'travisathougiessblog'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+  var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
         </div>
         <!-- Google Analytics Tracking -->

@@ -53,12 +53,12 @@ div#content
 {
   margin-left  : auto;
   margin-right : auto;
-  font-size    : 13pt;
+  font-size    : 18pt;
 }
 
 div#content p
 {
-  line-height : 1.7em;
+  line-height : 1.3em;
   text-align  : justify;
 }
 
@@ -77,6 +77,14 @@ div#content div.header-image .caption
   font-size  : 10pt;
   color      : #808080;
   text-align : left;
+}
+
+div#content blockquote
+{
+  font-style       : italic;
+  background-color : #eeeeee;
+  padding          : 0.1em 1em 0.1em 1em;
+  border-left      : 4px solid #888888;
 }
 
 div#content div.large-quote
